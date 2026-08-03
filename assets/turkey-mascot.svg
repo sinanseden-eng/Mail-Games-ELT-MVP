@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 300" role="img" aria-labelledby="title desc">
+  <title id="title">Energetic turkey mascot</title>
+  <desc id="desc">A colourful cartoon turkey wearing a blue headband.</desc>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4e2f6f"/><stop offset="1" stop-color="#1f183b"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="12" stdDeviation="8" flood-color="#17204b" flood-opacity=".22"/></filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <g transform="translate(55 34)">
+      <ellipse cx="105" cy="117" rx="48" ry="94" fill="#f7a21b" transform="rotate(-53 105 117)"/>
+      <ellipse cx="112" cy="108" rx="48" ry="98" fill="#ee5068" transform="rotate(-30 112 108)"/>
+      <ellipse cx="127" cy="100" rx="47" ry="98" fill="#8f5ee8" transform="rotate(-9 127 100)"/>
+      <ellipse cx="147" cy="101" rx="47" ry="98" fill="#396ee8" transform="rotate(13 147 101)"/>
+      <ellipse cx="165" cy="110" rx="47" ry="98" fill="#18a89a" transform="rotate(34 165 110)"/>
+      <ellipse cx="176" cy="121" rx="47" ry="94" fill="#f5c343" transform="rotate(52 176 121)"/>
+      <g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".58">
+        <path d="M60 130c46-47 99-70 160-64"/><path d="M69 165c51-37 101-51 149-42"/>
+      </g>
+    </g>
+    <ellipse cx="181" cy="180" rx="82" ry="68" fill="url(#body)"/>
+    <path d="M123 174c-42-19-55-11-62 3 19 8 35 20 48 38 17-9 25-23 14-41Z" fill="#2c214c"/>
+    <path d="M237 164c42-19 56-8 62 7-20 7-36 19-50 36-17-10-24-25-12-43Z" fill="#2c214c"/>
+    <path d="M154 227c8 29 5 45-10 57" fill="none" stroke="#f7a21b" stroke-width="9" stroke-linecap="round"/>
+    <path d="M202 229c-5 28-1 43 14 55" fill="none" stroke="#f7a21b" stroke-width="9" stroke-linecap="round"/>
+    <path d="M125 285h42m28 0h43" fill="none" stroke="#f7a21b" stroke-width="8" stroke-linecap="round"/>
+    <path d="M176 153c-13-25-13-51 0-79 12-26 45-31 64-9 17 19 9 53-13 62-13 5-22 16-27 32Z" fill="#d7493f"/>
+    <ellipse cx="211" cy="80" rx="27" ry="31" fill="#dd4e45"/>
+    <circle cx="220" cy="76" r="10" fill="#fff"/><circle cx="223" cy="78" r="4" fill="#171831"/>
+    <path d="M235 84l31 13-31 14Z" fill="#f5b529"/>
+    <path d="M206 101c6 7 11 15 14 25-16 6-24 1-25-15Z" fill="#f24c63"/>
+    <path d="M185 62c16-12 36-15 59-8" fill="none" stroke="#315cf3" stroke-width="12" stroke-linecap="round"/>
+    <path d="M239 55l21 8-19 9" fill="#eaf3ff"/>
+    <path d="M108 159c-18-19-35-21-51-7" fill="none" stroke="#2c214c" stroke-width="18" stroke-linecap="round"/>
+    <path d="M59 150c-5-18-18-25-30-15 9 5 12 13 11 25 9 2 15-1 19-10Z" fill="#d7493f"/>
+    <path d="M245 156c23-22 44-22 63-3" fill="none" stroke="#2c214c" stroke-width="18" stroke-linecap="round"/>
+    <path d="M306 150c7-18 21-22 31-10-10 3-14 11-15 23-9 0-14-4-16-13Z" fill="#d7493f"/>
+  </g>
+  <g fill="none" stroke="#5a42f2" stroke-width="5" stroke-linecap="round">
+    <path d="M44 55l9 9m0-9-9 9M298 46l9 9m0-9-9 9"/>
+    <path d="M300 111c17-19 31-18 43 2" stroke-dasharray="5 11"/>
+  </g>
+  <g fill="#f7bd2d"><path d="M50 89l5 12 13 5-13 5-5 13-5-13-13-5 13-5Z"/><path d="M322 80l4 9 9 4-9 4-4 10-4-10-10-4 10-4Z"/></g>
+</svg>

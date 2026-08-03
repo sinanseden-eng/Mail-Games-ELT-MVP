@@ -1,0 +1,186 @@
+/* 0.9D precision replay polish built on the 0.9C1 visible hybrid scope */
+:root {
+  --sniper-blue: #2588d8;
+  --sniper-red: #d6453a;
+  --sniper-amber: #f2b53e;
+  --sniper-ink: #121920;
+}
+
+body.sniper-game-page {
+  background:
+    radial-gradient(circle at 15% 5%, rgba(242,181,62,.18), transparent 30%),
+    linear-gradient(180deg, #171d23, #34271f 58%, #161b1e);
+}
+body.sniper-game-page .shootout-brand > span:first-child,
+body.sniper-game-page .primary { background: linear-gradient(145deg, #9b332d, #1d5b8f); }
+body.sniper-game-page .shootout-score { background: linear-gradient(135deg, #111820, #21303b 48%, #4a2b24); }
+body.sniper-game-page .control-eyebrow { color: #b26e22; }
+
+.sniper-scene {
+  position: relative;
+  background: #2f2923;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.35), inset 0 -50px 100px rgba(5,10,13,.38);
+}
+#sniper-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+.sniper-scene-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(rgba(23,22,22,.08), rgba(10,14,16,.42)),
+    url("./assets/sniper-village-background.png") center/cover no-repeat;
+}
+.sniper-scene.render-ready .sniper-scene-fallback { opacity: 0; pointer-events: none; }
+.sniper-scene .scene-caption { z-index: 18; }
+.sniper-caption.hit { background: rgba(151,60,37,.94); }
+.sniper-caption.miss { background: rgba(56,73,86,.94); }
+.sniper-caption.finish { background: rgba(156,93,27,.95); }
+.sniper-caption.futile { background: rgba(93,84,70,.94); }
+
+.sniper-health-score .score-player {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "name value" "bar bar";
+  gap: 4px 12px;
+}
+.sniper-health-score .score-player small { grid-area: name; }
+.sniper-health-score .score-player strong { grid-area: value; }
+.sniper-health-track {
+  grid-area: bar;
+  width: 100%;
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(0,0,0,.42);
+  border: 1px solid rgba(255,255,255,.22);
+}
+.sniper-health-track span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #efad35, #f0d55b);
+  transition: width .4s ease;
+}
+
+.sniper-choice-section { margin: 15px 0; }
+.sniper-choice-section h3 {
+  margin: 0 0 8px;
+  font-size: .78rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.sniper-choice-section.emergence h3 { color: var(--sniper-blue); }
+.sniper-choice-section.target h3 { color: var(--sniper-red); }
+.sniper-spot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+.sniper-spot-button {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  align-items: center;
+  gap: 9px;
+  min-height: 62px;
+  padding: 9px 11px;
+  color: #28323b;
+  background: rgba(250,248,244,.96);
+  border: 1px solid #ddd4c9;
+  border-radius: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.sniper-spot-button:hover,
+.sniper-spot-button:focus-visible { transform: translateY(-2px); outline: 3px solid rgba(242,181,62,.13); }
+.sniper-spot-button strong:first-child {
+  display: grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  color: #111820;
+  background: var(--sniper-amber);
+  border-radius: 8px;
+}
+.sniper-spot-button span { font-size: .77rem; font-weight: 850; }
+.sniper-spot-button.locked { opacity: .42; pointer-events: none; }
+.sniper-choice-section.emergence .sniper-spot-button.selected {
+  border-color: var(--sniper-blue);
+  background: #e9f5ff;
+  box-shadow: 0 0 0 3px rgba(37,136,216,.12);
+}
+.sniper-choice-section.target .sniper-spot-button.selected {
+  border-color: var(--sniper-red);
+  background: #fff0ed;
+  box-shadow: 0 0 0 3px rgba(214,69,58,.12);
+}
+.sniper-selection-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+.sniper-selection-summary div {
+  padding: 10px;
+  border-radius: 12px;
+  background: #f5f1eb;
+  text-align: center;
+}
+.sniper-selection-summary small { display: block; color: #77706b; font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; }
+.sniper-selection-summary strong { font-size: .85rem; }
+.sniper-result-stamp { background: linear-gradient(135deg, #b16a22, #263d50); }
+
+@media (max-width: 720px) {
+  .sniper-spot-grid { grid-template-columns: 1fr; }
+  .sniper-selection-summary { grid-template-columns: 1fr; }
+}
+
+/* Routing failsafe: the shared scene must never show this fallback in another game. */
+.shootout-scene:not(.sniper-scene) .sniper-scene-fallback { display: none !important; }
+
+
+/* The canvas owns projectile, muzzle-flash and hit-reaction animation. */
+.sniper-scene.render-ready {
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.35), inset 0 -64px 120px rgba(5,10,13,.46), 0 20px 55px rgba(4,8,12,.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sniper-scene, #sniper-canvas { scroll-behavior: auto; }
+}
+
+/* 0.9C1 visible hybrid scope POV and replay controls */
+.sniper-playback-card {
+  display: grid;
+  gap: .9rem;
+}
+.sniper-playback-controls {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+.sniper-playback-controls button {
+  min-width: 9.5rem;
+}
+.sniper-caption.scope {
+  color: #f5e4ac;
+  border-color: rgba(255, 218, 126, .72);
+  background: rgba(8, 14, 17, .86);
+}
+@media (max-width: 700px) {
+  .sniper-playback-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .sniper-playback-controls button {
+    width: 100%;
+    min-width: 0;
+  }
+}

@@ -1,0 +1,226 @@
+:root {
+  --turkey-plum: #6f2d78;
+  --turkey-red: #c33c4e;
+  --turkey-gold: #f2bc3f;
+  --turkey-sky: #65cde9;
+  --turkey-leaf: #4d9a58;
+}
+
+body.turkey-fight-page {
+  background:
+    radial-gradient(circle at 7% 3%, rgba(242,188,63,.22), transparent 28%),
+    radial-gradient(circle at 93% 8%, rgba(111,45,120,.18), transparent 31%),
+    linear-gradient(180deg, #fff9ec, #edf9f2 58%, #f7fbff);
+}
+
+body.turkey-fight-page .shootout-brand > span:first-child,
+body.turkey-fight-page .primary {
+  background: linear-gradient(145deg, var(--turkey-red), var(--turkey-plum));
+}
+
+body.turkey-fight-page .shootout-score {
+  background: linear-gradient(135deg, #34213d, #7b315f 55%, #b34a47);
+}
+
+body.turkey-fight-page .control-eyebrow { color: var(--turkey-plum); }
+body.turkey-fight-page .sound-toggle[aria-pressed="true"] {
+  color: #5c205e;
+  background: #f5e6f4;
+  border-color: #dbb7db;
+}
+
+.game-canvas { display: block; width: 100%; height: 100%; }
+.game-canvas[hidden], .game-overlay[hidden] { display: none; }
+
+.turkey-scene {
+  background: #70d1e8;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.46), inset 0 -30px 70px rgba(18,68,38,.18);
+}
+
+.turkey-scene::after {
+  background: linear-gradient(115deg, rgba(255,255,255,.13), transparent 25%, transparent 72%, rgba(57,23,53,.12));
+}
+
+.turkey-caption.hit { background: rgba(151,48,58,.92); }
+.turkey-caption.blocked { background: rgba(45,101,129,.92); }
+.turkey-caption.finish { background: rgba(102,40,111,.94); }
+.turkey-caption.futile { background: rgba(111,86,81,.9); }
+
+.turkey-health-score .score-player {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "name value" "bar bar";
+  gap: 4px 12px;
+  min-width: 0;
+}
+.turkey-health-score .score-player small { grid-area: name; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.turkey-health-score .score-player strong { grid-area: value; font-size: 1.4rem; }
+.turkey-health-track {
+  grid-area: bar;
+  width: 100%;
+  min-width: 110px;
+  height: 9px;
+  overflow: hidden;
+  background: rgba(8,13,34,.42);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 999px;
+}
+.turkey-health-track span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #75e08b, #d7e44d);
+  border-radius: inherit;
+  transition: width .45s ease;
+}
+.turkey-health-score .score-player:last-child small,
+.turkey-health-score .score-player:last-child strong { text-align: right; }
+
+.turkey-move-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+.turkey-move-button {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  grid-template-areas: "icon label" "icon note";
+  align-items: center;
+  gap: 1px 10px;
+  min-height: 76px;
+  padding: 11px 12px;
+  color: #353047;
+  background: #faf8fc;
+  border: 1px solid #e4dce8;
+  border-radius: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+.turkey-move-button:hover,
+.turkey-move-button:focus-visible {
+  transform: translateY(-2px);
+  border-color: #b77bb8;
+  outline: 3px solid rgba(111,45,120,.1);
+}
+.turkey-move-button .move-icon { grid-area: icon; font-size: 1.7rem; text-align: center; }
+.turkey-move-button strong { grid-area: label; font-size: .88rem; }
+.turkey-move-button small { grid-area: note; color: #7b7080; font-size: .68rem; line-height: 1.25; }
+.turkey-move-button[data-kind="attack"]::after,
+.turkey-move-button[data-kind="defence"]::after {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  font-size: .52rem;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.turkey-move-button[data-kind="attack"]::after { content: "Attack"; color: #9b3041; background: #ffe6e7; }
+.turkey-move-button[data-kind="defence"]::after { content: "Defence"; color: #2e6382; background: #e4f3fa; }
+.turkey-move-button.selected {
+  color: #4c2052;
+  background: #f2e5f3;
+  border-color: #8f4b91;
+  box-shadow: 0 0 0 3px rgba(111,45,120,.11), 0 10px 24px rgba(71,34,75,.1);
+}
+.turkey-move-button.locked { opacity: .4; pointer-events: none; }
+
+.turkey-selected-card {
+  margin-top: 13px;
+  padding: 13px;
+  color: #632b69;
+  background: #f5e9f5;
+  border: 1px solid #ddc2de;
+  border-radius: 15px;
+  text-align: center;
+  font-weight: 900;
+}
+
+.fight-result-stamp { background: linear-gradient(135deg, var(--turkey-red), var(--turkey-plum)); }
+.turkey-damage-grid div:nth-child(1), .turkey-damage-grid div:nth-child(2) { background: #fff5eb; }
+.turkey-damage-grid div:nth-child(3), .turkey-damage-grid div:nth-child(4) { background: #f2f7ff; }
+
+@media (max-width: 720px) {
+  .turkey-move-grid { grid-template-columns: 1fr; }
+  .turkey-health-score .score-player { gap: 2px 6px; }
+  .turkey-health-track { min-width: 70px; }
+}
+
+/* 0.8a — blank-arena hotfix and visual fallback */
+.turkey-scene { position: relative; }
+#turkey-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  visibility: visible;
+  opacity: 1;
+}
+.turkey-scene .scene-caption { z-index: 18; }
+.turkey-scene-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  background: linear-gradient(#78d9f1 0 57%, #83c96b 58% 68%, #407d46 100%);
+  transition: opacity .18s ease;
+}
+.turkey-scene.render-ready .turkey-scene-fallback { opacity: 0; pointer-events: none; }
+.fallback-sun { position:absolute; right:8%; top:7%; width:12%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,#fff7bb 0 18%,#ffd657 45%,rgba(255,214,87,0) 72%); }
+.fallback-hill { position:absolute; top:47%; width:64%; height:28%; border-radius:50% 50% 0 0; background:#6fb258; }
+.fallback-hill-a { left:-10%; transform:rotate(4deg); }
+.fallback-hill-b { right:-12%; transform:rotate(-4deg); background:#79bb5c; }
+.fallback-barn { position:absolute; left:50%; top:37%; width:24%; height:24%; transform:translateX(-50%); background:#c54d3e; border:4px solid rgba(91,34,29,.45); box-shadow:0 18px 24px rgba(27,61,41,.2); }
+.fallback-barn::before { content:""; position:absolute; left:50%; top:-48%; width:72%; aspect-ratio:1; background:#96352f; transform:translateX(-50%) rotate(45deg); border:4px solid rgba(91,34,29,.4); }
+.fallback-barn span { position:absolute; left:35%; bottom:0; width:30%; height:58%; background:#65332d; border:6px solid #f1d39e; }
+.fallback-fence { position:absolute; left:0; right:0; top:58%; height:10%; background:repeating-linear-gradient(90deg,transparent 0 5%,#e6cf97 5% 6.2%,transparent 6.2% 11%),linear-gradient(transparent 24%,#e6cf97 24% 39%,transparent 39% 62%,#e6cf97 62% 77%,transparent 77%); filter:drop-shadow(0 3px 0 #b4935b); }
+.fallback-turkey { position:absolute; bottom:10%; width:19%; height:44%; filter:drop-shadow(0 18px 10px rgba(18,55,35,.25)); }
+.fallback-turkey-a { left:15%; }
+.fallback-turkey-b { right:15%; transform:scaleX(-1); }
+.fallback-tail { position:absolute; left:0; top:5%; width:62%; height:70%; border-radius:50% 12% 50% 50%; background:repeating-conic-gradient(from 205deg,#6b342d 0 12deg,#ef9c48 12deg 25deg,#a64634 25deg 38deg); }
+.fallback-turkey-b .fallback-tail { background:repeating-conic-gradient(from 205deg,#252a4e 0 12deg,#5967a2 12deg 25deg,#9d4776 25deg 38deg); }
+.fallback-body { position:absolute; left:31%; top:31%; width:55%; height:58%; border-radius:48% 52% 44% 48%; background:radial-gradient(circle at 35% 25%,#a76543,#71402f 55%,#3e2827); border:4px solid #432923; }
+.fallback-turkey-b .fallback-body { background:radial-gradient(circle at 35% 25%,#6672a8,#343b68 55%,#202445); border-color:#1a1f42; }
+.fallback-head { position:absolute; right:0; top:24%; width:28%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 35% 30%,#f06f61,#b9343d); border:4px solid #852630; }
+.fallback-turkey-b .fallback-head { background:radial-gradient(circle at 35% 30%,#7896d7,#35477d); border-color:#25305d; }
+.fallback-head::after { content:""; position:absolute; right:-25%; top:43%; border-left:28px solid #f4bb42; border-top:10px solid transparent; border-bottom:10px solid transparent; }
+@media (prefers-reduced-motion: no-preference) {
+  .turkey-scene:not(.render-ready) .fallback-turkey-a { animation:fallback-ready-a 1.3s ease-in-out infinite alternate; }
+  .turkey-scene:not(.render-ready) .fallback-turkey-b { animation:fallback-ready-b 1.3s ease-in-out infinite alternate; }
+}
+@keyframes fallback-ready-a { to { transform:translateY(-5px) rotate(1deg); } }
+@keyframes fallback-ready-b { to { transform:scaleX(-1) translateY(-5px) rotate(1deg); } }
+
+/* 0.8e — cinematic barn arena polish */
+body.turkey-fight-page .shootout-stage-card,
+body.turkey-fight-page .shootout-control-card {
+  background: rgba(255, 250, 244, .95);
+  border-color: rgba(124, 87, 76, .14);
+  box-shadow: 0 26px 70px rgba(80, 49, 38, .13);
+}
+body.turkey-fight-page .shootout-control-card::before { background: rgba(244, 207, 154, .74); }
+body.turkey-fight-page .scene-ribbon {
+  background: linear-gradient(135deg, #f0c042, #efac34);
+  border-color: #cc8b17;
+}
+body.turkey-fight-page .shootout-scene {
+  background: linear-gradient(180deg, #f3cf9b, #d29a55 46%, #7b6b3a 100%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.5), inset 0 -60px 110px rgba(45,31,18,.22);
+}
+body.turkey-fight-page .shootout-scene::after {
+  background: linear-gradient(118deg, rgba(255,255,255,.08), transparent 24%, transparent 70%, rgba(73,31,21,.12));
+}
+
+/* 0.8e1 — prevent the Turkey fallback from covering Penalty Shootout */
+.shootout-scene:not(.turkey-scene) .turkey-scene-fallback {
+  display: none !important;
+}

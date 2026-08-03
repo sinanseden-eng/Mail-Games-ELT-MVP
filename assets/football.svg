@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-labelledby="title">
+  <title id="title">Football</title>
+  <defs><filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="#11183a" flood-opacity=".28"/></filter></defs>
+  <g filter="url(#shadow)"><circle cx="90" cy="90" r="73" fill="#fff" stroke="#172032" stroke-width="7"/><path d="m90 54 30 22-11 35H71L60 76Z" fill="#172032"/><path d="M90 17v37M158 68l-38 8M132 151l-23-40M48 151l23-40M22 68l38 8" fill="none" stroke="#172032" stroke-width="7"/><path d="m90 17 28 14 22 29-8 36 20 29M22 68l7-35 34-12 27-4M48 151l-25-27-1-56M132 151l25-27 1-56" fill="none" stroke="#172032" stroke-width="5"/></g>
+</svg>

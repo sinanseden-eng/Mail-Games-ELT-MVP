@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 300" role="img" aria-labelledby="title desc">
+  <title id="title">Flying email illustration</title>
+  <desc id="desc">A purple envelope carrying a letter through clouds and sparkles.</desc>
+  <defs>
+    <linearGradient id="env" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7560ff"/><stop offset="1" stop-color="#3b22c8"/></linearGradient>
+    <filter id="s"><feDropShadow dx="0" dy="14" stdDeviation="10" flood-color="#201259" flood-opacity=".23"/></filter>
+  </defs>
+  <g opacity=".9" fill="#eef3ff"><ellipse cx="59" cy="242" rx="52" ry="27"/><ellipse cx="115" cy="247" rx="68" ry="35"/><ellipse cx="304" cy="252" rx="56" ry="30"/></g>
+  <path d="M56 191c31-42 66-60 106-54" stroke="#2fd0bd" stroke-width="9" stroke-linecap="round" fill="none" stroke-dasharray="8 16"/>
+  <g filter="url(#s)" transform="translate(104 90) rotate(10 104 78)">
+    <path d="M31 2h148v113H31Z" fill="#fffdf7" stroke="#dedff2" stroke-width="4"/>
+    <path d="M51 26h86M51 47h104M51 68h68" stroke="#a7afd0" stroke-width="7" stroke-linecap="round"/>
+    <path d="M8 61h196v134H8Z" fill="url(#env)" stroke="#2d1a9d" stroke-width="5"/>
+    <path d="m10 65 96 73 96-73M10 192l72-70m120 70-72-70" fill="none" stroke="#d9d3ff" stroke-width="7"/>
+  </g>
+  <g transform="translate(40 42) rotate(-13)"><path d="m0 23 82-23-31 66-13-27Z" fill="#fff" stroke="#365de9" stroke-width="5"/><path d="M38 39 82 0" stroke="#365de9" stroke-width="4"/></g>
+  <g fill="#f6be2b"><path d="M307 55l7 17 18 7-18 7-7 18-7-18-18-7 18-7Z"/><path d="M70 111l4 10 11 4-11 4-4 11-4-11-11-4 11-4Z"/></g>
+  <g fill="none" stroke="#5b43ed" stroke-width="5" stroke-linecap="round"><path d="M284 127l12 12m0-12-12 12"/><path d="M38 171l11 11m0-11-11 11"/></g>
+</svg>
