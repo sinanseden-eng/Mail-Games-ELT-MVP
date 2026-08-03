@@ -35,7 +35,7 @@ export const PENALTY_VISUAL_ASSETS = Object.freeze({
     miss: "./assets/penalty-0.9f/outcome-miss.jpg"
   }),
   singleAngle: Object.freeze({
-    background: "./assets/penalty-single-angle/stadium-clean.jpg",
+    background: "./assets/penalty-single-angle/broadcast-reference.png",
     strikerContact: "./assets/penalty-single-angle/striker-contact.png",
     strikerFollow: "./assets/penalty-single-angle/striker-follow.png",
     keeperReady: "./assets/penalty-single-angle/keeper-ready.png",
@@ -922,18 +922,24 @@ export class PenaltyVisualPack {
     const shotZone = canonicalPenaltyZone(replay, "shotZone");
     const shotMove = singleAngleShotMove(shotZone);
 
+
     if (!final && progress < strike + 0.006) {
-      const runT = clamp((progress - 0.045) / Math.max(0.001, strike - 0.045), 0, 1);
-      const sequence = naturalFrameSequence(smoothstep(runT), 5, 0.15);
-      const first = this.get(this.assets.striker[sequence.index]) || this.get(this.assets.striker[0]);
-      const second = this.get(this.assets.striker[sequence.nextIndex]) || first;
-      if (!first) return false;
-      this.drawMotionMatchedFullFrame(ctx, first, second, sequence.mix, {
-        zoom: 1, panX: 0, panY: 0, motionX: 0, label: "PENALTY REPLAY · MAIN CAMERA"
+      const preT = smoothstep(clamp(progress / Math.max(0.001, strike), 0, 1));
+      this.drawSingleAngleKeeper(ctx, singleAngleKeeperState(replay, progress), time, reducedMotion);
+      this.drawSingleAngleSprite(ctx, contactSprite, {
+        x: 314 + shotMove.translateX * 0.10,
+        y: 25 + shotMove.translateY * 0.08,
+        width: 587,
+        height: 662,
+        alpha: clamp(1 - preT * 0.35, 0.68, 1),
+        rotation: shotMove.rotation * 0.18,
+        originX: 0.64,
+        originY: 0.86
       });
       if (progress >= strike - 0.032) this.drawContactPolish(ctx, progress, time);
       return true;
     }
+
 
     const background = this.get(this.assets.singleAngle?.background);
     const contactSprite = this.get(this.assets.singleAngle?.strikerContact);
@@ -1401,7 +1407,7 @@ export class PenaltyVisualPack {
     this.drawFullFrame(ctx, image, 1, {
       zoom: 1.03 + (final ? Math.sin(time * 0.0012) * 0.002 : smoothstep(impactT) * 0.016),
       mirror: effect.side < 0,
-      label: "GOALKEEPER VIEW · MAIN CAMERA"
+      label: "BROADCAST REPLAY"
     });
     this.drawGoalImpact(ctx, point, effect, final ? 1 : smoothstep(impactT), time, impactT, final);
     const badge = final ? 1 : smoothstep(clamp((impactT - 0.72) / 0.28, 0, 1));

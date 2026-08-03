@@ -541,3 +541,8 @@ The Turkey fallback layer is now hidden explicitly whenever a Penalty Shootout t
 ## 0.9H2A keeper-view flash hotfix
 
 The goalkeeper replay now cuts directly from the incoming ball to the physical outcome. The remaining full-screen white impact flash, generic radial ball-cam rays, and legacy comic contact bursts are disabled for keeper POV. Match logic and stored coordinates are unchanged.
+
+
+## 0.9H4A
+
+Locks penalty replay to the uploaded broadcast camera throughout the entire action sequence.
