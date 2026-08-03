@@ -546,3 +546,8 @@ The goalkeeper replay now cuts directly from the incoming ball to the physical o
 ## 0.9H4A
 
 Locks penalty replay to the uploaded broadcast camera throughout the entire action sequence.
+
+
+## 0.9H4B
+
+Makes the exact uploaded broadcast camera authoritative by replacing the browser entry/import chain with unique 0.9H4B filenames.

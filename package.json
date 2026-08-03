@@ -1,11 +1,11 @@
 {
   "name": "mailgames-elt-mvp",
-  "version": "0.9.24",
+  "version": "0.9.25",
   "private": true,
-  "description": "Teacher-editable ELT email games. 0.9H4A locks penalty replay to the uploaded broadcast camera for the full action sequence.",
+  "description": "Teacher-editable ELT email games. 0.9H4B makes the uploaded broadcast camera authoritative through uniquely named entry modules and assets.",
   "scripts": {
     "serve": "npx netlify dev",
-    "check": "node --check app.js && node --check turn.js && node --check replay.js && node --check shootout.js && node --check shootout-core.mjs && node --check shootout-net.mjs && node --check shootout-physics.mjs && node --check shootout-cinematics.mjs && node --check penalty-perspective.mjs && node --check penalty-visuals.mjs && node --check shootout-scene.mjs && node --check shootout-audio.mjs && node --check turkey-core.mjs && node --check turkey-scene.mjs && node --check turkey-audio.mjs && node --check sniper-core.mjs && node --check sniper-scene.mjs && node --check sniper-audio.mjs && find netlify/functions tests scripts -name \"*.mjs\" -print0 | xargs -0 -n1 node --check",
+    "check": "node --check app.js && node --check turn-0.9h4b.js && node --check replay-0.9h4b.js && node --check shootout-0.9h4b.js && node --check shootout-scene-0.9h4b.mjs && node --check penalty-visuals-0.9h4b.mjs && node --check turn.js && node --check replay.js && node --check shootout.js && node --check shootout-core.mjs && node --check shootout-net.mjs && node --check shootout-physics.mjs && node --check shootout-cinematics.mjs && node --check penalty-perspective.mjs && node --check penalty-visuals.mjs && node --check shootout-scene.mjs && node --check shootout-audio.mjs && node --check turkey-core.mjs && node --check turkey-scene.mjs && node --check turkey-audio.mjs && node --check sniper-core.mjs && node --check sniper-scene.mjs && node --check sniper-audio.mjs && find netlify/functions tests scripts -name \"*.mjs\" -print0 | xargs -0 -n1 node --check",
     "test": "node --test tests/*.test.mjs"
   },
   "engines": {
