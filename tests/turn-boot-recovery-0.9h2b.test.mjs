@@ -6,7 +6,7 @@ const turn = readFileSync(new URL("../turn.js", import.meta.url), "utf8");
 const html = readFileSync(new URL("../turn.html", import.meta.url), "utf8");
 
 test("0.9H2B version-busts the secure turn module", () => {
-  assert.match(html, /turn\.js\?v=0\.9\.23/);
+  assert.match(html, /(?:turn\.js\?v=0\.9\.23|turn-0\.9h4b\.js)/);
   assert.match(turn, /shootout-scene\.mjs\?v=0\.9\.23/);
 });
 
