@@ -1,0 +1,42 @@
+.turn-game-page { min-height: 100vh; }
+.turn-security { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; color: #44506c; background: rgba(255,255,255,.78); border: 1px solid rgba(78,88,130,.14); border-radius: 999px; font-size: .76rem; font-weight: 850; }
+.turn-control { min-height: 580px; }
+.turn-control .control-title { font-size: clamp(1.9rem, 3vw, 3.15rem); }
+.turn-question-prompt { margin: 10px 0 2px; font-size: 1.12rem; line-height: 1.55; }
+.turn-question-help { margin: 0; color: #707a94; font-size: .83rem; line-height: 1.5; }
+.turn-control input { width: 100%; padding: 13px 14px; border: 1px solid #d7dced; border-radius: 12px; font: inherit; }
+.turn-control input:focus { border-color: #7866ed; outline: 3px solid rgba(91,67,237,.14); }
+.turn-submit-state { min-height: 24px; margin-top: 10px; color: #6b7590; font-size: .82rem; font-weight: 750; }
+.turn-submit-state.ready { color: #17623d; }
+.turn-submit-state.error { padding: 10px 12px; color: #8b3442; background: #ffedf0; border-radius: 12px; }
+.goal-zone-overlay.locked { opacity: .22; filter: saturate(.45); pointer-events: none; }
+.goal-zone-overlay.ready { opacity: 1; filter: none; }
+.goal-zone-overlay.resolving { opacity: 0; pointer-events: none; }
+.turn-result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 16px 0; }
+.turn-result-grid div { padding: 11px; background: #f5f7fc; border-radius: 13px; }
+.turn-result-grid small, .turn-result-grid strong { display: block; }
+.turn-result-grid small { margin-bottom: 4px; color: #78829a; font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; }
+.turn-waiting-icon { display: grid; place-items: center; width: 96px; height: 96px; margin: 18px auto; border-radius: 30px; color: white; background: linear-gradient(145deg,#5b43ed,#2d7ee8); font-size: 2.8rem; box-shadow: 0 18px 38px rgba(73,57,190,.25); }
+.turn-email-note { margin-top: 14px; padding: 12px; color: #56617b; background: #f1f4fb; border-radius: 13px; font-size: .82rem; line-height: 1.5; }
+.turn-generic .shootout-score, .turn-generic #pitch-stage { display: none; }
+.turn-generic #turn-layout { display: block; max-width: 760px; margin: 30px auto; }
+.turn-generic .turn-control { position: relative; top: auto; }
+.turn-options, .turn-moves { display: grid; gap: 9px; margin: 14px 0; }
+.turn-options button, .turn-moves button { padding: 13px; border: 1px solid #d9deec; border-radius: 12px; background: #f8f9fd; text-align: left; font: inherit; font-weight: 750; cursor: pointer; }
+.turn-options button.selected, .turn-moves button.selected { color: #3e2eb7; background: #eae5ff; border-color: #7866ed; outline: 2px solid rgba(91,67,237,.12); }
+@media (max-width: 720px) {
+  .turn-security { display: none; }
+  .turn-control { min-height: 0; }
+  .turn-result-grid { grid-template-columns: 1fr; }
+}
+
+/* 0.9F1 — the choice grid is interactive only during an unresolved turn. */
+.replay-page .goal-zone-overlay,
+.penalty-replay-running .goal-zone-overlay {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.penalty-replay-running #shootout-canvas { pointer-events: none; }

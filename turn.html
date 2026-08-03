@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Your Turn · Mail Games ELT</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="shootout.css" />
+  <link rel="stylesheet" href="turkey.css" />
+  <link rel="stylesheet" href="sniper.css" />
+  <link rel="stylesheet" href="turn.css" />
+</head>
+<body class="shootout-page turn-game-page">
+  <header class="shootout-topbar">
+    <a class="shootout-brand" href="/#home" aria-label="Mail Games ELT home">
+      <span aria-hidden="true">✉</span>
+      <span><strong id="game-brand">Mail Games ELT</strong><small id="game-version">Live email turn · 0.9H4</small></span>
+    </a>
+    <div class="topbar-actions"><button type="button" class="sound-toggle compact" id="sound-toggle" aria-pressed="true">Sound on</button><div class="turn-security"><span aria-hidden="true">🔒</span> Signed single-use turn</div></div>
+  </header>
+
+  <main class="shootout-shell">
+    <section class="shootout-score" id="turn-score" aria-label="Match scoreboard">
+      <div class="score-player"><small id="name-a">Player A</small><strong id="score-a">0</strong><div class="turkey-health-track" id="health-track-a" hidden><span id="health-a"></span></div></div>
+      <div class="score-centre"><span id="round-badge">Loading match</span><strong id="match-status">Opening your secure turn…</strong></div>
+      <div class="score-player"><small id="name-b">Player B</small><strong id="score-b">0</strong><div class="turkey-health-track" id="health-track-b" hidden><span id="health-b"></span></div></div>
+    </section>
+
+    <section class="shootout-layout" id="turn-layout">
+      <article class="shootout-stage-card" id="game-stage">
+        <div class="scene-ribbon"><span id="scene-role">Your turn</span><strong id="scene-player">Player</strong></div>
+        <div class="shootout-scene" id="game-scene">
+          <div class="turkey-scene-fallback" id="turkey-scene-fallback" aria-hidden="true">
+            <div class="fallback-sun"></div>
+            <div class="fallback-hill fallback-hill-a"></div>
+            <div class="fallback-hill fallback-hill-b"></div>
+            <div class="fallback-barn"><span></span></div>
+            <div class="fallback-fence"></div>
+            <div class="fallback-turkey fallback-turkey-a"><span class="fallback-tail"></span><span class="fallback-body"></span><span class="fallback-head"></span></div>
+            <div class="fallback-turkey fallback-turkey-b"><span class="fallback-tail"></span><span class="fallback-body"></span><span class="fallback-head"></span></div>
+          </div>
+          <canvas class="game-canvas" id="shootout-canvas" width="1280" height="720" aria-label="Penalty shootout pitch"></canvas>
+          <canvas class="game-canvas" id="turkey-canvas" width="1280" height="720" aria-label="Turkey fight farm arena" hidden></canvas>
+          <div class="sniper-scene-fallback" id="sniper-scene-fallback" aria-hidden="true" hidden></div>
+          <canvas class="game-canvas" id="sniper-canvas" width="1280" height="720" aria-label="Sniper prediction training arena" hidden></canvas>
+          <div class="goal-zone-overlay locked game-overlay" id="goal-zone-overlay" aria-label="Choose a goal zone">
+            <button type="button" data-zone="top-left" aria-label="Top left"><span>↖</span><small>Top left</small></button>
+            <button type="button" data-zone="top-centre" aria-label="Top centre"><span>↑</span><small>Top centre</small></button>
+            <button type="button" data-zone="top-right" aria-label="Top right"><span>↗</span><small>Top right</small></button>
+            <button type="button" data-zone="bottom-left" aria-label="Bottom left"><span>↙</span><small>Low left</small></button>
+            <button type="button" data-zone="bottom-centre" aria-label="Bottom centre"><span>↓</span><small>Low centre</small></button>
+            <button type="button" data-zone="bottom-right" aria-label="Bottom right"><span>↘</span><small>Low right</small></button>
+          </div>
+          <div class="scene-caption" id="scene-caption" aria-live="polite">The game scene is loading…</div>
+        </div>
+        <div class="scene-legend" id="scene-legend">
+          <span id="legend-a"><i class="legend-dot live"></i> Answer and choose in the scene</span>
+          <span id="legend-b"><i class="legend-dot futile"></i> Incorrect answers make moves futile</span>
+          <span id="legend-c"><i class="legend-dot net"></i> The second player watches the result</span>
+        </div>
+      </article>
+
+      <aside class="shootout-control-card turn-control" id="turn-app" aria-live="polite">
+        <p>Loading your secure turn…</p>
+      </aside>
+    </section>
+  </main>
+  <script>
+    window.__MAIL_GAMES_TURN_BOOT__ = { stage: "html-ready", ready: false, startedAt: Date.now() };
+    window.setTimeout(() => {
+      const boot = window.__MAIL_GAMES_TURN_BOOT__;
+      if (!boot || boot.ready) return;
+      const status = document.getElementById("match-status");
+      const caption = document.getElementById("scene-caption");
+      const app = document.getElementById("turn-app");
+      if (status) status.textContent = "The secure turn could not start";
+      if (caption) caption.textContent = "The game module did not finish loading.";
+      if (app) app.innerHTML = `<span class="control-eyebrow">Loading recovery</span><h1 class="control-title">The turn page stalled.</h1><p class="control-copy">Reload once to fetch a clean copy of the game files. Your signed turn is unchanged.</p><div class="turn-submit-state error">Startup stage: ${String(boot.stage || "unknown")}</div><div class="control-actions"><button class="primary" type="button" onclick="location.reload()">Reload turn</button></div>`;
+    }, 12000);
+  </script>
+  <script type="module" src="turn.js?v=0.9.23" onerror="window.__MAIL_GAMES_TURN_BOOT__.stage='module-error'"></script>
+</body>
+</html>

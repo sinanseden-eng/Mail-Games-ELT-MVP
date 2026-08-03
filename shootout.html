@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Mail Penalty Shootout 0.9H4 with one fixed realistic camera, six shot moves, six goalkeeper moves and natural ball physics." />
+  <title>Mail Penalty Shootout — 0.9H4 Single-Angle Replay</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="shootout.css" />
+</head>
+<body class="shootout-page">
+  <header class="shootout-topbar">
+    <a class="shootout-brand" href="./#play" aria-label="Back to Mail Games ELT">
+      <span aria-hidden="true">✉</span>
+      <span><strong>Mail Penalty Shootout</strong><small>Single-angle six-zone replay 0.9H4</small></span>
+    </a>
+    <div class="shootout-toolbar">
+      <button type="button" class="sound-toggle" id="sound-toggle" aria-pressed="true">Sound on</button>
+      <button type="button" class="sound-toggle" id="motion-toggle" aria-pressed="false">Reduce motion</button>
+      <button type="button" class="secondary" id="reset-shootout">Reset match</button>
+      <a class="secondary button-link" href="./#play">Exit prototype</a>
+    </div>
+  </header>
+
+  <main class="shootout-shell">
+    <section class="shootout-score" aria-label="Match scoreboard">
+      <div class="score-player">
+        <small>Player A</small>
+        <strong id="score-a">0</strong>
+      </div>
+      <div class="score-centre">
+        <span id="round-badge">Kick 1 of 10</span>
+        <strong id="match-status">Ready for kickoff</strong>
+      </div>
+      <div class="score-player">
+        <small>Player B</small>
+        <strong id="score-b">0</strong>
+      </div>
+    </section>
+
+    <section class="shootout-layout">
+      <article class="shootout-stage-card">
+        <div class="scene-ribbon"><span id="scene-role">Striker turn</span><strong id="scene-player">Player A</strong></div>
+        <div class="shootout-scene" id="shootout-scene">
+          <canvas id="shootout-canvas" width="1280" height="720" aria-label="Animated penalty shootout scene"></canvas>
+          <div class="goal-zone-overlay" id="goal-zone-overlay" aria-label="Choose a goal zone" hidden>
+            <button type="button" data-zone="top-left" aria-label="Top left"><span>↖</span><small>Top left</small></button>
+            <button type="button" data-zone="top-centre" aria-label="Top centre"><span>↑</span><small>Top centre</small></button>
+            <button type="button" data-zone="top-right" aria-label="Top right"><span>↗</span><small>Top right</small></button>
+            <button type="button" data-zone="bottom-left" aria-label="Bottom left"><span>↙</span><small>Low left</small></button>
+            <button type="button" data-zone="bottom-centre" aria-label="Bottom centre"><span>↓</span><small>Low centre</small></button>
+            <button type="button" data-zone="bottom-right" aria-label="Bottom right"><span>↘</span><small>Low right</small></button>
+          </div>
+          <div class="scene-caption" id="scene-caption" aria-live="polite">Answer first. Act second.</div>
+        </div>
+        <div class="scene-legend">
+          <span><i class="legend-dot live"></i> Correct answer: move active</span>
+          <span><i class="legend-dot futile"></i> Incorrect answer: move futile</span>
+          <span><i class="legend-dot net"></i> One realistic visual world from selection through result</span>
+        </div>
+      </article>
+
+      <aside class="shootout-control-card" id="control-card" aria-live="polite"></aside>
+    </section>
+
+    <section class="prototype-notes">
+      <article>
+        <span>01</span>
+        <div><strong>One realistic match world</strong><p>The same positioned striker, ball, keeper and goal remain visible while the English task unlocks the six coordinates.</p></div>
+      </article>
+      <article>
+        <span>02</span>
+        <div><strong>Realistic coordinate selection</strong><p>The striker, ball, goalkeeper and six target positions share the same calibrated photographic scene.</p></div>
+      </article>
+      <article>
+        <span>03</span>
+        <div><strong>Unified result presentation</strong><p>Goal, save and miss remain photographic through the final frame without revealing the old cartoon renderer.</p></div>
+      </article>
+    </section>
+  </main>
+
+  <script type="module" src="shootout.js?v=0.9.23"></script>
+</body>
+</html>

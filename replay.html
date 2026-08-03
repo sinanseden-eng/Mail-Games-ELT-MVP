@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Result Replay · Mail Games ELT</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="shootout.css" />
+  <link rel="stylesheet" href="turkey.css" />
+  <link rel="stylesheet" href="sniper.css" />
+  <link rel="stylesheet" href="turn.css" />
+</head>
+<body class="shootout-page turn-game-page replay-page">
+  <header class="shootout-topbar">
+    <a class="shootout-brand" href="/#home" aria-label="Mail Games ELT home">
+      <span aria-hidden="true">✉</span>
+      <span><strong id="game-brand">Mail Games ELT</strong><small>Signed fixed-camera replay · 0.9H4</small></span>
+    </a>
+    <div class="topbar-actions"><button type="button" class="sound-toggle compact" id="sound-toggle" aria-pressed="true">Sound on</button><div class="turn-security"><span aria-hidden="true">▶</span> Replayable result link</div></div>
+  </header>
+
+  <main class="shootout-shell">
+    <section class="shootout-score" id="replay-score" aria-label="Match scoreboard">
+      <div class="score-player"><small id="name-a">Player A</small><strong id="score-a">0</strong><div class="turkey-health-track" id="health-track-a" hidden><span id="health-a"></span></div></div>
+      <div class="score-centre"><span id="round-badge">Loading replay</span><strong id="match-status">Preparing the result…</strong></div>
+      <div class="score-player"><small id="name-b">Player B</small><strong id="score-b">0</strong><div class="turkey-health-track" id="health-track-b" hidden><span id="health-b"></span></div></div>
+    </section>
+
+    <section class="shootout-layout">
+      <article class="shootout-stage-card">
+        <div class="scene-ribbon"><span id="scene-role">Result replay</span><strong id="scene-player">Result</strong></div>
+        <div class="shootout-scene" id="game-scene">
+          <div class="turkey-scene-fallback" id="turkey-scene-fallback" aria-hidden="true">
+            <div class="fallback-sun"></div>
+            <div class="fallback-hill fallback-hill-a"></div>
+            <div class="fallback-hill fallback-hill-b"></div>
+            <div class="fallback-barn"><span></span></div>
+            <div class="fallback-fence"></div>
+            <div class="fallback-turkey fallback-turkey-a"><span class="fallback-tail"></span><span class="fallback-body"></span><span class="fallback-head"></span></div>
+            <div class="fallback-turkey fallback-turkey-b"><span class="fallback-tail"></span><span class="fallback-body"></span><span class="fallback-head"></span></div>
+          </div>
+          <canvas class="game-canvas" id="shootout-canvas" width="1280" height="720" aria-label="Animated penalty result"></canvas>
+          <canvas class="game-canvas" id="turkey-canvas" width="1280" height="720" aria-label="Animated turkey fight result" hidden></canvas>
+          <div class="sniper-scene-fallback" id="sniper-scene-fallback" aria-hidden="true" hidden></div>
+          <canvas class="game-canvas" id="sniper-canvas" width="1280" height="720" aria-label="Sniper prediction training arena" hidden></canvas>
+          <div class="goal-zone-overlay resolving game-overlay" id="goal-zone-overlay" aria-hidden="true">
+            <button type="button" data-zone="top-left"></button><button type="button" data-zone="top-centre"></button><button type="button" data-zone="top-right"></button>
+            <button type="button" data-zone="bottom-left"></button><button type="button" data-zone="bottom-centre"></button><button type="button" data-zone="bottom-right"></button>
+          </div>
+          <div class="scene-caption" id="scene-caption" aria-live="polite">Loading the resolved result…</div>
+        </div>
+        <div class="scene-legend" id="scene-legend">
+          <span id="legend-a"><i class="legend-dot live"></i> Both moves are already locked</span>
+          <span id="legend-b"><i class="legend-dot net"></i> Replays do not change the result</span>
+        </div>
+      </article>
+      <aside class="shootout-control-card turn-control" id="replay-app" aria-live="polite"><p>Loading your replay…</p></aside>
+    </section>
+  </main>
+  <script type="module" src="replay.js?v=0.9.23"></script>
+</body>
+</html>

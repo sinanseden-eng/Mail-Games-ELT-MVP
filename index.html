@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Mail Games ELT: answer English questions to activate moves in asynchronous classroom games." />
+  <title>Mail Games ELT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="site-shell">
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="Mail Games ELT home">
+        <span class="brand-mark" aria-hidden="true">✉</span>
+        <span><strong>Mail Games</strong><small>ELT</small></span>
+      </a>
+      <nav aria-label="Main navigation">
+        <button class="nav-link" data-route="home">Home</button>
+        <button class="nav-link" data-route="teacher">Teacher Studio</button>
+        <button class="nav-link" data-route="play">Play Demo</button>
+      </nav>
+    </header>
+
+    <main id="app" tabindex="-1"></main>
+
+    <footer>
+      <p>Built for teachers, students, and inboxes with suspiciously competitive energy.</p>
+      <p class="footer-note">Prototype data stays in this browser unless email sending is configured.</p>
+    </footer>
+  </div>
+
+  <template id="home-template">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Answer first. Act second.</span>
+        <h1>English questions that actually control the game.</h1>
+        <p>Teachers create ELT questions. Students answer correctly to activate shots, saves, attacks, blocks, and counters—then continue the match by email.</p>
+        <div class="hero-actions">
+          <button class="primary" data-route="teacher">Create a question set</button>
+          <button class="secondary" data-route="play">Try the classroom demo</button>
+        </div>
+        <div class="feature-row" aria-label="Key features">
+          <span>✓ Teacher editable</span>
+          <span>✓ CSV import</span>
+          <span>✓ Email-ready turns</span>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="mail-orbit mail-one">✉</div>
+        <div class="mail-orbit mail-two">✉</div>
+        <div class="hero-ball">⚽</div>
+        <div class="hero-turkey">🦃</div>
+        <div class="hero-bubble">Correct answer!</div>
+      </div>
+    </section>
+
+    <section class="game-grid" aria-labelledby="games-heading">
+      <div class="section-heading">
+        <span class="eyebrow">Three games, one learning engine</span>
+        <h2 id="games-heading">Choose your classroom chaos</h2>
+      </div>
+
+      <article class="game-card penalty-card">
+        <div class="card-visual stadium-scene" aria-hidden="true">
+          <div class="stadium-lights"></div>
+          <div class="goal-mini">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+          </div>
+          <div class="player-avatar striker-avatar">S</div>
+          <div class="player-avatar keeper-avatar">K</div>
+          <div class="mini-ball">⚽</div>
+        </div>
+        <div class="game-card-copy">
+          <span class="game-label">Game 01</span>
+          <h3>Mail Penalty Shootout</h3>
+          <p>Answer correctly, choose a corner, and watch the run-up through a behind-the-ball camera before the ball, glove and net cameras resolve the attempt.</p>
+          <ul>
+            <li>Six target zones</li>
+            <li>Striker and keeper questions</li>
+            <li>Cinematic goal, save and miss replays</li>
+          </ul>
+          <div class="card-actions"><button class="primary" data-game="penalty">Play classic demo</button><a class="secondary prototype-link" href="shootout.html">Open realistic single-angle penalty replay 0.9H4</a></div>
+        </div>
+      </article>
+
+      <article class="game-card turkey-card">
+        <div class="card-visual barn-scene" aria-hidden="true">
+          <div class="barn"></div>
+          <div class="turkey fighter-a">🦃</div>
+          <div class="turkey fighter-b">🦃</div>
+          <div class="dust-cloud">POOF!</div>
+        </div>
+        <div class="game-card-copy">
+          <span class="game-label">Game 02</span>
+          <h3>Turkey Fight Mail</h3>
+          <p>Earn attacks and defences through English questions. Cartoon feathers fly; nobody needs to contact the school nurse.</p>
+          <ul>
+            <li>Attack-and-counter system</li>
+            <li>Streak-powered special moves</li>
+            <li>Non-graphic comic action</li>
+          </ul>
+          <button class="primary warm" data-game="turkey">Play turkey demo</button>
+        </div>
+      </article>
+
+      <article class="game-card sniper-card">
+        <div class="card-visual sniper-village-card" aria-hidden="true">
+          <span class="sniper-card-tag">4 secret positions</span>
+        </div>
+        <div class="game-card-copy">
+          <span class="game-label">Game 03</span>
+          <h3>Sniper Elite!</h3>
+          <p>Answer to activate a cinematic training shot, choose where to emerge, and predict the rival's hidden position.</p>
+          <ul>
+            <li>Four emergence locations</li>
+            <li>Two secret choices per player</li>
+            <li>Tracer shots · clean vest-hit reactions</li>
+          </ul>
+          <button class="primary sniper-primary" data-game="sniper">Play cinematic demo</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="how-it-works">
+      <div class="section-heading">
+        <span class="eyebrow">The learning loop</span>
+        <h2>From question to consequence</h2>
+      </div>
+      <div class="steps">
+        <article><span>1</span><h3>Teacher prepares</h3><p>Add questions manually or import a CSV question pack.</p></article>
+        <article><span>2</span><h3>Student answers</h3><p>A correct answer activates the chosen move at full strength.</p></article>
+        <article><span>3</span><h3>Opponent responds</h3><p>The next player receives a secure turn link by email.</p></article>
+        <article><span>4</span><h3>Game resolves</h3><p>The server compares the choices and reveals the result.</p></article>
+      </div>
+    </section>
+  </template>
+
+  <template id="teacher-template">
+    <section class="teacher-studio" id="teacher-studio">
+      <aside class="studio-rail" aria-label="Teacher Studio navigation">
+        <button class="studio-crest" type="button" data-route="home" aria-label="Mail Games ELT home">
+          <span aria-hidden="true">T</span>
+        </button>
+        <div class="studio-rail-links">
+          <button type="button" class="rail-link" data-route="home"><span aria-hidden="true">⌂</span><small>Home</small></button>
+          <button type="button" class="rail-link active" data-studio-target="question-editor-panel"><span aria-hidden="true">▱</span><small>Question<br />Bank</small></button>
+          <button type="button" class="rail-link" data-studio-target="mission-control"><span aria-hidden="true">➤</span><small>Mission<br />Control</small></button>
+          <button type="button" class="rail-link" data-studio-target="question-bank-panel"><span aria-hidden="true">▥</span><small>Questions</small></button>
+          <button type="button" class="rail-link" data-route="play"><span aria-hidden="true">▶</span><small>Play Demo</small></button>
+        </div>
+        <div class="rail-sticker" aria-hidden="true"><b>⚡</b><span>Make it<br /><em>legendary.</em></span></div>
+      </aside>
+
+      <div class="studio-page">
+        <header class="studio-hero">
+          <div class="studio-hero-copy">
+            <span class="studio-kicker"><i aria-hidden="true">✦</i> Teacher Studio</span>
+            <h1>Build <em>epic questions.</em><br />Power <strong>great games.</strong></h1>
+            <p>Create, import, and manage questions that decide every shot, save, block, and gloriously mistimed turkey move.</p>
+            <div class="hero-actions studio-actions">
+              <button class="secondary" id="load-sample" type="button">↻ Restore samples</button>
+              <button class="primary" id="export-json" type="button">⇩ Export JSON</button>
+            </div>
+            <span class="hero-tape">Answer first. Act second.</span>
+          </div>
+
+          <div class="studio-hero-art" aria-hidden="true">
+            <div class="hero-brush hero-brush-a"></div>
+            <div class="hero-brush hero-brush-b"></div>
+            <img class="turkey-illustration" src="assets/turkey-mascot.svg" alt="" />
+            <img class="keeper-illustration" src="assets/goalkeeper.svg" alt="" />
+            <span class="motion-mark mark-a">✦</span>
+            <span class="motion-mark mark-b">×</span>
+            <span class="motion-mark mark-c">○</span>
+            <span class="motion-caption">Saving good lessons!</span>
+          </div>
+        </header>
+
+        <section class="studio-workspace" aria-label="Question bank workspace">
+          <article class="panel editor-panel creative-panel" id="question-editor-panel">
+            <span class="panel-number" aria-hidden="true">1</span>
+            <span class="paper-tape tape-purple" aria-hidden="true"></span>
+            <div class="panel-heading">
+              <div><span class="eyebrow">Question editor</span><h2>Add an ELT question</h2></div>
+              <span class="status-pill" id="question-count"></span>
+            </div>
+            <form id="question-form">
+              <label>Question
+                <textarea name="prompt" rows="3" required placeholder="She ___ here since 2023."></textarea>
+              </label>
+              <div class="form-grid">
+                <label>Type
+                  <select name="type">
+                    <option value="multiple-choice">Multiple choice</option>
+                    <option value="true-false">True / False</option>
+                    <option value="gap-fill">Gap fill</option>
+                  </select>
+                </label>
+                <label>Level
+                  <select name="level">
+                    <option>A1</option><option>A2</option><option selected>B1</option><option>B2</option><option>C1</option>
+                  </select>
+                </label>
+              </div>
+              <div class="form-grid">
+                <label>Option A<input name="optionA" placeholder="works" /></label>
+                <label>Option B<input name="optionB" placeholder="worked" /></label>
+                <label>Option C<input name="optionC" placeholder="has worked" /></label>
+                <label>Option D<input name="optionD" placeholder="is working" /></label>
+              </div>
+              <div class="form-grid">
+                <label>Correct answer<input name="answer" required placeholder="has worked" /></label>
+                <label>Topic / tag<input name="tag" placeholder="Present Perfect" /></label>
+              </div>
+              <label>Explanation<input name="explanation" placeholder="Use present perfect with since." /></label>
+              <button class="primary add-question-button" type="submit"><span aria-hidden="true">✦</span> Add question</button>
+            </form>
+          </article>
+
+          <article class="panel bank-panel creative-panel" id="question-bank-panel">
+            <span class="paper-tape tape-blue" aria-hidden="true"></span>
+            <div class="panel-heading bank-heading">
+              <div><span class="eyebrow">Your question bank</span><h2>Ready to play</h2></div>
+              <div class="filter-row">
+                <input id="question-search" type="search" placeholder="Search" aria-label="Search questions or tags" />
+                <select id="level-filter" aria-label="Filter questions by level"><option value="all">All</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option></select>
+              </div>
+            </div>
+            <div id="question-list" class="question-list compact-question-list"></div>
+          </article>
+
+          <article class="panel import-panel creative-panel" id="bulk-tools-panel">
+            <span class="panel-number warm-number" aria-hidden="true">2</span>
+            <span class="paperclip" aria-hidden="true"></span>
+            <div class="panel-heading"><div><span class="eyebrow">Bulk tools</span><h2>Import CSV</h2></div></div>
+            <p>Required columns: <code>question, type, option_a, option_b, option_c, option_d, answer, explanation, level, tag</code></p>
+            <label class="upload-box">
+              <input type="file" id="csv-file" accept=".csv,text/csv" />
+              <span class="upload-icon" aria-hidden="true">☁</span>
+              <strong>Drop your CSV here</strong>
+              <small>or click to browse · .csv file</small>
+            </label>
+            <button class="secondary full csv-button" id="download-template" type="button">▣ Download CSV template</button>
+            <div class="privacy-note"><strong>Prototype note:</strong> questions are stored in this browser until teacher accounts and database storage are enabled.</div>
+          </article>
+
+          <aside class="setup-card" aria-labelledby="setup-card-title">
+            <span class="setup-label">✓ Setup status</span>
+            <h2 id="setup-card-title">You’re almost <em>match</em> ready!</h2>
+            <img src="assets/mail-rocket.svg" alt="" aria-hidden="true" />
+            <ul class="setup-checklist">
+              <li class="complete">Question bank saved</li>
+              <li class="complete">CSV import ready</li>
+              <li id="launch-ready-item">Launch your email match</li>
+            </ul>
+            <span class="status-pill status-neutral" id="mission-status">Checking backend…</span>
+          </aside>
+        </section>
+
+        <section class="mission-stage" id="mission-control" aria-labelledby="launch-match-heading">
+          <div class="mission-poster" aria-hidden="true">
+            <span class="mission-index">3 · Mission Control</span>
+            <h2>Launch your<br />email match</h2>
+            <p>Set the game. Invite players.<br />Let the language-powered chaos begin.</p>
+            <img class="mission-football" src="assets/football.svg" alt="" />
+            <span class="mission-arrow">↗</span>
+          </div>
+
+          <article class="mission-form-card">
+            <div class="panel-heading mission-form-heading">
+              <div><span class="eyebrow">Match builder</span><h2 id="launch-match-heading">Create the first turn</h2></div>
+            </div>
+            <form id="match-launch-form">
+              <div class="form-grid">
+                <label>Game
+                  <select name="gameType">
+                    <option value="penalty">⚽ Mail Penalty Shootout</option>
+                    <option value="turkey">🦃 Turkey Fight Mail</option>
+                    <option value="sniper">🎯 Sniper Elite! (training prediction)</option>
+                  </select>
+                </label>
+                <label>Question-pack name
+                  <input name="packName" required maxlength="120" value="Class revision match" />
+                </label>
+              </div>
+
+              <label class="test-code-field">Private email-test code
+                <input name="testCode" id="mail-test-code" required minlength="12" maxlength="200" type="password" autocomplete="off" placeholder="Enter the code saved in Netlify" />
+                <small>This protects the public prototype from unauthorised match emails.</small>
+              </label>
+
+              <div class="player-grid">
+                <fieldset class="player-card">
+                  <legend>Player A · first turn</legend>
+                  <label>Display name
+                    <input name="playerAName" required maxlength="80" autocomplete="off" placeholder="Student A" />
+                  </label>
+                  <label>School email
+                    <input name="playerAEmail" required maxlength="254" type="email" autocomplete="email" placeholder="student.a@example.com" />
+                  </label>
+                </fieldset>
+
+                <fieldset class="player-card">
+                  <legend>Player B</legend>
+                  <label>Display name
+                    <input name="playerBName" required maxlength="80" autocomplete="off" placeholder="Student B" />
+                  </label>
+                  <label>School email
+                    <input name="playerBEmail" required maxlength="254" type="email" autocomplete="email" placeholder="student.b@example.com" />
+                  </label>
+                </fieldset>
+              </div>
+
+              <div class="launch-actions">
+                <button class="primary" id="launch-match-button" type="submit">➤ Create match and send turn</button>
+                <span id="launch-question-summary">The current question bank will be used.</span>
+              </div>
+            </form>
+          </article>
+
+          <aside class="launch-summary mission-next-card">
+            <span class="paper-tape tape-yellow" aria-hidden="true"></span>
+            <h3>What happens next</h3>
+            <ol>
+              <li>The current question bank becomes a private match pack.</li>
+              <li>Player A receives a single-use, 48-hour turn link.</li>
+              <li>Each player answers and chooses directly beside the visible game pitch.</li>
+              <li>The goalkeeper watches the result; the striker receives a replay email.</li>
+            </ol>
+            <button class="secondary full" id="check-backend" type="button">⌁ Check Mission Control</button>
+            <div id="mission-details" class="backend-note" aria-live="polite">Connecting to the Netlify Functions…</div>
+            <div id="launch-result" class="launch-result" aria-live="polite" hidden></div>
+
+            <section class="delivery-recovery" aria-labelledby="delivery-recovery-heading">
+              <h4 id="delivery-recovery-heading">Email delivery recovery</h4>
+              <p>After creating a match, check which inbox owns the pending turn and recover its secure link if delivery fails.</p>
+              <label>Match ID
+                <input id="delivery-match-id" maxlength="80" placeholder="Paste a match ID" />
+              </label>
+              <button class="secondary full" id="check-delivery" type="button">Check pending delivery</button>
+              <div id="delivery-result" class="backend-note" aria-live="polite" hidden></div>
+            </section>
+            <p class="student-data-note">For 0.7 testing, use only the two email addresses listed in <code>MAIL_TEST_ALLOWED_RECIPIENTS</code>. Do not enter real student information.</p>
+          </aside>
+
+          <img class="mission-mail-art" src="assets/mail-rocket.svg" alt="" aria-hidden="true" />
+        </section>
+      </div>
+    </section>
+  </template>
+
+  <template id="play-template">
+    <section class="page-header compact">
+      <div>
+        <span class="eyebrow">Classroom Demo</span>
+        <h1>Answer, choose, resolve</h1>
+        <p>This local demo lets two players take turns on one device. Email delivery is scaffolded for Netlify.</p>
+      </div>
+      <div class="header-actions"><a class="primary prototype-link" href="shootout.html">Open cinematic shootout</a><button class="secondary" id="reset-demo">Reset demo</button></div>
+    </section>
+
+    <section class="game-switcher" role="tablist" aria-label="Choose a game">
+      <button role="tab" aria-selected="true" data-play-game="penalty">⚽ Mail Penalty Shootout</button>
+      <button role="tab" aria-selected="false" data-play-game="turkey">🦃 Turkey Fight Mail</button>
+      <button role="tab" aria-selected="false" data-play-game="sniper">🎯 Sniper Elite!</button>
+    </section>
+
+    <div id="demo-stage"></div>
+  </template>
+
+  <template id="penalty-demo-template">
+    <section class="match-layout">
+      <article class="panel game-board penalty-board">
+        <div class="scoreboard">
+          <div><small>Striker</small><strong id="striker-name">Player A</strong></div>
+          <div class="score-main"><span id="penalty-score">0–0</span><small id="round-label">Round 1 of 5</small></div>
+          <div><small>Keeper</small><strong id="keeper-name">Player B</strong></div>
+        </div>
+        <div class="stadium-full">
+          <div class="crowd crowd-back"></div>
+          <div class="pitch-lines"></div>
+          <div class="goal-grid" id="goal-grid" aria-label="Penalty target zones">
+            <button data-zone="top-left">↖</button><button data-zone="top-centre">↑</button><button data-zone="top-right">↗</button>
+            <button data-zone="bottom-left">↙</button><button data-zone="bottom-centre">↓</button><button data-zone="bottom-right">↘</button>
+          </div>
+          <div class="keeper-character" id="keeper-character"><span class="head"></span><span class="body"></span><span class="arms"></span></div>
+          <div class="striker-character"><span class="head"></span><span class="body"></span><span class="leg"></span></div>
+          <div class="football" id="football">⚽</div>
+        </div>
+        <div class="event-log" id="penalty-log">Player A must answer a question to unlock the shot.</div>
+      </article>
+      <aside class="panel turn-panel" id="penalty-turn-panel"></aside>
+    </section>
+  </template>
+
+  <template id="turkey-demo-template">
+    <section class="match-layout">
+      <article class="panel game-board turkey-board">
+        <div class="scoreboard turkey-scoreboard">
+          <div><small>Fighter A</small><strong>Sir Gobbles</strong><div class="health"><span id="turkey-health-a"></span></div></div>
+          <div class="score-main"><span id="turkey-round">Round 1</span><small>First to 0 health loses</small></div>
+          <div><small>Fighter B</small><strong>Ninja Wing</strong><div class="health"><span id="turkey-health-b"></span></div></div>
+        </div>
+        <div class="farm-arena">
+          <div class="sun"></div><div class="cloud cloud-a"></div><div class="cloud cloud-b"></div>
+          <div class="barn-large"><span></span></div>
+          <div class="fence"></div>
+          <div class="turkey-character turkey-left" id="turkey-a"><div class="tail"></div><div class="body"></div><div class="head"></div><div class="beak"></div></div>
+          <div class="turkey-character turkey-right" id="turkey-b"><div class="tail"></div><div class="body"></div><div class="head"></div><div class="beak"></div></div>
+          <div class="fight-effect" id="fight-effect"></div>
+        </div>
+        <div class="event-log" id="turkey-log">Sir Gobbles must answer a question to activate a move.</div>
+      </article>
+      <aside class="panel turn-panel" id="turkey-turn-panel"></aside>
+    </section>
+  </template>
+
+  <template id="sniper-demo-template">
+    <section class="match-layout">
+      <article class="panel game-board sniper-demo-board">
+        <div class="scoreboard sniper-demo-scoreboard">
+          <div><small>Player A</small><strong id="sniper-demo-health-a">3</strong></div>
+          <div class="score-main"><span id="sniper-demo-round">Round 1</span><small>Prediction training</small></div>
+          <div><small>Player B</small><strong id="sniper-demo-health-b">3</strong></div>
+        </div>
+        <div class="sniper-demo-arena">
+          <span class="sniper-demo-position p1">1</span>
+          <span class="sniper-demo-position p2">2</span>
+          <span class="sniper-demo-position p3">3</span>
+          <span class="sniper-demo-position p4">4</span>
+          <div class="sniper-demo-effect" id="sniper-demo-effect"></div>
+        </div>
+        <div class="event-log" id="sniper-demo-log">Player A must answer, choose cover, and predict Player B's position.</div>
+      </article>
+      <aside class="panel turn-panel" id="sniper-turn-panel"></aside>
+    </section>
+  </template>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
