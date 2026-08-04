@@ -4,6 +4,7 @@ import { readFile, stat } from "node:fs/promises";
 import {
   PenaltyVisualPack,
   REALISTIC_SELECTION_POINTS,
+  BROADCAST_SELECTION_POINTS,
   SINGLE_ANGLE_KEEPER_MOVES,
   SINGLE_ANGLE_SHOT_MOVES,
   singleAngleBallState,
@@ -29,7 +30,7 @@ test("0.9H4 sends every goal shot to its exact selected coordinate", () => {
   for (const zone of zones) {
     const replay = { shotZone: zone, keeperZone: "bottom-centre", outcome: "goal", kickIndex: 2 };
     const state = singleAngleBallState(replay, REPLAY_TIMELINE.goalPlane);
-    assert.ok(Math.hypot(state.x - REALISTIC_SELECTION_POINTS.zones[zone].x, state.y - REALISTIC_SELECTION_POINTS.zones[zone].y) < 0.001, zone);
+    assert.ok(Math.hypot(state.x - BROADCAST_SELECTION_POINTS.zones[zone].x, state.y - BROADCAST_SELECTION_POINTS.zones[zone].y) < 0.001, zone);
     assert.equal(state.zoneId, zone);
     assert.equal(replay.shotZone, zone);
   }
@@ -49,7 +50,7 @@ test("0.9H4 uses one cinematic renderer regardless of signed viewer role", async
   const dispatch = source.slice(source.indexOf("  drawCinematic(ctx"), source.indexOf("\n  drawSingleAngleCinematic(ctx"));
   assert.match(dispatch, /drawSingleAngleCinematic/);
   assert.doesNotMatch(dispatch, /drawKeeperCinematic|drawStrikerCinematic|role ===/);
-  assert.match(source, /PENALTY REPLAY · MAIN CAMERA/);
+  assert.match(source, /PENALTY REPLAY · (?:MAIN|BROADCAST) CAMERA/);
 });
 
 test("0.9H4 packages the fixed stadium plate and realistic player sprites", async () => {

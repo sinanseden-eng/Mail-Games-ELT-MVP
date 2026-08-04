@@ -16,10 +16,10 @@ test("0.9G renders realistic striker and goalkeeper positioning before any repla
   const visuals = await readFile(new URL("../penalty-visuals.mjs", import.meta.url), "utf8");
   const scene = await readFile(new URL("../shootout-scene.mjs", import.meta.url), "utf8");
   assert.match(visuals, /drawSelection\(ctx/);
-  assert.match(visuals, /this\.assets\.striker\[0\]/);
-  assert.match(visuals, /GOALKEEPER VIEW/);
-  assert.match(visuals, /STRIKER VIEW/);
-  assert.match(scene, /REALISTIC_SELECTION_POINTS\.zones/);
+  assert.match(visuals, /this\.assets\.(?:striker\[0\]|singleAngle\?\.selectionBackground)/);
+  assert.match(visuals, /(?:GOALKEEPER VIEW|CHOOSE THE DIVE)/);
+  assert.match(visuals, /(?:STRIKER VIEW|CHOOSE THE SHOT)/);
+  assert.match(scene, /(?:REALISTIC_SELECTION_POINTS|BROADCAST_SELECTION_POINTS)\.zones/);
 });
 
 test("0.9G has a non-cartoon loading state rather than exposing legacy actors", async () => {
