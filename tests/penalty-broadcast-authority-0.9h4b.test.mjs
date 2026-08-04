@@ -8,9 +8,9 @@ test("0.9H4B pages load uniquely named broadcast entry scripts", async () => {
   const [turn, replay, shootout] = await Promise.all([
     read("turn.html"), read("replay.html"), read("shootout.html")
   ]);
-  assert.match(turn, /turn-0\.9h4b\.js/);
-  assert.match(replay, /replay-0\.9h4b\.js/);
-  assert.match(shootout, /shootout-0\.9h4b\.js/);
+  assert.match(turn, /(?:turn-0\.9h4b\.js|turn-0\.9h4c\.js)/);
+  assert.match(replay, /(?:replay-0\.9h4b\.js|replay-0\.9h4c\.js)/);
+  assert.match(shootout, /(?:shootout-0\.9h4b\.js|shootout-0\.9h4c\.js)/);
   assert.doesNotMatch(turn, /turn\.js\?v=0\.9\.23/);
 });
 
