@@ -94,7 +94,7 @@ test("0.9H4 active replay copy describes one fixed camera", async () => {
   assert.match(turn, /Fixed main camera/);
   assert.match(replay, /one fixed camera/);
   assert.match(scene, /fixed main-camera angle/);
-  assert.match(html, /Single-angle six-zone replay 0\.9H4/);
+  assert.match(html, /(?:Single-angle six-zone replay 0\.9H4|Broadcast scale and six-zone net reaction 0\.9H5A)/);
 });
 
 function fakeContext() {
