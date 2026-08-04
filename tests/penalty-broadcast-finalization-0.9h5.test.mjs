@@ -15,9 +15,9 @@ const exactSpots = {
 
 test("0.9H5 pages load the final broadcast module chain", async () => {
   const [turn, replay, demo] = await Promise.all([read("turn.html"), read("replay.html"), read("shootout.html")]);
-  assert.match(turn, /turn-0\.9h5(?:a1?)?\.js/);
-  assert.match(replay, /replay-0\.9h5(?:a1?)?\.js/);
-  assert.match(demo, /shootout-0\.9h5(?:a1?)?\.js/);
+  assert.match(turn, /turn-0\.9h5(?:a(?:1|2)?)?\.js/);
+  assert.match(replay, /replay-0\.9h5(?:a(?:1|2)?)?\.js/);
+  assert.match(demo, /shootout-0\.9h5(?:a(?:1|2)?)?\.js/);
   const scene = await read("shootout-scene-0.9h5.mjs");
   assert.match(scene, /penalty-visuals-0\.9h5\.mjs/);
   assert.match(scene, /shootout-physics-0\.9h5\.mjs/);

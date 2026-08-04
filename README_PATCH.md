@@ -1,3 +1,3 @@
-# 0.9H5A → 0.9H5A1
+# 0.9H5A1 → 0.9H5A2 Patch
 
-Copy everything in this folder into the repository root and replace matching files. Keep the new `assets/penalty-single-angle/*0.9h5a1.png` files and the uniquely named 0.9H5A1 module chain. Then clear the Netlify cache and deploy.
+Copy the contents of this folder into the root of an existing complete 0.9H5A1 repository and replace matching files. Keep the new player PNG files and the new 0.9H5A2 JavaScript/module files. Then clear the Netlify cache and deploy.

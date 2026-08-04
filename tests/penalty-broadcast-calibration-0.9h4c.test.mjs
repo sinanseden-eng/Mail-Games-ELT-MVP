@@ -6,9 +6,9 @@ const read = relative => readFile(new URL(`../${relative}`, import.meta.url), "u
 
 test("0.9H4C pages load the calibrated broadcast chain", async () => {
   const [turn, replay, demo] = await Promise.all([read("turn.html"), read("replay.html"), read("shootout.html")]);
-  assert.match(turn, /(?:turn-0\.9h4(?:c|d)\.js|turn-0\.9h5(?:a1?)?\.js)/);
-  assert.match(replay, /(?:replay-0\.9h4(?:c|d)\.js|replay-0\.9h5(?:a1?)?\.js)/);
-  assert.match(demo, /(?:shootout-0\.9h4(?:c|d)\.js|shootout-0\.9h5(?:a1?)?\.js)/);
+  assert.match(turn, /(?:turn-0\.9h4(?:c|d)\.js|turn-0\.9h5(?:a(?:1|2)?)?\.js)/);
+  assert.match(replay, /(?:replay-0\.9h4(?:c|d)\.js|replay-0\.9h5(?:a(?:1|2)?)?\.js)/);
+  assert.match(demo, /(?:shootout-0\.9h4(?:c|d)\.js|shootout-0\.9h5(?:a(?:1|2)?)?\.js)/);
 });
 
 test("0.9H4C keeps all six choices inside the broadcast goalmouth", async () => {

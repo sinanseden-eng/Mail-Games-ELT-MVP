@@ -15,7 +15,7 @@
   <header class="shootout-topbar">
     <a class="shootout-brand" href="/#home" aria-label="Mail Games ELT home">
       <span aria-hidden="true">✉</span>
-      <span><strong id="game-brand">Mail Games ELT</strong><small id="game-version">Live email turn · 0.9H5A1</small></span>
+      <span><strong id="game-brand">Mail Games ELT</strong><small id="game-version">Live email turn · 0.9H5A2</small></span>
     </a>
     <div class="topbar-actions"><button type="button" class="sound-toggle compact" id="sound-toggle" aria-pressed="true">Sound on</button><div class="turn-security"><span aria-hidden="true">🔒</span> Signed single-use turn</div></div>
   </header>
@@ -79,6 +79,6 @@
       if (app) app.innerHTML = `<span class="control-eyebrow">Loading recovery</span><h1 class="control-title">The turn page stalled.</h1><p class="control-copy">Reload once to fetch a clean copy of the game files. Your signed turn is unchanged.</p><div class="turn-submit-state error">Startup stage: ${String(boot.stage || "unknown")}</div><div class="control-actions"><button class="primary" type="button" onclick="location.reload()">Reload turn</button></div>`;
     }, 12000);
   </script>
-  <script type="module" src="turn-0.9h5a1.js" onerror="window.__MAIL_GAMES_TURN_BOOT__.stage='module-error'"></script>
+  <script type="module" src="turn-0.9h5a2.js" onerror="window.__MAIL_GAMES_TURN_BOOT__.stage='module-error'"></script>
 </body>
 </html>

@@ -575,3 +575,8 @@ Broadcast-scale correction with a more readable match ball and six zone-specific
 ## 0.9H5A1
 
 Ball-free transparent player cutouts, strict broadcast-scale limits, and one independent football layer.
+
+
+## 0.9H5A2
+
+Removes the duplicated-goal glitch by replacing all active striker and goalkeeper frames with clean transparent cutouts. The stadium and goal now come only from the broadcast background plate.
