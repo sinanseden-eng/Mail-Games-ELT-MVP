@@ -14,9 +14,9 @@ const exactSpots = {
 
 test("0.9H5A pages load the scale-and-net module chain", async () => {
   const [turn, replay, demo, scene] = await Promise.all([read("turn.html"), read("replay.html"), read("shootout.html"), read("shootout-scene-0.9h5a.mjs")]);
-  assert.match(turn, /turn-0\.9h5a\.js/);
-  assert.match(replay, /replay-0\.9h5a\.js/);
-  assert.match(demo, /shootout-0\.9h5a\.js/);
+  assert.match(turn, /turn-0\.9h5a1?\.js/);
+  assert.match(replay, /replay-0\.9h5a1?\.js/);
+  assert.match(demo, /shootout-0\.9h5a1?\.js/);
   assert.match(scene, /penalty-visuals-0\.9h5a\.mjs/);
 });
 

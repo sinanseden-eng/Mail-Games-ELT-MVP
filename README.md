@@ -570,3 +570,8 @@ The penalty replay retains the fixed uploaded broadcast camera and exact six mar
 ## 0.9H5A
 
 Broadcast-scale correction with a more readable match ball and six zone-specific net-sag reactions.
+
+
+## 0.9H5A1
+
+Ball-free transparent player cutouts, strict broadcast-scale limits, and one independent football layer.
