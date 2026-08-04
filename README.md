@@ -551,3 +551,8 @@ Locks penalty replay to the uploaded broadcast camera throughout the entire acti
 ## 0.9H4B
 
 Makes the exact uploaded broadcast camera authoritative by replacing the browser entry/import chain with unique 0.9H4B filenames.
+
+
+## 0.9H4C
+
+Calibrates the goal buttons and full penalty action to the fixed broadcast frame.
