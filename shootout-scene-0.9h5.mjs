@@ -5,7 +5,7 @@ import {
   sampleBallTrail,
   sampleBallWorld,
   sampleKeeperMotion
-} from "./shootout-physics.mjs";
+} from "./shootout-physics-0.9h5.mjs";
 
 import {
   GOAL,
@@ -26,13 +26,13 @@ import {
   kickContactEnvelope,
   mapCameraPoint,
   penaltyCameraFrame
-} from "./shootout-cinematics.mjs?v=0.9.27";
+} from "./shootout-cinematics.mjs?v=0.9.28";
 
 import {
   PenaltyVisualPack,
   BROADCAST_SELECTION_POINTS,
   penaltyActionImpactPointForViewer
-} from "./penalty-visuals.mjs";
+} from "./penalty-visuals-0.9h5.mjs";
 import {
   PENALTY_VIEWERS,
   canonicalPenaltyZone,
@@ -40,7 +40,7 @@ import {
   normalizePenaltyViewer,
   perspectiveAriaLabel,
   perspectiveLabel
-} from "./penalty-perspective.mjs?v=0.9.27";
+} from "./penalty-perspective.mjs?v=0.9.28";
 
 const BALL_START = SCENE_LAYOUT.ballStart;
 const STRIKER_BASE = SCENE_LAYOUT.strikerBase;
@@ -130,12 +130,14 @@ export class ShootoutScene {
       this.replay = {
         ...createPenaltyReplaySnapshot(round, role),
         start: performance.now(),
-        duration: this.reducedMotion ? 1500 : 4400,
+        duration: this.reducedMotion ? 1400 : 4050,
         readyCalled: false,
         anticipated: false,
-        cameraEntered: false,
-        ballCameraEntered: false,
-        impactCameraEntered: false,
+        keeperLaunched: false,
+        settled: false,
+        cameraEntered: true,
+        ballCameraEntered: true,
+        impactCameraEntered: true,
         impacted: false,
         kicked: false,
         resultAnnounced: false,
@@ -209,6 +211,16 @@ export class ShootoutScene {
       this.emit("strike", { outcome: this.replay.outcome, round: this.replay, viewerRole: this.replay.viewerRole });
     }
 
+    if (progress > REPLAY_TIMELINE.keeperTakeoff && !this.replay.keeperLaunched) {
+      this.replay.keeperLaunched = true;
+      this.emit("keeper-takeoff", {
+        outcome: this.replay.outcome,
+        zone: canonicalPenaltyZone(this.replay, "keeperZone"),
+        round: this.replay,
+        viewerRole: this.replay.viewerRole
+      });
+    }
+
     if (this.replay.outcome === "goal" && progress > REPLAY_TIMELINE.goalPlane && !this.replay.impacted) {
       const target = getZone(canonicalPenaltyZone(this.replay, "shotZone"));
       const current = sampleBallWorld(this.replay, progress).position;
@@ -247,6 +259,16 @@ export class ShootoutScene {
       this.emit("result", { outcome: this.replay.outcome, round: this.replay, viewerRole: this.replay.viewerRole });
     }
 
+    if (progress > REPLAY_TIMELINE.settleStart && !this.replay.settled) {
+      this.replay.settled = true;
+      this.emit("settle", {
+        outcome: this.replay.outcome,
+        zone: canonicalPenaltyZone(this.replay, "shotZone"),
+        round: this.replay,
+        viewerRole: this.replay.viewerRole
+      });
+    }
+
     if (progress >= 1 && !this.replay.resolved) {
       const resolve = this.replay.resolve;
       this.replay.resolved = true;
@@ -261,7 +283,7 @@ export class ShootoutScene {
 
   spawnParticles(zone, kind) {
     const target = this.replay
-      ? penaltyActionImpactPointForViewer({ ...this.replay, shotZone: zone.id }, this.replay.viewerRole)
+      ? (BROADCAST_SELECTION_POINTS.zones[zone.id] || BROADCAST_SELECTION_POINTS.zones["bottom-centre"])
       : projectGoalZone(this.camera, zone);
     const count = this.reducedMotion ? 4 : 22;
     for (let index = 0; index < count; index += 1) {
@@ -279,7 +301,7 @@ export class ShootoutScene {
   }
 
   spawnKickParticles() {
-    const point = this.camera.project({ ...BALL_START, y: 0.03 });
+    const point = BROADCAST_SELECTION_POINTS.ball;
     const count = this.reducedMotion ? 3 : 14;
     for (let index = 0; index < count; index += 1) {
       this.particles.push({
@@ -296,23 +318,9 @@ export class ShootoutScene {
   }
 
   spawnCelebration(outcome) {
-    const count = this.reducedMotion ? 5 : outcome === "goal" ? 54 : outcome === "save" ? 30 : 14;
-    for (let index = 0; index < count; index += 1) {
-      const fromTop = outcome === "goal" && index % 3 === 0;
-      this.particles.push({
-        x: fromTop ? 110 + Math.random() * 1060 : 640 + (Math.random() - 0.5) * 520,
-        y: fromTop ? -20 - Math.random() * 80 : 245 + (Math.random() - 0.5) * 120,
-        vx: (Math.random() - 0.5) * (outcome === "goal" ? 420 : 300),
-        vy: fromTop ? 45 + Math.random() * 85 : -110 - Math.random() * 260,
-        gravity: fromTop ? 105 : 235,
-        spinRate: (Math.random() - 0.5) * 14,
-        life: 0.9 + Math.random() * (outcome === "goal" ? 1.15 : 0.7),
-        age: 0,
-        size: 4 + Math.random() * 8,
-        kind: `${outcome}-celebration`,
-        colourIndex: index % 5
-      });
-    }
+    // 0.9H5 keeps the television frame clean. Crowd and result audio carry the
+    // reaction; coloured confetti no longer floats over the football action.
+    void outcome;
   }
 
   updateParticles(dt) {

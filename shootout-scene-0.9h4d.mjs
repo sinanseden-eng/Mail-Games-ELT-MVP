@@ -32,7 +32,7 @@ import {
   PenaltyVisualPack,
   BROADCAST_SELECTION_POINTS,
   penaltyActionImpactPointForViewer
-} from "./penalty-visuals.mjs";
+} from "./penalty-visuals-0.9h4d.mjs";
 import {
   PENALTY_VIEWERS,
   canonicalPenaltyZone,

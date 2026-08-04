@@ -1,4 +1,4 @@
-import { REPLAY_TIMELINE } from "./shootout-physics.mjs";
+import { REPLAY_TIMELINE } from "./shootout-physics-0.9h5.mjs";
 import { keeperCameraFrame } from "./shootout-cinematics.mjs";
 import {
   PENALTY_VIEWERS,
@@ -706,33 +706,99 @@ export function broadcastMissPoint(zoneId = "bottom-centre", replay = {}) {
   return points[zoneId] || points["bottom-centre"];
 }
 
+// 0.9H5 freezes the user-marked target geometry and concentrates only on
+// broadcast motion: grounded run-up, boot contact, keeper launch/extension,
+// physical ball response, landing, and a delayed result reveal.
+export const PENALTY_BROADCAST_FINALIZATION = Object.freeze({
+  approachStart: 0.018,
+  plantStart: REPLAY_TIMELINE.plantStart,
+  bootContactWidth: 0.022,
+  followBlend: 0.145,
+  keeperLandingStartOffset: 0.050,
+  resultSafetyGap: REPLAY_TIMELINE.resultReveal - REPLAY_TIMELINE.goalPlane
+});
+
+function quadraticPoint(start, control, end, t) {
+  const u = 1 - t;
+  return {
+    x: u * u * start.x + 2 * u * t * control.x + t * t * end.x,
+    y: u * u * start.y + 2 * u * t * control.y + t * t * end.y
+  };
+}
+
+function quadraticDerivative(start, control, end, t) {
+  return {
+    x: 2 * (1 - t) * (control.x - start.x) + 2 * t * (end.x - control.x),
+    y: 2 * (1 - t) * (control.y - start.y) + 2 * t * (end.y - control.y)
+  };
+}
+
 export function singleAngleStrikerState(replay = {}, progress = 0, final = false) {
   const p = clamp(progress, 0, 1);
   const strike = REPLAY_TIMELINE.strike;
   const zoneId = canonicalPenaltyZone(replay, "shotZone");
   const move = singleAngleShotMove(zoneId);
-  const approachT = final ? 1 : smoothstep(clamp(p / Math.max(0.001, strike), 0, 1));
-  const followT = final ? 1 : smoothstep(clamp((p - strike + 0.006) / 0.125, 0, 1));
+  const rawApproach = final ? 1 : clamp(
+    (p - PENALTY_BROADCAST_FINALIZATION.approachStart) /
+      Math.max(0.001, strike - PENALTY_BROADCAST_FINALIZATION.approachStart),
+    0,
+    1
+  );
+  const approachT = 1 - Math.pow(1 - rawApproach, 2.05);
+  const plantT = final ? 1 : smoothstep(clamp(
+    (p - PENALTY_BROADCAST_FINALIZATION.plantStart) /
+      Math.max(0.001, strike - PENALTY_BROADCAST_FINALIZATION.plantStart),
+    0,
+    1
+  ));
+  const followT = final ? 1 : smoothstep(clamp(
+    (p - strike + 0.004) / PENALTY_BROADCAST_FINALIZATION.followBlend,
+    0,
+    1
+  ));
+  const recoveryT = final ? 1 : smoothstep(clamp((p - strike - 0.105) / 0.205, 0, 1));
 
-  // The plant foot is the anchor. It follows the pitch plane instead of the
-  // sprite's centre, which prevents the taker from levitating toward the ball.
+  // The plant foot follows a shallow curve on the photographed pitch plane.
+  // Body size and lean change around this anchor, never around the sprite centre.
   const startFoot = { x: 1160, y: 602 };
+  const controlFoot = { x: 1042, y: 585 };
   const contactFoot = {
     x: 889 + move.translateX * 0.22,
     y: 548 + move.translateY * 0.08
   };
-  const foot = {
-    x: lerp(startFoot.x, contactFoot.x, approachT),
-    y: lerp(startFoot.y, contactFoot.y, approachT)
-  };
-  const contactWidth = lerp(92, 160, approachT);
-  const contactHeight = lerp(104, 180, approachT);
+  const foot = quadraticPoint(startFoot, controlFoot, contactFoot, approachT);
+  const stride = Math.sin(rawApproach * Math.PI * 3.25) * (1 - plantT) * 0.9;
+  foot.x += stride * 1.3;
+  foot.y += Math.abs(stride) * 0.45;
+
+  const contactWidth = lerp(92, 158, approachT);
+  const contactHeight = lerp(104, 178, approachT);
   const contactOrigin = { x: 0.69, y: 0.98 };
-  const followWidth = 120;
-  const followHeight = 202;
+  const plantCompression = plantT * (1 - followT);
+  const contactEnvelope = Math.exp(-Math.pow(
+    (p - strike) / PENALTY_BROADCAST_FINALIZATION.bootContactWidth,
+    2
+  ));
+
+  const followWidth = lerp(120, 116, recoveryT);
+  const followHeight = lerp(202, 198, recoveryT);
   const followOrigin = { x: 0.62, y: 0.98 };
+  const followFoot = {
+    x: contactFoot.x + recoveryT * 5,
+    y: contactFoot.y + recoveryT * 2
+  };
+
   return {
-    p, zoneId, move, approachT, followT, foot,
+    p,
+    zoneId,
+    move,
+    rawApproach,
+    approachT,
+    plantT,
+    followT,
+    recoveryT,
+    contactEnvelope,
+    foot,
     contact: {
       x: foot.x - contactWidth * contactOrigin.x,
       y: foot.y - contactHeight * contactOrigin.y,
@@ -741,21 +807,29 @@ export function singleAngleStrikerState(replay = {}, progress = 0, final = false
       originX: contactOrigin.x,
       originY: contactOrigin.y,
       alpha: 1 - followT,
-      rotation: move.rotation * (0.08 + approachT * 0.34)
+      rotation: move.rotation * (0.06 + approachT * 0.30) - plantCompression * 0.010,
+      scaleX: 1 + plantCompression * 0.018,
+      scaleY: 1 - plantCompression * 0.032
     },
     follow: {
-      x: contactFoot.x - followWidth * followOrigin.x,
-      y: contactFoot.y - followHeight * followOrigin.y,
+      x: followFoot.x - followWidth * followOrigin.x,
+      y: followFoot.y - followHeight * followOrigin.y,
       width: followWidth,
       height: followHeight,
       originX: followOrigin.x,
       originY: followOrigin.y,
       alpha: followT,
-      rotation: move.rotation * 0.52,
-      scaleX: move.followScaleX,
-      scaleY: move.followScaleY
+      rotation: move.rotation * 0.52 + recoveryT * move.rotation * 0.12,
+      scaleX: move.followScaleX * (1 - recoveryT * 0.012),
+      scaleY: move.followScaleY * (1 + recoveryT * 0.006)
     }
   };
+}
+
+export function broadcastMissImpactKind(zoneId = "bottom-centre") {
+  if (zoneId === "top-left" || zoneId === "top-right") return "frame";
+  if (zoneId === "top-centre") return "over";
+  return "wide";
 }
 
 export function singleAngleBallState(replay = {}, progress = 0) {
@@ -765,6 +839,7 @@ export function singleAngleBallState(replay = {}, progress = 0) {
   const contact = outcome === "save" ? REPLAY_TIMELINE.keeperContact : REPLAY_TIMELINE.goalPlane;
   const zoneId = canonicalPenaltyZone(replay, "shotZone");
   const move = singleAngleShotMove(zoneId);
+  const effect = penaltyZoneEffect(zoneId);
   const start = BROADCAST_SELECTION_POINTS.ball;
   const target = outcome === "miss"
     ? broadcastMissPoint(zoneId, replay)
@@ -772,45 +847,120 @@ export function singleAngleBallState(replay = {}, progress = 0) {
   const rawFlightT = clamp((p - strike) / Math.max(0.001, contact - strike), 0, 1);
   const flightT = naturalBallFlightEasing(rawFlightT);
   const control = {
-    x: start.x + (target.x - start.x) * 0.48 + move.bend,
-    y: Math.min(start.y, target.y) - move.arc
+    x: start.x + (target.x - start.x) * 0.49 + move.bend * 0.72,
+    y: Math.min(start.y, target.y) - move.arc * (zoneId.startsWith("top") ? 0.80 : 0.64)
   };
-  const u = 1 - flightT;
-  let x = u*u*start.x + 2*u*flightT*control.x + flightT*flightT*target.x;
-  let y = u*u*start.y + 2*u*flightT*control.y + flightT*flightT*target.y;
-  let radius = lerp(10.6, 5.4, Math.pow(flightT, 0.84));
-  let rotation = flightT * Math.PI * (16 + Math.abs(move.bend) / 10) * (move.bend < 0 ? -1 : 1);
+  const base = quadraticPoint(start, control, target, flightT);
+  const derivative = quadraticDerivative(start, control, target, flightT);
+  let x = base.x;
+  let y = base.y;
+  let radius = lerp(10.4, 5.25, Math.pow(flightT, 0.86));
+  let rotation = flightT * Math.PI * (14.5 + Math.abs(move.bend) / 12) * (move.bend < 0 ? -1 : 1);
+  let velocityX = derivative.x / Math.max(0.001, contact - strike);
+  let velocityY = derivative.y / Math.max(0.001, contact - strike);
   const settleT = smoothstep(clamp((p - contact) / Math.max(0.001, 1 - contact), 0, 1));
+  const missImpactKind = outcome === "miss" ? broadcastMissImpactKind(zoneId) : "";
+
   if (p >= contact) {
     if (outcome === "goal") {
-      const side = penaltyZoneEffect(zoneId).side || 1;
-      x = target.x + Math.sin(settleT * Math.PI) * side * 5 * (1 - settleT);
-      y = target.y + settleT * (zoneId.startsWith("top") ? 24 : 11) - Math.sin(settleT * Math.PI) * 4;
-      radius = lerp(5.4, 5.0, settleT);
-      rotation += settleT * Math.PI * 1.8 * side;
+      const side = effect.side || 1;
+      const damping = Math.exp(-settleT * 3.4);
+      x = target.x + Math.sin(settleT * Math.PI * 3.2) * side * 5.5 * damping;
+      y = target.y
+        + settleT * (zoneId.startsWith("top") ? 32 : 17)
+        - Math.sin(settleT * Math.PI * 2.4) * 4.5 * damping;
+      radius = lerp(5.25, 4.75, settleT);
+      rotation += settleT * Math.PI * 2.1 * side;
+      velocityX = side * 42 * damping;
+      velocityY = 55 * (1 - damping * 0.35);
     } else if (outcome === "save") {
-      const side = penaltyZoneEffect(zoneId).side || (Number(replay.kickIndex || 0) % 2 ? 1 : -1);
-      const end = { x: clamp(target.x - side * 280, 55, 1225), y: clamp(target.y + (zoneId.startsWith("top") ? 215 : 135), 80, 675) };
-      const c2 = { x: target.x - side * 115, y: target.y - 12 };
-      const v = 1 - settleT;
-      x = v*v*target.x + 2*v*settleT*c2.x + settleT*settleT*end.x;
-      y = v*v*target.y + 2*v*settleT*c2.y + settleT*settleT*end.y;
-      radius = lerp(5.4, 7.2, settleT);
-      rotation += settleT * Math.PI * 6.8 * -side;
+      const side = effect.side || (Number(replay.kickIndex || 0) % 2 ? 1 : -1);
+      const end = {
+        x: clamp(target.x - side * 205, 56, 1224),
+        y: clamp(target.y + (zoneId.startsWith("top") ? 150 : 96), 90, 676)
+      };
+      const c2 = {
+        x: target.x - side * 78,
+        y: target.y - (zoneId.startsWith("top") ? 8 : 18)
+      };
+      const rebound = quadraticPoint(target, c2, end, settleT);
+      const reboundVelocity = quadraticDerivative(target, c2, end, settleT);
+      x = rebound.x;
+      y = rebound.y;
+      radius = lerp(5.25, 8.0, settleT);
+      rotation += settleT * Math.PI * 7.0 * -side;
+      velocityX = reboundVelocity.x;
+      velocityY = reboundVelocity.y;
+    } else if (missImpactKind === "frame") {
+      const side = effect.side || 1;
+      const end = {
+        x: clamp(target.x - side * 130, 60, 1220),
+        y: clamp(target.y + 178, 80, 680)
+      };
+      const c2 = { x: target.x - side * 58, y: target.y - 18 };
+      const rebound = quadraticPoint(target, c2, end, settleT);
+      const reboundVelocity = quadraticDerivative(target, c2, end, settleT);
+      x = rebound.x;
+      y = rebound.y;
+      radius = lerp(5.25, 8.7, settleT);
+      rotation += settleT * Math.PI * 8.4 * -side;
+      velocityX = reboundVelocity.x;
+      velocityY = reboundVelocity.y;
+    } else if (missImpactKind === "over") {
+      x = lerp(target.x, target.x + (Number(replay.kickIndex || 0) % 2 ? 18 : -18), settleT);
+      y = lerp(target.y, target.y - 112, settleT);
+      radius = lerp(5.25, 4.1, settleT);
+      rotation += settleT * Math.PI * 6.2;
+      velocityX = Number(replay.kickIndex || 0) % 2 ? 18 : -18;
+      velocityY = -112;
     } else {
-      const side = penaltyZoneEffect(zoneId).side || 1;
-      x = lerp(target.x, clamp(target.x + side * 175, 18, 1262), settleT);
-      y = lerp(target.y, clamp(target.y + (zoneId.startsWith("top") ? -52 : 78), 20, 695), settleT);
-      radius = lerp(5.4, 4.6, settleT);
-      rotation += settleT * Math.PI * 6 * side;
+      const side = effect.side || (Number(replay.kickIndex || 0) % 2 ? 1 : -1);
+      x = lerp(target.x, clamp(target.x + side * 165, 12, 1268), settleT);
+      y = lerp(target.y, clamp(target.y + 38, 20, 690), settleT);
+      radius = lerp(5.25, 4.45, settleT);
+      rotation += settleT * Math.PI * 6.0 * side;
+      velocityX = side * 165;
+      velocityY = 38;
     }
   }
+
   const shadowY = lerp(548, zoneId.startsWith("top") ? 500 : 516, flightT);
+  const velocity = Math.hypot(velocityX, velocityY);
+  const velocityAngle = Math.atan2(velocityY, velocityX);
+  const contactCompression = outcome === "save"
+    ? Math.exp(-Math.pow((p - contact) / 0.018, 2))
+    : 0;
+
   return {
-    progress: p, outcome, strike, contact, zoneId, move, start, target, control,
-    rawFlightT, flightT, settleT, x, y, radius, rotation,
-    visible: p >= strike - 0.004,
-    shadow: { x: lerp(start.x, target.x, flightT), y: shadowY, radiusX: lerp(10, 4, flightT), radiusY: lerp(3.2, 1.5, flightT), opacity: clamp(0.20 - Math.max(0, shadowY - y) / 900, 0.025, 0.18) }
+    progress: p,
+    outcome,
+    strike,
+    contact,
+    zoneId,
+    move,
+    effect,
+    start,
+    target,
+    control,
+    rawFlightT,
+    flightT,
+    settleT,
+    missImpactKind,
+    x,
+    y,
+    radius,
+    rotation,
+    velocity,
+    velocityAngle,
+    contactCompression,
+    visible: p >= strike - 0.003,
+    shadow: {
+      x: lerp(start.x, target.x, flightT),
+      y: shadowY,
+      radiusX: lerp(10, 3.8, flightT),
+      radiusY: lerp(3.0, 1.35, flightT),
+      opacity: clamp(0.19 - Math.max(0, shadowY - y) / 920, 0.022, 0.17)
+    }
   };
 }
 
@@ -818,13 +968,48 @@ export function singleAngleKeeperState(replay = {}, progress = 0) {
   const p = clamp(progress, 0, 1);
   const zoneId = canonicalPenaltyZone(replay, "keeperZone");
   const move = singleAngleKeeperMove(zoneId);
+  const effect = penaltyZoneEffect(zoneId);
   const outcome = replay.outcome || "miss";
   const contact = outcome === "save" ? REPLAY_TIMELINE.keeperContact : REPLAY_TIMELINE.goalPlane;
-  const launchStart = REPLAY_TIMELINE.strike + 0.012;
-  const rawDiveT = clamp((p - launchStart) / Math.max(0.001, contact - launchStart), 0, 1);
-  const diveT = 1 - Math.pow(1 - rawDiveT, 2.2);
-  const settleT = smoothstep(clamp((p - contact) / Math.max(0.001, 1 - contact), 0, 1));
-  return { p, zoneId, move, contact, rawDiveT, diveT, settleT, readyAlpha: 1 - smoothstep(clamp(rawDiveT / 0.34, 0, 1)), moveAlpha: smoothstep(clamp((rawDiveT - 0.05) / 0.42, 0, 1)) };
+  const anticipation = smoothstep(clamp(
+    (p - REPLAY_TIMELINE.anticipationStart) /
+      Math.max(0.001, REPLAY_TIMELINE.keeperTakeoff - REPLAY_TIMELINE.anticipationStart),
+    0,
+    1
+  ));
+  const rawDiveT = clamp(
+    (p - REPLAY_TIMELINE.keeperTakeoff) /
+      Math.max(0.001, contact - REPLAY_TIMELINE.keeperTakeoff),
+    0,
+    1
+  );
+  const pushOff = smoothstep(clamp(rawDiveT / 0.22, 0, 1));
+  const extension = 1 - Math.pow(1 - rawDiveT, 2.25);
+  const landingStart = contact + PENALTY_BROADCAST_FINALIZATION.keeperLandingStartOffset;
+  const landing = smoothstep(clamp(
+    (p - landingStart) / Math.max(0.001, REPLAY_TIMELINE.settleStart - landingStart),
+    0,
+    1
+  ));
+  const direction = effect.side;
+  return {
+    p,
+    zoneId,
+    move,
+    effect,
+    contact,
+    anticipation,
+    pushOff,
+    rawDiveT,
+    diveT: extension,
+    extension,
+    landing,
+    airborne: rawDiveT > 0 && landing < 0.72,
+    direction,
+    crouch: Math.sin(anticipation * Math.PI * 0.5) * (1 - pushOff * 0.55),
+    readyAlpha: 1 - smoothstep(clamp((rawDiveT - 0.02) / 0.30, 0, 1)),
+    moveAlpha: smoothstep(clamp((rawDiveT - 0.025) / 0.30, 0, 1))
+  };
 }
 
 export class PenaltyVisualPack {
@@ -1029,14 +1214,22 @@ export class PenaltyVisualPack {
     this.drawSingleAngleKeeper(ctx, keeperState, time, reducedMotion);
 
     const striker = singleAngleStrikerState(replay, progress, final);
-    // A soft contact shadow follows the planted foot and confirms the run-up is
-    // attached to the pitch plane throughout the approach.
+    // The shadow is solved from the same plant-foot anchor as the sprite. It
+    // narrows at contact and expands only during the grounded follow-through.
     ctx.save();
-    ctx.globalAlpha = 0.13 + striker.approachT * 0.07;
-    ctx.fillStyle = "rgba(0,0,0,.74)";
+    ctx.globalAlpha = 0.12 + striker.approachT * 0.075;
+    ctx.fillStyle = "rgba(0,0,0,.76)";
     ctx.filter = "blur(3px)";
     ctx.beginPath();
-    ctx.ellipse(striker.foot.x, striker.foot.y + 2, lerp(14, 24, striker.approachT), 4.2, -0.08, 0, Math.PI * 2);
+    ctx.ellipse(
+      striker.foot.x,
+      striker.foot.y + 2,
+      lerp(13, 22, striker.approachT) * (1 - striker.plantT * 0.08),
+      lerp(3.6, 4.4, striker.approachT),
+      -0.08,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
     ctx.filter = "none";
     ctx.restore();
@@ -1048,18 +1241,43 @@ export class PenaltyVisualPack {
       this.drawSingleAngleSprite(ctx, followSprite, striker.follow);
     }
 
+    // Boot contact uses tiny turf flecks and compression only—no flash, target
+    // pointer, or comic burst.
+    if (!reducedMotion && striker.contactEnvelope > 0.035) {
+      const contactStrength = striker.contactEnvelope;
+      ctx.save();
+      ctx.fillStyle = "rgba(210,225,191,.72)";
+      ctx.globalAlpha = contactStrength * 0.62;
+      for (let index = 0; index < 7; index += 1) {
+        const angle = -2.85 + index * 0.19;
+        const distance = 5 + index * 1.7;
+        const size = 0.8 + (index % 3) * 0.45;
+        ctx.beginPath();
+        ctx.ellipse(
+          BROADCAST_SELECTION_POINTS.ball.x + Math.cos(angle) * distance,
+          BROADCAST_SELECTION_POINTS.ball.y + 5 + Math.sin(angle) * distance * 0.42,
+          size * 1.5,
+          size,
+          angle,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
     const ball = singleAngleBallState(replay, progress);
     if (ball.visible) {
       this.drawBallShadow(ctx, ball.shadow.x, ball.shadow.y, ball.shadow.radiusX, ball.shadow.radiusY, ball.shadow.opacity);
-      if (!reducedMotion && progress < ball.contact && ball.rawFlightT > 0.12) {
-        const ghost = singleAngleBallState(replay, Math.max(strike, progress - 0.014));
-        ctx.save();
-        ctx.globalAlpha = clamp((1 - ball.rawFlightT) * 0.07 + 0.02, 0.02, 0.075);
-        this.drawBallMarker(ctx, ghost.x, ghost.y, ghost.radius * 0.82, ghost.rotation, { glow: false });
-        ctx.restore();
+      if (!reducedMotion && progress < ball.contact && ball.rawFlightT > 0.08) {
+        this.drawBallMotionBlur(ctx, ball, 0.075);
       }
-      const compression = replay.outcome === "save" ? Math.exp(-Math.pow((progress - ball.contact) / 0.019, 2)) : 0;
-      this.drawBallMarker(ctx, ball.x, ball.y, ball.radius, ball.rotation, { glow: false, scaleX: 1 + compression * 0.13, scaleY: 1 - compression * 0.10 });
+      this.drawBallMarker(ctx, ball.x, ball.y, ball.radius, ball.rotation, {
+        glow: false,
+        scaleX: 1 + ball.contactCompression * 0.12,
+        scaleY: 1 - ball.contactCompression * 0.095
+      });
     }
 
     if (replay.outcome === "goal" && progress >= ball.contact) {
@@ -1075,33 +1293,64 @@ export class PenaltyVisualPack {
     const ready = this.get(this.assets.singleAngle?.keeperReady);
     const target = this.get(this.assets.singleAngle?.[state.move.asset]);
     if (!ready || !target) return;
-    const start = { x: 264, y: 302, width: 82, height: 198 };
-    const t = reducedMotion ? (state.p >= REPLAY_TIMELINE.strike ? 1 : 0) : state.diveT;
-    const x = lerp(start.x, state.move.x, t);
-    const y = lerp(start.y, state.move.y, t) - Math.sin(t * Math.PI) * (state.zoneId.startsWith("top") ? 18 : 8);
-    const width = lerp(start.width, state.move.width, t);
-    const height = lerp(start.height, state.move.height, t);
-    const rotation = lerp(0, state.move.rotation || 0, t);
 
-    const shadowX = x + width * 0.50;
+    const start = { x: 264, y: 302, width: 82, height: 198 };
+    const t = reducedMotion ? (state.p >= REPLAY_TIMELINE.strike ? 1 : 0) : state.extension;
+    const direction = state.direction || 0;
+    const anticipationShift = direction * state.anticipation * 4.5;
+    const launchLift = Math.sin(Math.min(1, t) * Math.PI) * (state.zoneId.startsWith("top") ? 19 : 9);
+    const landingDrop = state.landing * (state.zoneId.startsWith("top") ? 13 : 8);
+    const x = lerp(start.x, state.move.x, t) + anticipationShift;
+    const y = lerp(start.y, state.move.y, t) - launchLift + landingDrop;
+    const width = lerp(start.width, state.move.width, t) * (1 - state.landing * 0.035);
+    const height = lerp(start.height, state.move.height, t) * (1 - state.landing * 0.075);
+    const rotation = lerp(0, state.move.rotation || 0, t) * (1 + state.landing * 0.12);
+
+    const shadowX = lerp(start.x + start.width * 0.5, x + width * 0.5, smoothstep(t));
     const shadowY = state.zoneId.startsWith("top") ? 498 : 510;
     ctx.save();
-    ctx.globalAlpha = clamp(0.24 - t * 0.08, 0.10, 0.24);
-    ctx.fillStyle = "rgba(0,0,0,.74)";
+    ctx.globalAlpha = clamp(0.245 - state.airborne * 0.10 + state.landing * 0.055, 0.09, 0.27);
+    ctx.fillStyle = "rgba(0,0,0,.76)";
     ctx.filter = "blur(4px)";
     ctx.beginPath();
-    ctx.ellipse(shadowX, shadowY, lerp(23, width * 0.28, t), lerp(5, 3.5, t), 0, 0, Math.PI * 2);
+    ctx.ellipse(
+      shadowX,
+      shadowY,
+      lerp(23, width * 0.29, t) * (1 + state.landing * 0.12),
+      lerp(5, 3.2, t) * (1 + state.landing * 0.20),
+      0,
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
     ctx.filter = "none";
     ctx.restore();
 
     if (state.readyAlpha > 0.015) {
-      this.drawSingleAngleSprite(ctx, ready, { ...start, alpha: state.readyAlpha, originX: 0.5, originY: 0.92 });
+      this.drawSingleAngleSprite(ctx, ready, {
+        ...start,
+        x: start.x + anticipationShift,
+        y: start.y + state.crouch * 4,
+        alpha: state.readyAlpha,
+        scaleX: 1 + state.crouch * 0.025,
+        scaleY: 1 - state.crouch * 0.040,
+        rotation: direction * state.anticipation * 0.010,
+        originX: 0.5,
+        originY: 0.92
+      });
     }
     if (state.moveAlpha > 0.015) {
       this.drawSingleAngleSprite(ctx, target, {
-        x, y, width, height, alpha: state.moveAlpha, rotation,
-        scaleX: state.move.scaleX || 1, scaleY: state.move.scaleY || 1, originX: 0.5, originY: 0.55
+        x,
+        y,
+        width,
+        height,
+        alpha: state.moveAlpha,
+        rotation,
+        scaleX: (state.move.scaleX || 1) * (1 + state.pushOff * 0.015),
+        scaleY: (state.move.scaleY || 1) * (1 - state.landing * 0.055),
+        originX: 0.5,
+        originY: 0.55
       });
     }
   }

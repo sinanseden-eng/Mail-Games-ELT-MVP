@@ -556,3 +556,12 @@ Makes the exact uploaded broadcast camera authoritative by replacing the browser
 ## 0.9H4C
 
 Calibrates the goal buttons and full penalty action to the fixed broadcast frame.
+
+
+## 0.9H4D
+
+Exact user-marked broadcast targets, realistic match-ball texture, and a grounded striker run-up.
+
+## 0.9H5 — Penalty Broadcast Finalization
+
+The penalty replay retains the fixed uploaded broadcast camera and exact six marked targets while adding a grounded plant/contact sequence, complete goalkeeper takeoff and landing, physical ball rebounds and settling, synchronized sound, and a delayed result reveal.

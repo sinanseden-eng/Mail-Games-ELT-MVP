@@ -1,11 +1,11 @@
 {
   "name": "mailgames-elt-mvp",
-  "version": "0.9.26",
+  "version": "0.9.28",
   "private": true,
-  "description": "Teacher-editable ELT email games. 0.9H4C calibrates the six choices to the broadcast goal and keeps taker, ball, and keeper moving in one uninterrupted frame.",
+  "description": "Teacher-editable ELT email games. 0.9H5 finalizes the locked broadcast replay with grounded contact, complete keeper motion, physical rebounds, synchronized sound, and delayed results.",
   "scripts": {
     "serve": "npx netlify dev",
-    "check": "node --check app.js && node --check turn-0.9h4c.js && node --check replay-0.9h4c.js && node --check shootout-0.9h4c.js && node --check shootout-scene-0.9h4c.mjs && node --check penalty-visuals-0.9h4c.mjs && node --check turn.js && node --check replay.js && node --check shootout.js && node --check shootout-core.mjs && node --check shootout-net.mjs && node --check shootout-physics.mjs && node --check shootout-cinematics.mjs && node --check penalty-perspective.mjs && node --check penalty-visuals.mjs && node --check shootout-scene.mjs && node --check shootout-audio.mjs && node --check turkey-core.mjs && node --check turkey-scene.mjs && node --check turkey-audio.mjs && node --check sniper-core.mjs && node --check sniper-scene.mjs && node --check sniper-audio.mjs && find netlify/functions tests scripts -name \"*.mjs\" -print0 | xargs -0 -n1 node --check",
+    "check": "node --check app.js && node --check turn-0.9h5.js && node --check replay-0.9h5.js && node --check shootout-0.9h5.js && node --check shootout-scene-0.9h5.mjs && node --check penalty-visuals-0.9h5.mjs && node --check shootout-physics-0.9h5.mjs && node --check shootout-audio-0.9h5.mjs && node --check turn.js && node --check replay.js && node --check shootout.js && node --check shootout-core.mjs && node --check shootout-net.mjs && node --check shootout-physics.mjs && node --check shootout-cinematics.mjs && node --check penalty-perspective.mjs && node --check penalty-visuals.mjs && node --check shootout-scene.mjs && node --check shootout-audio.mjs && node --check turkey-core.mjs && node --check turkey-scene.mjs && node --check turkey-audio.mjs && node --check sniper-core.mjs && node --check sniper-scene.mjs && node --check sniper-audio.mjs && find netlify/functions tests scripts -name \"*.mjs\" -print0 | xargs -0 -n1 node --check",
     "test": "node --test tests/*.test.mjs"
   },
   "engines": {
