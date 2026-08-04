@@ -12,6 +12,30 @@ export const GOAL = Object.freeze({
 // the posts and crossbar even when a player chooses an extreme corner.
 export const BALL_RADIUS = 0.11;
 
+// 0.9H5A: broadcast-camera net pocket profiles. These values affect only
+// the local photographed-goal overlay; the stored shot coordinates remain
+// the exact six user-marked 0.9H4D centres.
+export const NET_SAG_PROFILES = Object.freeze({
+  "top-left": Object.freeze({ biasX: -1, biasY: -0.28, spanX: 82, spanY: 66, pocketDepth: 30, drop: 17, spreadX: 0.86, spreadY: 0.78 }),
+  "top-centre": Object.freeze({ biasX: 0, biasY: -0.34, spanX: 92, spanY: 70, pocketDepth: 34, drop: 21, spreadX: 1.00, spreadY: 0.82 }),
+  "top-right": Object.freeze({ biasX: 1, biasY: -0.28, spanX: 82, spanY: 66, pocketDepth: 30, drop: 17, spreadX: 0.86, spreadY: 0.78 }),
+  "bottom-left": Object.freeze({ biasX: -1, biasY: 0.52, spanX: 92, spanY: 54, pocketDepth: 37, drop: 28, spreadX: 0.90, spreadY: 0.94 }),
+  "bottom-centre": Object.freeze({ biasX: 0, biasY: 0.64, spanX: 104, spanY: 58, pocketDepth: 48, drop: 38, spreadX: 1.00, spreadY: 1.00 }),
+  "bottom-right": Object.freeze({ biasX: 1, biasY: 0.52, spanX: 92, spanY: 54, pocketDepth: 37, drop: 28, spreadX: 0.90, spreadY: 0.94 })
+});
+
+export function netSagProfile(zoneId = "bottom-centre") {
+  return NET_SAG_PROFILES[zoneId] || NET_SAG_PROFILES["bottom-centre"];
+}
+
+export function netSagEnvelope(rawT = 0, final = false) {
+  if (final) return 0.18;
+  const t = clamp(rawT, 0, 1);
+  const attack = Math.sin(Math.min(1, t / 0.19) * Math.PI * 0.5);
+  const elastic = 0.66 + Math.cos(t * Math.PI * 7.2) * 0.34;
+  return clamp(attack * Math.exp(-t * 1.72) * elastic, 0, 1);
+}
+
 export const OBLIQUE_CAMERA = Object.freeze({
   // Pulled back to create a real penalty-distance corridor while preserving
   // the preferred near-right-post three-quarter view.

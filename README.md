@@ -565,3 +565,8 @@ Exact user-marked broadcast targets, realistic match-ball texture, and a grounde
 ## 0.9H5 — Penalty Broadcast Finalization
 
 The penalty replay retains the fixed uploaded broadcast camera and exact six marked targets while adding a grounded plant/contact sequence, complete goalkeeper takeoff and landing, physical ball rebounds and settling, synchronized sound, and a delayed result reveal.
+
+
+## 0.9H5A
+
+Broadcast-scale correction with a more readable match ball and six zone-specific net-sag reactions.
