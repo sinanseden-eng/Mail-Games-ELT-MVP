@@ -182,7 +182,7 @@ import { poolStore } from "./question-pools.mjs";
   }
 
   function bindGlobalNavigation() {
-    document.querySelectorAll("[data-route]").forEach(button => {
+    document.querySelectorAll("button[data-route], a[data-route]").forEach(button => {
       button.onclick = () => setRoute(button.dataset.route);
     });
     document.querySelectorAll("[data-game]").forEach(button => {
