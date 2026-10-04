@@ -18,7 +18,7 @@ The `app-platform` branch adds `/classroom.html` alongside the existing email ga
 Use the existing Netlify project with a branch deploy, not a second production app.
 
 1. Enable Netlify Identity for the project in the Netlify dashboard. Keep email confirmation enabled. This cannot be enabled by the available project connector.
-2. Set the following **function** environment variables only in the appropriate deploy context:
+2. Set the following environment variables only in the appropriate deploy context, ensuring they include the **Functions** scope. On the current plan the dashboard uses All scopes for non-secret settings, and Builds / Functions / Runtime for secret settings; a Functions-only connector request returned success without persisting a variable, so verify each setting in the dashboard before deploying:
    - `CLASSROOM_NAMESPACE`: `app-platform-preview-v1` for the isolated pilot. Production must use a distinct value, such as `production`.
    - `CLASSROOM_TEACHER_CODE`: a private teacher activation code. If omitted, the existing `MAILGAMES_TEST_CODE` is used.
    - `CLASSROOM_VAPID_PUBLIC_KEY`, `CLASSROOM_VAPID_PRIVATE_KEY`: a matching Web Push VAPID key pair.
@@ -51,7 +51,10 @@ Before classroom-wide use, complete one deployed teacher + two-student journey u
 
 - Production game fixes are merged in PR #5 (`11ca723b81d5feec0082f3ed80566fa2ccaf73b9`) and deployed successfully as `6ac2ba324ca7cd0cf6d322ea`.
 - Live browser checks passed: Sniper moving frames and scope replay, pause/resume, full-round completion, saved damage, repeated playback and reset; Turkey Counter damage and round-limit winner; football tie-setting persistence.
-- The complete classroom branch has 249 passing tests and a successful browser journey with mocked authentication. Draft PR #4 remains unmerged.
-- The real site's Identity settings endpoint returns 404. Identity must be enabled before real sign-in tests.
-- The generic Netlify deployment connector was rejected by automatic approval for the app preview because it cannot specify a branch in its tool arguments. No app preview was uploaded. The documented build API accepts an explicit `branch=app-platform`, but using that deployment connection still requires approval. Do not reuse production authorization to bypass this rejection.
-- Preview-only Blob namespace and VAPID settings have been configured. No secrets were committed, and no live invitation or reminder emails were sent in testing.
+- The classroom preview is available at https://deploy-preview-4--mail-games-elt-mvp.netlify.app/classroom.html. Git integration built PR #4 automatically; after correcting the preview environment, a dashboard retry produced ready deploy `6ac2c0fa6b6fc949c2941e62` in context `deploy-preview`, branch `app-platform`.
+- Identity is enabled. Open registration requires email confirmation (`disable_signup=false`, `autoconfirm=false`). The deployed Identity settings endpoint returns 200.
+- Preview GET and same-origin POST `/api/classroom` correctly return 401 without an account; a foreign-origin POST returns 403. The manifest and service worker are served successfully. Authenticated Blob writes still require a real-account pilot test.
+- Preview-only Blob namespace and matching VAPID settings are persisted and verified in the dashboard. The private VAPID key is marked secret. No secrets were committed, and no live invitation or reminder emails were sent in testing.
+- PR #6 adds a small production-root authentication callback bridge for the pilot: recognized Identity hashes go to the fixed PR #4 preview, with tokens remaining in fragments. Ordinary game navigation is unchanged. The classroom branch omits the pilot marker, restoring same-origin callback routing when the app is eventually merged.
+- Draft PR #4 remains unmerged until one real teacher and two students complete a match and phone push delivery is checked. Automated browser journeys used mocked Identity; they do not verify email delivery, real account recovery, or phone notifications.
+- The generic deployment connector's earlier automatic approval rejection was respected. Preview rebuilding and Identity activation used the Netlify dashboard after explicit user approval.
