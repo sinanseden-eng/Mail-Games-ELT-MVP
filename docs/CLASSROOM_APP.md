@@ -46,3 +46,12 @@ Push endpoints are restricted to supported push-service hosts. Notifications con
 Automated tests cover full matches, equal-turn sudden death, defensive standoffs, counter damage, class ownership, joining codes, secret-choice redaction, server grading, pool snapshots, stale turns, simultaneous submissions, notification leasing and push-host validation. Browser checks use a mock Identity adapter and an in-memory instance of the real classroom service; they cover teacher enrolment through student play, actual Word import, cloud pool editing, results and mobile layout.
 
 Before classroom-wide use, complete one deployed teacher + two-student journey using real confirmed accounts, then grant notification permission on a real supported phone and confirm delivery. Test account recovery emails against the final app URL. The mock checks do not substitute for these account/provider/device checks. Native App Store / Play Store packaging is a later delivery option; the current app is an installable web app.
+
+## Deployment checkpoint — 4 October 2026
+
+- Production game fixes are merged in PR #5 (`11ca723b81d5feec0082f3ed80566fa2ccaf73b9`) and deployed successfully as `6ac2ba324ca7cd0cf6d322ea`.
+- Live browser checks passed: Sniper moving frames and scope replay, pause/resume, full-round completion, saved damage, repeated playback and reset; Turkey Counter damage and round-limit winner; football tie-setting persistence.
+- The complete classroom branch has 249 passing tests and a successful browser journey with mocked authentication. Draft PR #4 remains unmerged.
+- The real site's Identity settings endpoint returns 404. Identity must be enabled before real sign-in tests.
+- The generic Netlify deployment connector was rejected by automatic approval for the app preview because it cannot specify a branch in its tool arguments. No app preview was uploaded. The documented build API accepts an explicit `branch=app-platform`, but using that deployment connection still requires approval. Do not reuse production authorization to bypass this rejection.
+- Preview-only Blob namespace and VAPID settings have been configured. No secrets were committed, and no live invitation or reminder emails were sent in testing.
