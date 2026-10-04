@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f3ec">
+  <meta name="description" content="Step into the Penalty Club. Pick your corner, beat the keeper and watch the net ripple. A new football experience from Mail Games ELT.">
+  <title>The Penalty Club · Mail Games</title>
+  <link rel="stylesheet" href="football.css">
+</head>
+<body class="club-page">
+  <header class="club-header">
+    <a class="club-brand" href="./" aria-label="Mail Games home"><span class="club-monogram" aria-hidden="true">m<span>g</span></span><span>MAIL GAMES<small>PLAY IS THE POINT.</small></span></a>
+    <nav aria-label="Football modes"><a href="football.html" class="nav-active" aria-current="page">Practice pitch</a><a href="shootout.html">English match <span aria-hidden="true">↗</span></a><a class="club-home" href="./#studio">Teacher studio</a></nav>
+  </header>
+  <main class="club-shell">
+    <div class="club-heading"><div><p class="club-eyebrow"><span></span> THE PENALTY CLUB</p><h1>One shot.<em>Make it count.</em></h1></div><p class="club-intro">Find your corner. Trust your finish.<br>The floodlights are on. It’s your moment.</p></div>
+    <div class="club-layout">
+      <section class="club-pitch-card" aria-label="Penalty pitch">
+        <div class="club-matchbar"><span class="match-night"><i></i> MATCH NIGHT</span><div class="club-score"><span>YOU</span><strong id="club-goals">0</strong><b>:</b><strong id="club-stops">0</strong><span>KEEPER</span></div><span id="club-count">PRACTICE / 01</span></div>
+        <div class="club-viewport"><canvas id="club-canvas" width="1280" height="720" aria-label="Penalty pitch"></canvas><div class="scene-caption" id="club-caption" aria-live="polite">Pick a corner. The keeper is ready.</div></div>
+        <div class="club-playback"><div class="club-form"><span>YOUR FORM</span><ol id="club-history" aria-label="Recent attempts"><li>—</li><li>—</li><li>—</li><li>—</li><li>—</li></ol></div><div class="club-playback-actions"><button id="club-pause" type="button" disabled aria-label="Pause replay">Ⅱ <span>Pause</span></button><button id="club-replay" type="button" disabled>↻ <span>Replay</span></button><button id="club-slow" type="button" aria-pressed="false">½× <span>Slow motion</span></button><button id="club-sound" type="button" aria-pressed="false">Sound off</button></div></div>
+        <div class="club-progress" aria-label="Replay progress"><div id="club-progress"></div></div>
+      </section>
+      <aside class="club-controls">
+        <div class="club-step"><span>01 / AIM</span><span class="club-direction">From the striker’s view</span></div>
+        <h2>Find the corner.</h2><p class="club-muted">Choose your spot in the goal.</p>
+        <div class="club-targets" id="club-targets" role="group" aria-label="Shot direction"></div>
+        <div class="club-selected"><span>YOUR TARGET</span><strong id="club-selected">Top right</strong><span aria-hidden="true">↗</span></div>
+        <div class="club-divider"></div>
+        <label class="club-step" for="club-drill"><span>02 / YOUR SESSION</span></label>
+        <select id="club-drill"><option value="play">Take on the keeper</option><option value="goal">Finishing · hit the net</option><option value="save">Goalkeeping · catch</option><option value="parry">Goalkeeping · parry</option><option value="miss">Off-target attempt</option></select>
+        <p id="club-drill-help" class="club-drill-help">The keeper makes an independent choice. Can you beat them?</p>
+        <button class="club-kick" id="club-kick" type="button"><span>Take the shot</span><span aria-hidden="true">↗</span></button>
+        <p class="club-keyboard">Or press <kbd>Space</kbd> to shoot</p>
+        <div class="club-net-control"><label for="club-net">Net tension <span id="club-net-label">Matchday</span></label><input id="club-net" type="range" min="0" max="100" value="45"><div><span>Loose &amp; sagging</span><span>Firm</span></div></div>
+      </aside>
+    </div>
+    <section class="club-bottom" aria-label="Session information"><div><span class="club-football" aria-hidden="true">✦</span><p><strong>A little practice. A better finish.</strong><span>Nine corners and angles. One keeper to beat.</span></p></div><div class="club-bottom-actions"><button type="button" id="club-motion" aria-pressed="false">Reduce motion</button><button type="button" id="club-reset">New session ↻</button></div></section>
+    <footer class="club-footer"><span>MAIL GAMES ELT</span><p>Ready to play for more? <a href="shootout.html">Unlock your shots with English. ↗</a></p><span>EST. FOR PLAY</span></footer>
+  </main>
+  <script type="module" src="football.mjs"></script>
+</body>
+</html>

@@ -109,6 +109,8 @@ export function applyRoundResult(state, result) {
     ...result,
     shotZone: next.shotZone,
     keeperZone: next.keeperZone,
+    shotActive: next.shotActive,
+    keeperActive: next.keeperActive,
     striker: players.striker,
     keeper: players.keeper
   };

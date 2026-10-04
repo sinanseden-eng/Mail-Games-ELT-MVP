@@ -3,22 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Mail Penalty Shootout 0.9H5A2 with broadcast-scale players, a readable match ball and six zone-specific net reactions." />
-  <title>Mail Penalty Shootout — 0.9H5A2 Broadcast Net Reaction</title>
+  <meta name="description" content="Answer English questions, choose your corner, and play a penalty match with animated kicks, keeper dives and a responsive goal net." />
+  <title>English Match · The Penalty Club</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="shootout.css" />
+  <link rel="stylesheet" href="football.css" />
 </head>
-<body class="shootout-page">
+<body class="shootout-page football-classroom">
   <header class="shootout-topbar">
     <a class="shootout-brand" href="./#play" aria-label="Back to Mail Games ELT">
       <span aria-hidden="true">✉</span>
-      <span><strong>Mail Penalty Shootout</strong><small>Broadcast scale and six-zone net reaction 0.9H5A2</small></span>
+      <span><strong>The Penalty Club</strong><small>English match · Mail Games ELT</small></span>
     </a>
     <div class="shootout-toolbar">
       <button type="button" class="sound-toggle" id="sound-toggle" aria-pressed="true">Sound on</button>
       <button type="button" class="sound-toggle" id="motion-toggle" aria-pressed="false">Reduce motion</button>
       <button type="button" class="secondary" id="reset-shootout">Reset match</button>
-      <a class="secondary button-link" href="./#play">Exit prototype</a>
+      <a class="secondary button-link" href="football.html">Practice pitch ↗</a>
     </div>
   </header>
 
@@ -56,27 +57,14 @@
         <div class="scene-legend">
           <span><i class="legend-dot live"></i> Correct answer: move active</span>
           <span><i class="legend-dot futile"></i> Incorrect answer: move futile</span>
-          <span><i class="legend-dot net"></i> One realistic visual world from selection through result</span>
+          <span><i class="legend-dot net"></i> Pick your corner. Watch the finish.</span>
         </div>
       </article>
 
       <aside class="shootout-control-card" id="control-card" aria-live="polite"></aside>
     </section>
 
-    <section class="prototype-notes">
-      <article>
-        <span>01</span>
-        <div><strong>One realistic match world</strong><p>The same positioned striker, ball, keeper and goal remain visible while the English task unlocks the six coordinates.</p></div>
-      </article>
-      <article>
-        <span>02</span>
-        <div><strong>Realistic coordinate selection</strong><p>The striker, ball, goalkeeper and six target positions share the same calibrated photographic scene.</p></div>
-      </article>
-      <article>
-        <span>03</span>
-        <div><strong>Unified result presentation</strong><p>Goal, save and miss remain photographic through the final frame without revealing the old cartoon renderer.</p></div>
-      </article>
-    </section>
+
   </main>
 
   <script type="module" src="shootout-0.9h5a2.js"></script>
