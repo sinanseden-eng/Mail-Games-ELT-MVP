@@ -91,7 +91,7 @@ $('club-net').addEventListener('input',event=>{
   const value=Number(event.target.value); scene.sag=1.85-value/100*1.2;
   $('club-net-label').textContent=value<30?'Loose':value>72?'Firm':'Matchday';
 });
-scene.sag=1.31;
+scene.sag=1.61;
 controls.drill.addEventListener('change',()=>{
   const help={play:'The keeper makes an independent choice. Can you beat them?',goal:'Work on your finish. Watch the ball stretch the net and drop.',save:'A catching drill: the keeper follows the shot and holds the ball.',parry:'A parrying drill: the keeper pushes the ball away from goal.',miss:'Watch an attempt fly wide or over the crossbar.'};
   $('club-drill-help').textContent=help[controls.drill.value];

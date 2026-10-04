@@ -4,7 +4,7 @@ export const TURKEY_MOVES = [
   { id: "charge", label: "Charge", type: "attack", icon: "💨", note: "Heavy forward attack" },
   { id: "block", label: "Block", type: "defence", icon: "🛡", note: "Stops slap and peck" },
   { id: "duck", label: "Duck", type: "defence", icon: "↘", note: "Avoids slap and charge" },
-  { id: "counter", label: "Counter", type: "defence", icon: "↩", note: "Reads the attack and answers" }
+  { id: "counter", label: "Counter", type: "defence", icon: "↩", note: "Stops Peck and Charge; no return damage" }
 ];
 
 export function turkeyMove(id) {

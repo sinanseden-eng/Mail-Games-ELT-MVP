@@ -176,7 +176,7 @@ export function resolvePenaltyResult({ shotZone, keeperZone, shotActive, keeperA
         ? "OFF TARGET — the answer weakened the shot."
         : "WIDE — both moves lost their power.",
       message: keeperActive
-        ? "The powerless shot is comfortably saved."
+        ? "The inactive shot goes off target."
         : "Both answers were incorrect; the ball wanders wide."
     };
   }

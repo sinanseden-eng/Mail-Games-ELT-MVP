@@ -79,11 +79,11 @@ function drawNet(ctx, round, time, sag) {
   const cols = 32, rows = 17;
   for (let i = 0; i <= cols; i++) {
     const u = i / cols;
-    line(ctx, [projectPitch(u, 0, 1), projectPitch(u, NET_DEPTH / 2, 1 - .025 * Math.sin(Math.PI * u)), projectPitch(u, NET_DEPTH, 1)], '#c7e0bd69', .85);
+    line(ctx, [projectPitch(u, 0, 1), projectPitch(u, NET_DEPTH / 2, 1 - .09 * sag * Math.sin(Math.PI * u)), projectPitch(u, NET_DEPTH, 1)], '#c7e0bd69', .85);
   }
   for (let j = 0; j <= 7; j++) {
     const d = NET_DEPTH * j / 7, points = [];
-    for (let i = 0; i <= cols; i++) points.push(projectPitch(i / cols, d, 1 - .025 * Math.sin(Math.PI * i / cols) * Math.sin(Math.PI * j / 7)));
+    for (let i = 0; i <= cols; i++) points.push(projectPitch(i / cols, d, 1 - .09 * sag * Math.sin(Math.PI * i / cols) * Math.sin(Math.PI * j / 7)));
     line(ctx, points, '#cee1c15c', .85);
   }
   for (const u of [0, 1]) {
@@ -208,7 +208,7 @@ export class ShootoutScene {
   constructor(canvas, caption, { overlay = null, reducedMotion = false, onEvent = null, onProgress = null } = {}) {
     this.canvas = canvas; this.ctx = canvas.getContext('2d'); this.caption = caption; this.overlay = overlay;
     this.reducedMotion = reducedMotion; this.onEvent = onEvent; this.onProgress = onProgress;
-    this.preview = null; this.replay = null; this.resultStill = null; this.sag = 1; this.speed = 1; this.paused = false;
+    this.preview = null; this.replay = null; this.resultStill = null; this.sag = 1.6; this.speed = 1; this.paused = false;
     this.snapshotMode = new URLSearchParams(globalThis.location?.search || '').has('snapshot');
     this.net = { reset: () => { this.resultStill = null; } };
     this.canvas.width = W; this.canvas.height = H;

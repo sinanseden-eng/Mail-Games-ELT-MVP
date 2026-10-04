@@ -107,7 +107,7 @@ export function keeperPose(round, time) {
 }
 
 export function netBase(u, v) {
-  return { x: lerp(345, 935, u), y: lerp(173, 395, v) + 9 * Math.sin(Math.PI * u) * Math.sin(Math.PI * v) };
+  return { x: lerp(345, 935, u), y: lerp(173, 395, v) + 24 * Math.sin(Math.PI * u) * Math.sin(Math.PI * v) };
 }
 
 // Fixed rope attachments, local impact pocket, propagating wave and gravity sag.
@@ -130,7 +130,7 @@ export function netPoint(u, v, round, time, sag = 1) {
   const weight = Math.exp(-age * 1.8) * onset;
   return {
     x: base.x + sag * ((target.u - .5) * 46 * pulse * pocket + wave * 4),
-    y: Math.min(395, base.y + sag * (60 * weight * pocket - 10 * pulse * pocket + wave * 5))
+    y: Math.min(395, base.y + sag * (85 * weight * pocket - 10 * pulse * pocket + wave * 5))
   };
 }
 
