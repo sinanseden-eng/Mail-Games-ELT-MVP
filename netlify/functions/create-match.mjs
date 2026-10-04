@@ -26,7 +26,7 @@ export async function handler(event) {
       body: questions.map(question => ({ ...question, id: randomUUID(), pack_id: pack.id }))
     });
 
-    const state = defaultState(gameType);
+    const state = defaultState(gameType, payload.settings || {});
     const [match] = await db("matches", {
       method: "POST",
       body: {

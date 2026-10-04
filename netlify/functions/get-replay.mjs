@@ -37,7 +37,7 @@ export async function handler(event) {
 
     return json(200, {
       replay,
-      match: publicMatch(match),
+      match: publicReplayMatch(match),
       review,
       viewer: {
         actor: claims.recipientActor || "",
@@ -109,3 +109,11 @@ function reviewTurn(turn) {
 function notFound(message) { const error = new Error(message); error.statusCode = 404; throw error; }
 function forbidden() { const error = new Error("This replay link does not match the resolved result"); error.statusCode = 403; throw error; }
 function gone(message) { const error = new Error(message); error.statusCode = 410; throw error; }
+
+function publicReplayMatch(match) {
+  const value = publicMatch(match);
+  for (const key of ["shot", "shotActive", "shotTurnId", "keeperMove", "keeperActive", "moveA", "moveB", "activeA", "activeB", "moveATurnId", "emergenceA", "emergenceB", "targetA", "targetB", "turnAId"]) {
+    if (key in value.state) value.state[key] = null;
+  }
+  return value;
+}
