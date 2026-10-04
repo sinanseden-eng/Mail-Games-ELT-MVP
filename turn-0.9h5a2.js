@@ -1,4 +1,4 @@
-import { ShootoutScene } from "./shootout-scene-0.9h5a2.mjs";
+import { ShootoutScene } from "./football-scene.mjs";
 import { createShootoutAudio } from "./shootout-audio-0.9h5a2.mjs";
 import { zoneLabel } from "./shootout-core.mjs?v=0.9.30";
 import { TurkeyFightScene } from "./turkey-scene.mjs?v=0.9.30";

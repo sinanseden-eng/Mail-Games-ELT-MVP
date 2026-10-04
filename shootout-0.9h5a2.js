@@ -10,7 +10,7 @@ import {
   getZone,
   zoneLabel
 } from "./shootout-core.mjs?v=0.9.30";
-import { ShootoutScene } from "./shootout-scene-0.9h5a2.mjs";
+import { ShootoutScene } from "./football-scene.mjs";
 import { createShootoutAudio } from "./shootout-audio-0.9h5a2.mjs";
 import { PENALTY_VIEWERS, perspectiveLabel } from "./penalty-perspective.mjs?v=0.9.30";
 
@@ -363,8 +363,8 @@ function renderReplay() {
   elements.status.textContent = "Animated replay";
   elements.control.innerHTML = `
     <span class="control-eyebrow">Penalty replay · main camera</span>
-    <h1 class="control-title">Watch the shot from the goal line.</h1>
-    <p class="control-copy">The server-style rules have already resolved the round. The current goalkeeper sees the incoming ball and their stored dive.</p>
+    <h1 class="control-title">Watch the kick and dive.</h1>
+    <p class="control-copy">Both players’ choices are locked. Watch the finish from the pitch.</p>
     <div class="result-summary"><strong>${escapeHtml(result?.striker || "Striker")}</strong> aimed ${escapeHtml(zoneLabel(state.shotZone))}.<br /><strong>${escapeHtml(result?.keeper || "Keeper")}</strong> chose ${escapeHtml(zoneLabel(state.keeperZone))}.</div>
   `;
 
@@ -377,7 +377,8 @@ function renderReplay() {
     keeperZone: state.keeperZone,
     shotActive: state.shotActive,
     keeperActive: state.keeperActive
-  }, { viewerRole: PENALTY_VIEWERS.KEEPER }).then(() => {
+  }, { viewerRole: PENALTY_VIEWERS.KEEPER }).then(replay => {
+    if (replay?.cancelled) return;
     replayInProgress = false;
     state.phase = "result";
     saveState();
@@ -451,6 +452,7 @@ function characterMarkup(character, icon) {
 }
 
 function resetMatch() {
+  scene.cancelReplay();
   state = createInitialShootoutState();
   activeQuestion = null;
   selectedAnswer = null;

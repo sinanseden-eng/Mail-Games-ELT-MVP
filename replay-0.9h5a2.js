@@ -1,4 +1,4 @@
-import { ShootoutScene } from "./shootout-scene-0.9h5a2.mjs";
+import { ShootoutScene } from "./football-scene.mjs";
 import { createShootoutAudio } from "./shootout-audio-0.9h5a2.mjs";
 import { zoneLabel } from "./shootout-core.mjs?v=0.9.30";
 import { TurkeyFightScene } from "./turkey-scene.mjs?v=0.9.30";
@@ -148,7 +148,7 @@ async function presentPenalty(data) {
   scene.setIdle({
     role: viewerRole,
     active: true,
-    caption: keeperView ? "Watch the incoming shot from your goal line." : "Watch your shot from the pitch."
+    caption: "Watch the kick and dive together from the pitch."
   });
 
   app.innerHTML = startCard({
