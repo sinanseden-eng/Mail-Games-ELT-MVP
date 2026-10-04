@@ -1,3 +1,6 @@
+import { defaultState, applyTurn, turkeyAttack } from "./game-engine.mjs";
+import { createSniperAudio } from "./sniper-audio.mjs";
+import { SniperScene } from "./sniper-scene.mjs";
 import { validateQuestion } from "./question-import.mjs";
 import { initQuestionStudio } from "./question-studio.mjs";
 import { poolStore } from "./question-pools.mjs";
@@ -95,14 +98,16 @@ import { poolStore } from "./question-pools.mjs";
     { id: "charge", label: "Charge", type: "attack", damage: 22, note: "Powerful but predictable" },
     { id: "block", label: "Block", type: "defence", damage: 0, note: "Stops Peck and Wing Slap" },
     { id: "duck", label: "Duck", type: "defence", damage: 0, note: "Avoids Wing Slap and Charge" },
-    { id: "counter", label: "Counter", type: "defence", damage: 0, note: "Stops Peck and Charge; no return damage" }
+    { id: "counter", label: "Counter", type: "defence", damage: 0, note: "Stops Peck and Charge, returns 8 damage" }
   ];
 
   let activePlayGame = "penalty";
   let currentQuestionId = null;
   let answerState = null;
   let gameTimers = new Set();
-  function cancelGameTimers() { gameTimers.forEach(clearTimeout); gameTimers.clear(); }
+  let classroomScene = null;
+  let sniperAudio = null;
+  function cancelGameTimers() { gameTimers.forEach(clearTimeout); gameTimers.clear(); classroomScene?.destroy(); classroomScene = null; }
   function laterGame(callback, delay) {
     const timer = setTimeout(() => { gameTimers.delete(timer); callback(); }, delay);
     gameTimers.add(timer);
@@ -516,6 +521,7 @@ import { poolStore } from "./question-pools.mjs";
 
       const payload = {
         gameType: String(formData.get("gameType")),
+        settings: {tieMode: String(formData.get("tieMode") || "draw"), maxRounds: Number(formData.get("maxRounds") || (formData.get("gameType") === "turkey" ? 8 : 5))},
         packName: String(formData.get("packName") || "Class revision match").trim(),
         playerA: {
           name: String(formData.get("playerAName") || "").trim(),
@@ -755,7 +761,7 @@ import { poolStore } from "./question-pools.mjs";
     document.getElementById("round-label").textContent = state.finished ? "Full time" : `Kick ${state.kickIndex + 1} of 10`;
 
     const log = document.getElementById("penalty-log");
-    if (state.history.length) log.textContent = state.history[state.history.length - 1];
+    if (state.history.length) log.textContent = state.history.at(-1)?.message || state.history.at(-1);
 
     const gridButtons = [...document.querySelectorAll("#goal-grid button")];
     gridButtons.forEach(button => button.disabled = true);
@@ -860,7 +866,7 @@ import { poolStore } from "./question-pools.mjs";
       keeper.style.transform = `translateX(-50%) rotate(${keepPos.x < 50 ? -35 : keepPos.x > 50 ? 35 : 0}deg)`;
     }
     if (log) {
-      log.textContent = state.history[state.history.length - 1];
+      log.textContent = state.history.at(-1)?.message || state.history.at(-1);
       log.classList.add(goal ? "flash" : "shake");
     }
     laterGame(done, 1700);
@@ -895,22 +901,7 @@ import { poolStore } from "./question-pools.mjs";
     return map[zone] || map["bottom-centre"];
   }
 
-  function defaultTurkeyState() {
-    return {
-      round: 1,
-      phase: "A",
-      healthA: 100,
-      healthB: 100,
-      streakA: 0,
-      streakB: 0,
-      moveA: null,
-      moveB: null,
-      activeA: false,
-      activeB: false,
-      history: [],
-      finished: false
-    };
-  }
+  function defaultTurkeyState() { return defaultState("turkey"); }
 
   function getTurkeyState() {
     try { return { ...defaultTurkeyState(), ...JSON.parse(localStorage.getItem(STORAGE.turkey)) }; }
@@ -924,14 +915,20 @@ import { poolStore } from "./question-pools.mjs";
   function renderTurkeyGame(stage) {
     stage.append(cloneTemplate("turkey-demo-template"));
     const state = getTurkeyState();
-    document.getElementById("turkey-round").textContent = state.finished ? "Fight over" : `Round ${state.round}`;
+    document.getElementById("turkey-round").textContent = state.finished ? "Fight over" : `Round ${state.round} of ${state.maxRounds}`;
     document.getElementById("turkey-health-a").style.width = `${Math.max(0, state.healthA)}%`;
     document.getElementById("turkey-health-b").style.width = `${Math.max(0, state.healthB)}%`;
     const log = document.getElementById("turkey-log");
-    if (state.history.length) log.textContent = state.history[state.history.length - 1];
+    if (state.history.length) log.textContent = state.history.at(-1)?.message || state.history.at(-1);
     if (state.finished) renderTurkeyFinished(state);
     else if (state.phase === "B") handoff(document.getElementById("turkey-turn-panel"), "Ninja Wing", () => renderTurkeyTurn(state));
     else renderTurkeyTurn(state);
+    if (state.round === 1 && state.phase === "A" && !state.history.length) {
+      const label = document.createElement("label"); label.textContent = "Teacher: round limit (1–20)";
+      const input = document.createElement("input"); input.type = "number"; input.min = "1"; input.max = "20"; input.value = state.maxRounds;
+      input.onchange = () => { state.maxRounds = Math.max(1, Math.min(20, Math.round(Number(input.value) || 8))); input.value = state.maxRounds; saveTurkeyState(state); document.getElementById("turkey-round").textContent = `Round 1 of ${state.maxRounds}`; };
+      label.append(input); document.getElementById("turkey-turn-panel").prepend(label);
+    }
   }
 
   function renderTurkeyTurn(state) {
@@ -965,7 +962,6 @@ import { poolStore } from "./question-pools.mjs";
         } else {
           state.moveB = move;
           state.activeB = correct;
-          state.streakB = correct ? state.streakB + 1 : 0;
           resolveTurkeyRound(state);
         }
       }
@@ -973,40 +969,13 @@ import { poolStore } from "./question-pools.mjs";
   }
 
   function resolveTurkeyRound(state) {
-    const resultA = calculateTurkeyAttack(state.moveA, state.activeA, state.moveB, state.activeB);
-    const resultB = calculateTurkeyAttack(state.moveB, state.activeB, state.moveA, state.activeA);
-    state.healthB = Math.max(0, state.healthB - resultA.damage);
-    state.healthA = Math.max(0, state.healthA - resultB.damage);
-
-    const parts = [];
-    if (!state.activeA) parts.push("Sir Gobbles' move fizzles after an incorrect answer");
-    else parts.push(`Sir Gobbles uses ${moveLabel(state.moveA)}${resultA.damage ? ` for ${resultA.damage} damage` : " successfully"}`);
-    if (!state.activeB) parts.push("Ninja Wing's move is futile after an incorrect answer");
-    else parts.push(`Ninja Wing uses ${moveLabel(state.moveB)}${resultB.damage ? ` for ${resultB.damage} damage` : " successfully"}`);
-    const message = `${parts.join("; ")}.`;
-    state.history.push(message);
-
-    // Resolve storage before playback, so leaving the page cannot lose the round.
-    const next = { ...state, finished: state.healthA <= 0 || state.healthB <= 0,
-      round: state.round + 1, phase: "A", moveA: null, moveB: null, activeA: false, activeB: false };
-    saveTurkeyState(next);
-    animateTurkey(state, resultA, resultB, renderActiveGame);
+    const result = applyTurn("turkey", state, {actor: "B", move: state.moveB, answerCorrect: state.activeB});
+    saveTurkeyState(result.state);
+    state.history.push(result.replay.message);
+    animateTurkey(state, {damage: result.replay.damageToB}, {damage: result.replay.damageToA}, renderActiveGame);
   }
 
-  function calculateTurkeyAttack(attackerMoveId, attackerActive, defenderMoveId, defenderActive) {
-    const attack = turkeyMoves.find(move => move.id === attackerMoveId);
-    const defence = turkeyMoves.find(move => move.id === defenderMoveId);
-    if (!attackerActive || !attack || attack.type !== "attack") return { damage: 0, effect: "futile" };
-    if (!defenderActive || !defence || defence.type !== "defence") return { damage: attack.damage, effect: "hit" };
-
-    const counters = {
-      block: { "wing-slap": 0, peck: 0, charge: 10 },
-      duck: { "wing-slap": 0, peck: 8, charge: 0 },
-      counter: { "wing-slap": 12, peck: 0, charge: 0 }
-    };
-    const damage = counters[defence.id]?.[attack.id] ?? attack.damage;
-    return { damage, effect: damage ? "partial" : "blocked" };
-  }
+  function calculateTurkeyAttack(...args) { return turkeyAttack(...args); }
 
   function moveLabel(id) {
     return turkeyMoves.find(move => move.id === id)?.label || "a mysterious manoeuvre";
@@ -1025,7 +994,7 @@ import { poolStore } from "./question-pools.mjs";
     } else {
       effect.textContent = "BLOCKED!";
     }
-    if (log) log.textContent = state.history[state.history.length - 1];
+    if (log) log.textContent = state.history.at(-1)?.message || state.history.at(-1);
     laterGame(done, 1700);
   }
 
@@ -1085,14 +1054,24 @@ import { poolStore } from "./question-pools.mjs";
   function renderSniperGame(stage) {
     stage.append(cloneTemplate("sniper-demo-template"));
     const state = getSniperState();
+    sniperAudio ||= createSniperAudio();
+    classroomScene = new SniperScene(document.getElementById("classroom-sniper-canvas"), document.getElementById("sniper-demo-log"), {reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches, onEvent: event => sniperAudio.handleEvent(event)});
+    classroomScene.setIdle({actor: state.phase});
     document.getElementById("sniper-demo-health-a").textContent = state.healthA;
     document.getElementById("sniper-demo-health-b").textContent = state.healthB;
     document.getElementById("sniper-demo-round").textContent = state.finished ? "Match over" : `Round ${state.round} of ${state.maxRounds}`;
     const log = document.getElementById("sniper-demo-log");
-    if (state.history.length) log.textContent = state.history[state.history.length - 1];
+    if (state.history.length) log.textContent = state.history.at(-1)?.message || state.history.at(-1);
     if (state.finished) renderSniperFinished(state);
     else if (state.phase === "B") handoff(document.getElementById("sniper-turn-panel"), "Player B", () => renderSniperTurn(state));
     else renderSniperTurn(state);
+    const replay = state.history.findLast(item => item && typeof item === "object" && item.gameType === "sniper");
+    const watch = document.getElementById("watch-classroom-sniper");
+    watch.disabled = !replay;
+    watch.onclick = async () => { const active = classroomScene; watch.disabled = true; void sniperAudio.unlock(); await active.playReplay(replay); if (classroomScene === active) watch.disabled = false; };
+    const motion = document.getElementById("classroom-sniper-motion");
+    motion.checked = classroomScene.reducedMotion;
+    motion.onchange = () => {classroomScene.reducedMotion = motion.checked;};
   }
 
   function renderSniperTurn(state) {
@@ -1171,6 +1150,7 @@ import { poolStore } from "./question-pools.mjs";
     panel.querySelector("#sniper-submit-turn").addEventListener("click", () => {
       if (locked || !checked || !emergence || !target) return;
       locked = true;
+      void sniperAudio?.unlock();
       panel.querySelectorAll("button, input").forEach(el => { el.disabled = true; });
       state[`emergence${actor}`] = emergence;
       state[`target${actor}`] = target;
@@ -1188,29 +1168,17 @@ import { poolStore } from "./question-pools.mjs";
     });
   }
 
-  function resolveSniperRound(state) {
-    const hitByA = Boolean(state.activeA && state.targetA === state.emergenceB);
-    const hitByB = Boolean(state.activeB && state.targetB === state.emergenceA);
-    state.healthB = Math.max(0, state.healthB - (hitByA ? 1 : 0));
-    state.healthA = Math.max(0, state.healthA - (hitByB ? 1 : 0));
-    const message = hitByA && hitByB
-      ? "Double tag—both students predicted the rival position."
-      : hitByA
-        ? "Player A predicted Player B's position and scores a training tag."
-        : hitByB
-          ? "Player B predicted Player A's position and scores a training tag."
-          : "No tag—both predictions miss or a shot was disabled.";
-    state.history.push(message);
-    const effect = document.getElementById("sniper-demo-effect");
-    if (effect) effect.textContent = hitByA && hitByB ? "DOUBLE TAG" : hitByA ? "A TAGS B" : hitByB ? "B TAGS A" : "MISS";
-    document.getElementById("sniper-demo-log").textContent = message;
-    state.finished = state.healthA <= 0 || state.healthB <= 0 || state.round >= state.maxRounds;
-    state.round += 1;
-    state.phase = "A";
-    state.emergenceA = state.emergenceB = state.targetA = state.targetB = null;
-    state.activeA = state.activeB = false;
-    saveSniperState(state);
-    laterGame(renderActiveGame, 1300);
+  async function resolveSniperRound(state) {
+    const result = applyTurn("sniper", state, {actor: "B", emergence: state.emergenceB, target: state.targetB, answerCorrect: state.activeB});
+    saveSniperState(result.state);
+    const scene = classroomScene;
+    const panel = document.getElementById("sniper-turn-panel");
+    panel.innerHTML = '<h2>Watch the round</h2><p>Both choices are now revealed.</p><button id="pause-classroom-replay" class="secondary">Pause</button> <button id="skip-classroom-replay" class="secondary">Skip replay</button>';
+    panel.querySelector('#skip-classroom-replay').onclick = () => scene.skipReplay();
+    panel.querySelector('#pause-classroom-replay').onclick = event => {event.currentTarget.textContent = scene.togglePause() ? 'Resume' : 'Pause';};
+    document.getElementById('watch-classroom-sniper').disabled = true;
+    await scene.playReplay(result.replay);
+    if (classroomScene === scene) renderActiveGame();
   }
 
   function renderSniperFinished(state) {

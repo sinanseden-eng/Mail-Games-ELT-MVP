@@ -46,6 +46,7 @@ export class SniperScene {
     this.captionElement = captionElement;
     this.reducedMotion = Boolean(reducedMotion);
     this.onEvent = typeof onEvent === "function" ? onEvent : () => {};
+    this.cancelReplay();
     this.mode = "idle";
     this.idle = { actor: "A", emergence: null, target: null, active: true };
     this.replay = null;
@@ -95,6 +96,7 @@ export class SniperScene {
   }
 
   setIdle({ actor = "A", emergence = null, target = null, active = true, caption = "Answer, choose cover, then predict the rival position." } = {}) {
+    this.cancelReplay();
     this.mode = "idle";
     this.idle = { actor, emergence, target, active: Boolean(active) };
     this.replay = null;
@@ -103,7 +105,16 @@ export class SniperScene {
     this.drawSafely(performanceNow());
   }
 
+  cancelReplay() {
+    this.replayGeneration = (this.replayGeneration || 0) + 1;
+    this.finishReplay?.(); this.finishReplay = null;
+  }
+
+  destroy() { this.cancelReplay(); this.onEvent = () => {}; this.captionElement = null; this.ctx = null; }
+
   async playReplay(replay) {
+    this.cancelReplay();
+    const generation = this.replayGeneration;
     this.mode = "replay";
     this.replay = structuredClone(replay || {});
     this.progress = 0;
@@ -126,7 +137,9 @@ export class SniperScene {
 
     this.startedAt = performanceNow();
     await new Promise(resolve => {
+      this.finishReplay = resolve;
       const tick = now => {
+        if (generation !== this.replayGeneration) return resolve();
         if (this.skipRequested) {
           this.progress = 1;
         } else if (!this.paused) {

@@ -1,3 +1,4 @@
+import {footballRoundLabel} from "./game-rules.mjs";
 import {
   SHOOTOUT_STORAGE_KEY,
   ZONES,
@@ -128,7 +129,7 @@ function render() {
   const players = playersForKick(state.kickIndex);
   elements.scoreA.textContent = state.scoreA;
   elements.scoreB.textContent = state.scoreB;
-  elements.round.textContent = state.finished ? "Full time" : `Kick ${state.kickIndex + 1} of 10`;
+  elements.round.textContent = state.finished ? "Full time" : footballRoundLabel(state);
   elements.player.textContent = state.activeRole === "keeper" ? players.keeper : players.striker;
   elements.role.textContent = state.activeRole === "keeper" ? "Goalkeeper turn" : "Striker turn";
   elements.overlay.hidden = true;
@@ -174,12 +175,14 @@ function renderArrival() {
     <h1 class="control-title">Step up to the spot.</h1>
     <p class="control-copy"><strong>${escapeHtml(players.striker)}</strong> is the striker. Answer a question, then lock a secret target before the goalkeeper takes a turn.</p>
     ${characterMarkup(character, "⚡")}
-    <div class="result-summary">Current score: <strong>${state.scoreA}–${state.scoreB}</strong><br />The next shot is kick ${state.kickIndex + 1} of 10.</div>
+    <div class="result-summary">Current score: <strong>${state.scoreA}–${state.scoreB}</strong><br />${footballRoundLabel(state)}.</div>
+    ${state.kickIndex === 0 ? `<label>Tied match<select id="tie-mode"><option value="draw" ${state.tieMode === "draw" ? "selected" : ""}>Finish as a draw</option><option value="sudden-death" ${state.tieMode === "sudden-death" ? "selected" : ""}>Sudden death (up to 5 extra pairs)</option></select></label><p>Both players get equal kicks. Still tied at the limit? A draw.</p>` : ""}
     <div class="control-actions">
       <button type="button" class="primary" id="start-challenge">Start English challenge</button>
     </div>
   `;
   document.getElementById("start-challenge").addEventListener("click", () => {
+    state.tieMode = document.getElementById("tie-mode")?.value || state.tieMode;
     const question = chooseQuestion();
     state.questionId = question.id;
     state.answerCorrect = null;

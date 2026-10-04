@@ -1289,3 +1289,5 @@ body[data-route="teacher"] #app:focus { outline: none; }
   text-shadow: 0 5px 18px rgba(0,0,0,.65);
   pointer-events: none;
 }
+
+#sniper-demo-log.scene-caption { padding: 14px 18px; min-height: 52px; font-size: 14px; line-height: 1.5; }

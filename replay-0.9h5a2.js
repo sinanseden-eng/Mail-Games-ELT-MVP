@@ -1,3 +1,4 @@
+import {footballRoundLabel} from "./game-rules.mjs";
 import { ShootoutScene } from "./football-scene.mjs";
 import { createShootoutAudio } from "./shootout-audio-0.9h5a2.mjs";
 import { zoneLabel } from "./shootout-core.mjs?v=0.9.30";
@@ -139,7 +140,7 @@ async function presentPenalty(data) {
   elements.nameB.textContent = match.players.B;
   elements.scoreA.textContent = replay.scoreA;
   elements.scoreB.textContent = replay.scoreB;
-  elements.round.textContent = `Kick ${Number(replay.kickIndex) + 1} of 10`;
+  elements.round.textContent = footballRoundLabel({...replay, finished: false});
   elements.status.textContent = "Penalty ready";
   elements.role.textContent = "MAIN CAMERA";
   elements.player.textContent = keeperView
@@ -194,7 +195,7 @@ function renderPenaltyResult(data) {
 async function presentTurkey(data) {
   const { replay, match } = data;
   updateTurkeyScore(match, replay, true);
-  elements.round.textContent = `Round ${Number(replay.round || 1)}`;
+  elements.round.textContent = `Round ${Number(replay.round || 1)} of ${Number(replay.maxRounds || 8)}`;
   elements.status.textContent = "Fight ready";
   elements.player.textContent = `${match.players.A} vs ${match.players.B}`;
   scene.setIdle({ actor: "A", active: true, caption: "The resolved farm fight is ready." });

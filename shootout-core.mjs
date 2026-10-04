@@ -1,3 +1,4 @@
+import {gameSettings, footballFinished} from "./game-rules.mjs";
 export const SHOOTOUT_STORAGE_KEY = "mailgames.shootout.v05e";
 
 // Calibrated goal-mouth contact points. The coordinates sit close to the
@@ -26,8 +27,9 @@ export const CHARACTERS = {
   }
 };
 
-export function createInitialShootoutState() {
+export function createInitialShootoutState(options = {}) {
   return {
+    ...gameSettings("penalty", options),
     version: 1,
     kickIndex: 0,
     scoreA: 0,
@@ -127,7 +129,7 @@ export function advanceAfterReplay(state) {
   next.keeperZone = null;
   next.keeperActive = false;
   next.activeRole = "striker";
-  next.finished = next.kickIndex >= 10;
+  next.finished = footballFinished(next);
   next.phase = next.finished ? "finished" : "arrival";
   return next;
 }
