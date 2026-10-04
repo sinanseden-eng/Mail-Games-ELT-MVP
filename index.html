@@ -281,6 +281,7 @@
               <div><span class="eyebrow">Match builder</span><h2 id="launch-match-heading">Create the first turn</h2></div>
             </div>
             <form id="match-launch-form">
+              <div class="form-grid"><label>Football ties<select name="tieMode"><option value="draw">Draw after 5 kicks each</option><option value="sudden-death">Sudden death: up to 5 extra pairs, then draw</option></select></label><label>Turkey / Sniper round limit<input name="maxRounds" type="number" min="1" max="20" placeholder="8 Turkey / 5 Sniper" /></label></div>
               <div class="form-grid">
                 <label>Game
                   <select name="gameType">
@@ -408,7 +409,7 @@
       <article class="panel game-board turkey-board">
         <div class="scoreboard turkey-scoreboard">
           <div><small>Fighter A</small><strong>Sir Gobbles</strong><div class="health"><span id="turkey-health-a"></span></div></div>
-          <div class="score-main"><span id="turkey-round">Round 1</span><small>First to 0 health loses</small></div>
+          <div class="score-main"><span id="turkey-round">Round 1</span><small>Most health at the limit wins</small></div>
           <div><small>Fighter B</small><strong>Ninja Wing</strong><div class="health"><span id="turkey-health-b"></span></div></div>
         </div>
         <div class="farm-arena">
@@ -433,19 +434,16 @@
           <div class="score-main"><span id="sniper-demo-round">Round 1</span><small>Prediction training</small></div>
           <div><small>Player B</small><strong id="sniper-demo-health-b">3</strong></div>
         </div>
-        <div class="sniper-demo-arena">
-          <span class="sniper-demo-position p1">1</span>
-          <span class="sniper-demo-position p2">2</span>
-          <span class="sniper-demo-position p3">3</span>
-          <span class="sniper-demo-position p4">4</span>
-          <div class="sniper-demo-effect" id="sniper-demo-effect"></div>
-        </div>
-        <div class="event-log" id="sniper-demo-log">Player A must answer, choose cover, and predict Player B's position.</div>
+        <canvas id="classroom-sniper-canvas" style="width:100%;aspect-ratio:16/9" aria-label="Training village replay"></canvas>
+        <div class="event-log" id="sniper-demo-log">The simulation starts after both players lock their choices.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;padding:16px"><button type="button" class="secondary" id="watch-classroom-sniper" disabled>Watch last simulation</button><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="classroom-sniper-motion" style="width:auto">Reduced motion</label></div>
       </article>
       <aside class="panel turn-panel" id="sniper-turn-panel"></aside>
     </section>
   </template>
 
+  <a href="classroom.html" style="position:fixed;right:18px;bottom:18px;z-index:50" class="primary button-link">Open classroom app ↗</a>
+  <script type="module" src="auth-redirect.mjs"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -29,3 +29,15 @@
   for = "/*.mjs"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/classroom-sw.js"
+  [headers.values]
+    Cache-Control = "no-store"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/classroom.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "no-cache"

@@ -12,6 +12,7 @@ export class TurkeyFightScene {
     this.captionElement = captionElement;
     this.reducedMotion = Boolean(reducedMotion);
     this.onEvent = typeof onEvent === "function" ? onEvent : () => {};
+    this.cancelReplay();
     this.mode = "idle";
     this.idle = { actor: "A", active: true, preview: null };
     this.replay = null;
@@ -65,6 +66,7 @@ export class TurkeyFightScene {
   }
 
   setIdle({ actor = "A", active = true, preview = null, caption = "Choose a move in the farm arena." } = {}) {
+    this.cancelReplay();
     this.mode = "idle";
     this.idle = { actor, active: Boolean(active), preview };
     this.replay = null;
@@ -73,7 +75,16 @@ export class TurkeyFightScene {
     this.drawSafely(performanceNow());
   }
 
+  cancelReplay() {
+    this.replayGeneration = (this.replayGeneration || 0) + 1;
+    this.finishReplay?.(); this.finishReplay = null;
+  }
+
+  destroy() { this.cancelReplay(); this.onEvent = () => {}; this.captionElement = null; this.ctx = null; }
+
   async playReplay(replay) {
+    this.cancelReplay();
+    const generation = this.replayGeneration;
     this.mode = "replay";
     this.replay = structuredClone(replay || {});
     this.progress = 0;
@@ -92,7 +103,9 @@ export class TurkeyFightScene {
 
     this.startedAt = performanceNow();
     await new Promise(resolve => {
+      this.finishReplay = resolve;
       const tick = now => {
+        if (generation !== this.replayGeneration) return resolve();
         this.progress = clamp((now - this.startedAt) / this.duration, 0, 1);
         this.emitReplayEvents(this.progress);
         this.drawSafely(now);

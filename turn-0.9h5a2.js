@@ -1,3 +1,4 @@
+import {footballRoundLabel} from "./game-rules.mjs";
 import { ShootoutScene } from "./football-scene.mjs";
 import { createShootoutAudio } from "./shootout-audio-0.9h5a2.mjs";
 import { zoneLabel } from "./shootout-core.mjs?v=0.9.30";
@@ -188,7 +189,7 @@ function renderPenaltyTurn() {
   elements.nameB.textContent = match.players.B;
   elements.scoreA.textContent = Number(state.scoreA || 0);
   elements.scoreB.textContent = Number(state.scoreB || 0);
-  elements.round.textContent = `Kick ${Number(state.kickIndex || 0) + 1} of 10`;
+  elements.round.textContent = footballRoundLabel(state);
   elements.status.textContent = `${player}: English challenge`;
   elements.role.textContent = `${roleLabel} turn`;
   elements.player.textContent = player;
@@ -347,7 +348,7 @@ function renderTurkeyTurn() {
   const player = match.players[turn.actor];
   const fighter = turkeyFighterName(turn.actor);
   updateTurkeyScore(match, state);
-  elements.round.textContent = `Round ${Number(state.round || 1)}`;
+  elements.round.textContent = `Round ${Number(state.round || 1)} of ${Number(state.maxRounds || 8)}`;
   elements.status.textContent = `${player}: English challenge`;
   elements.role.textContent = `${fighter} · Fighter ${turn.actor}`;
   elements.player.textContent = player;

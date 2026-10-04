@@ -28,7 +28,7 @@ export async function handler(event) {
         id: turn.id,
         actor: turn.actor,
         role: turn.role,
-        question: turn.question_snapshot,
+        question: (({explanation, answer, ...question}) => question)(turn.question_snapshot || {}),
         moves: allowedMoves(match.game_type),
         expiresAt: turn.expires_at
       },
