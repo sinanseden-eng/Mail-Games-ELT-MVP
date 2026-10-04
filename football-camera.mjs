@@ -3,7 +3,7 @@ import { FIELD, TIMING, TARGETS, clamp, lerp, smooth, targetFor, keeperPose, net
 // A fixed elevated sideline camera. u runs across the goal, d runs out onto
 // the pitch (the penalty spot is d=1), and h is a fraction of goal height.
 // This is a Canvas 2D projection, with no model, camera library or 3D assets.
-export const NET_DEPTH = -.23;
+export const NET_DEPTH = -.115;
 export function projectPitch(u, d = 0, h = 0) {
   const perspective = 1 + .135 * u - .035 * d;
   return { x: (188 + 358 * u + 596 * d) / perspective,
@@ -27,7 +27,7 @@ export function tvKeeperPose(round, time) {
 export function tvNetPoint(u, v, round, time, sag = 1) {
   const base = netBase(u, v), moved = netPoint(u, v, round, time, sag);
   // A local pocket pulls back as well as down. The ball uses this exact surface.
-  const depth = NET_DEPTH - Math.max(0, moved.y - base.y) / 222 * .3;
+  const depth = NET_DEPTH - Math.max(0, moved.y - base.y) / 222 * .15;
   return projectPitch((moved.x - 345) / 590, depth, (395 - moved.y) / 222);
 }
 const phase = (t, a, b) => clamp((t - a) / (b - a));

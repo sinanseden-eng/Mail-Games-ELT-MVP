@@ -1,3 +1,7 @@
+import { validateQuestion } from "./question-import.mjs";
+import { initQuestionStudio } from "./question-studio.mjs";
+import { poolStore } from "./question-pools.mjs";
+
 (() => {
   "use strict";
 
@@ -91,12 +95,22 @@
     { id: "charge", label: "Charge", type: "attack", damage: 22, note: "Powerful but predictable" },
     { id: "block", label: "Block", type: "defence", damage: 0, note: "Stops Peck and Wing Slap" },
     { id: "duck", label: "Duck", type: "defence", damage: 0, note: "Avoids Wing Slap and Charge" },
-    { id: "counter", label: "Counter", type: "defence", damage: 0, note: "Punishes Peck and Charge" }
+    { id: "counter", label: "Counter", type: "defence", damage: 0, note: "Stops Peck and Charge; no return damage" }
   ];
 
   let activePlayGame = "penalty";
   let currentQuestionId = null;
   let answerState = null;
+  let gameTimers = new Set();
+  function cancelGameTimers() { gameTimers.forEach(clearTimeout); gameTimers.clear(); }
+  function laterGame(callback, delay) {
+    const timer = setTimeout(() => { gameTimers.delete(timer); callback(); }, delay);
+    gameTimers.add(timer);
+  }
+  function handoff(panel, player, resume) {
+    panel.innerHTML = `<h2>Pass to ${player}</h2><p>The previous choices are locked and hidden. Pass the device before continuing.</p><button type="button" class="primary full" id="begin-private-turn">I’m ${player} — begin</button>`;
+    panel.querySelector("button").onclick = resume;
+  }
 
   const app = document.getElementById("app");
 
@@ -128,7 +142,8 @@
   }
 
   function saveQuestions(questions) {
-    localStorage.setItem(STORAGE.questions, JSON.stringify(questions));
+    poolStore.saveQuestions(questions);
+    document.dispatchEvent(new Event("pools-changed"));
   }
 
   function randomQuestion(excludeId = null) {
@@ -162,12 +177,13 @@
   }
 
   function routeFromHash() {
-    return location.hash.replace(/^#/, "").split("?")[0] || "home";
+    const route = location.hash.replace(/^#/, "").split("?")[0] || "home";
+    return route === "studio" ? "teacher" : route;
   }
 
   function bindGlobalNavigation() {
     document.querySelectorAll("[data-route]").forEach(button => {
-      button.addEventListener("click", () => setRoute(button.dataset.route));
+      button.onclick = () => setRoute(button.dataset.route);
     });
     document.querySelectorAll("[data-game]").forEach(button => {
       button.addEventListener("click", () => {
@@ -184,6 +200,7 @@
   }
 
   function render() {
+    cancelGameTimers();
     const route = routeFromHash();
     document.body.dataset.route = route;
     updateNav(route);
@@ -206,6 +223,7 @@
   function renderTeacher() {
     app.append(cloneTemplate("teacher-template"));
     const form = document.getElementById("question-form");
+    initQuestionStudio({ getQuestions, saveQuestions, refreshQuestionList, showToast });
     const typeSelect = form.elements.type;
 
     document.querySelectorAll("[data-studio-target]").forEach(button => {
@@ -220,7 +238,7 @@
 
     function syncTypeFields() {
       const type = typeSelect.value;
-      const options = ["optionA", "optionB", "optionC", "optionD"];
+      const options = ["optionA", "optionB", "optionC", "optionD", "optionE"];
       options.forEach((name, index) => {
         const input = form.elements[name];
         const label = input.closest("label");
@@ -242,11 +260,11 @@
       event.preventDefault();
       const data = new FormData(form);
       const type = data.get("type");
-      const options = [data.get("optionA"), data.get("optionB"), data.get("optionC"), data.get("optionD")]
+      const options = [data.get("optionA"), data.get("optionB"), data.get("optionC"), data.get("optionD"), data.get("optionE")]
         .map(value => String(value || "").trim())
         .filter(Boolean);
       const question = {
-        id: crypto.randomUUID(),
+        id: form.dataset.editId || crypto.randomUUID(),
         prompt: String(data.get("prompt")).trim(),
         type,
         options: type === "gap-fill" ? [] : options,
@@ -255,22 +273,24 @@
         level: String(data.get("level") || "B1"),
         tag: String(data.get("tag") || "General English").trim()
       };
-      if (type !== "gap-fill" && question.options.length < 2) {
-        showToast("Add at least two answer options.");
-        return;
-      }
+      const errors = validateQuestion(question);
+      if (errors.length) return showToast(errors[0]);
       const questions = getQuestions();
-      questions.push(question);
-      saveQuestions(questions);
+      const index = questions.findIndex(q => q.id === question.id);
+      if (index >= 0) questions[index] = question; else questions.push(question);
+      try { saveQuestions(questions); } catch { return showToast("Storage is full. Export a backup before adding more questions."); }
+      delete form.dataset.editId;
+      form.querySelector('[type="submit"]').textContent = "Add question";
       form.reset();
       typeSelect.value = "multiple-choice";
       syncTypeFields();
       refreshQuestionList();
-      showToast("Question added to both games.");
+      showToast("Question saved for all three games.");
     });
 
     document.getElementById("load-sample").addEventListener("click", () => {
-      saveQuestions(sampleQuestions.map(q => ({ ...q, id: crypto.randomUUID() })));
+      poolStore.create("Sample questions", sampleQuestions.map(q => ({ ...q, id: crypto.randomUUID() })));
+      document.dispatchEvent(new Event("pools-changed"));
       refreshQuestionList();
       showToast("Sample question bank restored.");
     });
@@ -285,23 +305,6 @@
         '"She ___ here since 2023.","multiple-choice","works","worked","has worked","is working","has worked","Use present perfect with since.","B1","Present Perfect"'
       ].join("\n");
       downloadText("mailgames-question-template.csv", csv, "text/csv");
-    });
-
-    document.getElementById("csv-file").addEventListener("change", async event => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      try {
-        const text = await file.text();
-        const imported = parseQuestionCsv(text);
-        if (!imported.length) throw new Error("No valid rows found");
-        saveQuestions([...getQuestions(), ...imported]);
-        refreshQuestionList();
-        showToast(`${imported.length} question${imported.length === 1 ? "" : "s"} imported.`);
-      } catch (error) {
-        showToast(`CSV import failed: ${error.message}`);
-      } finally {
-        event.target.value = "";
-      }
     });
 
     const launchForm = document.getElementById("match-launch-form");
@@ -500,7 +503,7 @@
         return;
       }
       if (questions.length > 100) {
-        setLaunchMessage("fail", "Question bank too large", "Mission Control accepts up to 100 questions per match. Delete or export some questions first.");
+        setLaunchMessage("fail", "Question bank too large", "Choose or create a smaller pool with up to 100 questions for this match. Your larger pool can stay saved.");
         return;
       }
 
@@ -653,9 +656,19 @@
             <span class="chip">${escapeHtml(question.type)}</span>
           </div>
         </div>
-        <button class="danger" type="button">Delete</button>
+        <div class="question-actions"><button class="secondary edit-question" type="button">Edit</button><button class="danger delete-question" type="button">Delete</button></div>
       `;
-      item.querySelector("button").addEventListener("click", () => {
+      item.querySelector(".edit-question").onclick = () => {
+        const form = document.getElementById("question-form");
+        form.dataset.editId = question.id;
+        for (const name of ["prompt", "type", "answer", "explanation", "level", "tag"]) form.elements[name].value = question[name] || "";
+        form.elements.type.dispatchEvent(new Event("change"));
+        ["optionA", "optionB", "optionC", "optionD", "optionE"].forEach((name, i) => form.elements[name].value = question.options[i] || "");
+        form.querySelector('[type="submit"]').textContent = "Save changes";
+        form.scrollIntoView({ behavior: "smooth", block: "center" });
+      };
+      item.querySelector(".delete-question").addEventListener("click", () => {
+        if (!confirm("Delete this question from the current pool?")) return;
         saveQuestions(getQuestions().filter(q => q.id !== question.id));
         refreshQuestionList();
         showToast("Question deleted.");
@@ -687,6 +700,7 @@
   }
 
   function renderActiveGame() {
+    cancelGameTimers();
     const stage = document.getElementById("demo-stage");
     if (!stage) return;
     stage.replaceChildren();
@@ -783,7 +797,7 @@
           document.getElementById("penalty-log").textContent = correct
             ? `${players.striker} answered correctly and locked a live shot.`
             : `${players.striker}'s answer was incorrect. The shot will be futile.`;
-          setTimeout(() => renderActiveGame(), 650);
+          laterGame(() => renderActiveGame(), 650);
         } else {
           state.keeperMove = move;
           state.keeperActive = correct;
@@ -849,7 +863,7 @@
       log.textContent = state.history[state.history.length - 1];
       log.classList.add(goal ? "flash" : "shake");
     }
-    setTimeout(done, 1700);
+    laterGame(done, 1700);
   }
 
   function renderPenaltyFinished(state) {
@@ -916,6 +930,7 @@
     const log = document.getElementById("turkey-log");
     if (state.history.length) log.textContent = state.history[state.history.length - 1];
     if (state.finished) renderTurkeyFinished(state);
+    else if (state.phase === "B") handoff(document.getElementById("turkey-turn-panel"), "Ninja Wing", () => renderTurkeyTurn(state));
     else renderTurkeyTurn(state);
   }
 
@@ -945,10 +960,8 @@
           state.streakA = correct ? state.streakA + 1 : 0;
           state.phase = "B";
           saveTurkeyState(state);
-          document.getElementById("turkey-log").textContent = correct
-            ? `Sir Gobbles answered correctly and prepared ${moveLabel(move)}.`
-            : `Sir Gobbles answered incorrectly. The chosen move will be futile.`;
-          setTimeout(() => renderActiveGame(), 650);
+          document.getElementById("turkey-log").textContent = "Sir Gobbles has locked a hidden move.";
+          handoff(panel, "Ninja Wing", () => renderTurkeyTurn(state));
         } else {
           state.moveB = move;
           state.activeB = correct;
@@ -973,17 +986,11 @@
     const message = `${parts.join("; ")}.`;
     state.history.push(message);
 
-    animateTurkey(state, resultA, resultB, () => {
-      state.finished = state.healthA <= 0 || state.healthB <= 0;
-      state.round += 1;
-      state.phase = "A";
-      state.moveA = null;
-      state.moveB = null;
-      state.activeA = false;
-      state.activeB = false;
-      saveTurkeyState(state);
-      renderActiveGame();
-    });
+    // Resolve storage before playback, so leaving the page cannot lose the round.
+    const next = { ...state, finished: state.healthA <= 0 || state.healthB <= 0,
+      round: state.round + 1, phase: "A", moveA: null, moveB: null, activeA: false, activeB: false };
+    saveTurkeyState(next);
+    animateTurkey(state, resultA, resultB, renderActiveGame);
   }
 
   function calculateTurkeyAttack(attackerMoveId, attackerActive, defenderMoveId, defenderActive) {
@@ -1019,7 +1026,7 @@
       effect.textContent = "BLOCKED!";
     }
     if (log) log.textContent = state.history[state.history.length - 1];
-    setTimeout(done, 1700);
+    laterGame(done, 1700);
   }
 
   function renderTurkeyFinished(state) {
@@ -1084,6 +1091,7 @@
     const log = document.getElementById("sniper-demo-log");
     if (state.history.length) log.textContent = state.history[state.history.length - 1];
     if (state.finished) renderSniperFinished(state);
+    else if (state.phase === "B") handoff(document.getElementById("sniper-turn-panel"), "Player B", () => renderSniperTurn(state));
     else renderSniperTurn(state);
   }
 
@@ -1095,6 +1103,7 @@
     currentQuestionId = question.id;
     let submittedAnswer = "";
     let checked = false;
+    let locked = false;
     let correct = false;
     let emergence = "";
     let target = "";
@@ -1143,7 +1152,7 @@
     });
 
     function syncReady() {
-      panel.querySelector("#sniper-submit-turn").disabled = !(checked && emergence && target);
+      panel.querySelector("#sniper-submit-turn").disabled = locked || !(checked && emergence && target);
     }
     panel.querySelectorAll("[data-sniper-emergence]").forEach(button => {
       button.addEventListener("click", () => {
@@ -1160,6 +1169,9 @@
       });
     });
     panel.querySelector("#sniper-submit-turn").addEventListener("click", () => {
+      if (locked || !checked || !emergence || !target) return;
+      locked = true;
+      panel.querySelectorAll("button, input").forEach(el => { el.disabled = true; });
       state[`emergence${actor}`] = emergence;
       state[`target${actor}`] = target;
       state[`active${actor}`] = correct;
@@ -1198,7 +1210,7 @@
     state.emergenceA = state.emergenceB = state.targetA = state.targetB = null;
     state.activeA = state.activeB = false;
     saveSniperState(state);
-    setTimeout(renderActiveGame, 1300);
+    laterGame(renderActiveGame, 1300);
   }
 
   function renderSniperFinished(state) {
@@ -1220,7 +1232,8 @@
   function renderQuestionInteraction(container, config) {
     const question = randomQuestion(currentQuestionId);
     currentQuestionId = question.id;
-    answerState = { selected: null, checked: false, correct: false, move: null };
+    const turnAnswer = { selected: null, checked: false, correct: false, move: null, locked: false };
+    answerState = turnAnswer;
     const optionsHtml = question.type === "gap-fill"
       ? `<input id="gap-answer" type="text" placeholder="Type your answer" autocomplete="off" />`
       : `<div class="answers">${question.options.map(option => `<button type="button" class="answer-option" data-answer="${escapeAttribute(option)}">${escapeHtml(option)}</button>`).join("")}</div>`;
@@ -1244,26 +1257,26 @@
 
     container.querySelectorAll("[data-answer]").forEach(button => {
       button.addEventListener("click", () => {
-        if (answerState.checked) return;
-        answerState.selected = button.dataset.answer;
+        if (turnAnswer.checked) return;
+        turnAnswer.selected = button.dataset.answer;
         container.querySelectorAll("[data-answer]").forEach(option => option.classList.toggle("selected", option === button));
       });
     });
 
     container.querySelector("#check-answer").addEventListener("click", () => {
-      if (answerState.checked) return;
+      if (turnAnswer.checked) return;
       const submitted = question.type === "gap-fill"
         ? container.querySelector("#gap-answer").value
-        : answerState.selected;
+        : turnAnswer.selected;
       if (!String(submitted || "").trim()) {
         showToast("Choose or type an answer first.");
         return;
       }
-      answerState.checked = true;
-      answerState.correct = normalize(submitted) === normalize(question.answer);
+      turnAnswer.checked = true;
+      turnAnswer.correct = normalize(submitted) === normalize(question.answer);
       const feedback = container.querySelector("#answer-feedback");
-      feedback.className = `feedback ${answerState.correct ? "success" : "fail"}`;
-      feedback.innerHTML = answerState.correct
+      feedback.className = `feedback ${turnAnswer.correct ? "success" : "fail"}`;
+      feedback.innerHTML = turnAnswer.correct
         ? `Correct. Your move is live.${question.explanation ? ` ${escapeHtml(question.explanation)}` : ""}`
         : `Not quite. Correct answer: <strong>${escapeHtml(question.answer)}</strong>. Your selected move will be futile.`;
       container.querySelector("#check-answer").disabled = true;
@@ -1277,15 +1290,18 @@
 
     container.querySelectorAll("[data-move]").forEach(button => {
       button.addEventListener("click", () => {
-        answerState.move = button.dataset.move;
+        if (turnAnswer.locked) return;
+        turnAnswer.move = button.dataset.move;
         container.querySelectorAll("[data-move]").forEach(move => move.classList.toggle("selected", move === button));
         container.querySelector("#submit-move").disabled = false;
       });
     });
 
     container.querySelector("#submit-move").addEventListener("click", () => {
-      if (!answerState.checked || !answerState.move) return;
-      config.onComplete({ correct: answerState.correct, move: answerState.move, question });
+      if (turnAnswer.locked || !turnAnswer.checked || !turnAnswer.move) return;
+      turnAnswer.locked = true;
+      container.querySelectorAll("button, input").forEach(el => { el.disabled = true; });
+      config.onComplete({ correct: turnAnswer.correct, move: turnAnswer.move, question });
     });
   }
 

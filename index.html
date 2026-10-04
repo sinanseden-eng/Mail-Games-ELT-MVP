@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="question-studio.css" />
 </head>
 <body>
   <div class="site-shell">
@@ -99,8 +100,8 @@
           <h3>Turkey Fight Mail</h3>
           <p>Earn attacks and defences through English questions. Cartoon feathers fly; nobody needs to contact the school nurse.</p>
           <ul>
-            <li>Attack-and-counter system</li>
-            <li>Streak-powered special moves</li>
+            <li>Attacks and damage-reducing defences</li>
+            <li>Secret attacks and defensive choices</li>
             <li>Non-graphic comic action</li>
           </ul>
           <button class="primary warm" data-game="turkey">Play turkey demo</button>
@@ -118,9 +119,9 @@
           <ul>
             <li>Four emergence locations</li>
             <li>Two secret choices per player</li>
-            <li>Tracer shots · clean vest-hit reactions</li>
+            <li>Cinematic replays in email matches</li>
           </ul>
-          <button class="primary sniper-primary" data-game="sniper">Play cinematic demo</button>
+          <button class="primary sniper-primary" data-game="sniper">Play classroom demo</button>
         </div>
       </article>
     </section>
@@ -162,7 +163,7 @@
             <h1>Build <em>epic questions.</em><br />Power <strong>great games.</strong></h1>
             <p>Create, import, and manage questions that decide every shot, save, block, and gloriously mistimed turkey move.</p>
             <div class="hero-actions studio-actions">
-              <button class="secondary" id="load-sample" type="button">↻ Restore samples</button>
+              <button class="secondary" id="load-sample" type="button">＋ Sample pool</button>
               <button class="primary" id="export-json" type="button">⇩ Export JSON</button>
             </div>
             <span class="hero-tape">Answer first. Act second.</span>
@@ -202,7 +203,7 @@
                 </label>
                 <label>Level
                   <select name="level">
-                    <option>A1</option><option>A2</option><option selected>B1</option><option>B2</option><option>C1</option>
+                    <option>A1</option><option>A2</option><option selected>B1</option><option>B2</option><option>C1</option><option>C2</option>
                   </select>
                 </label>
               </div>
@@ -211,6 +212,7 @@
                 <label>Option B<input name="optionB" placeholder="worked" /></label>
                 <label>Option C<input name="optionC" placeholder="has worked" /></label>
                 <label>Option D<input name="optionD" placeholder="is working" /></label>
+                <label>Option E (optional)<input name="optionE" /></label>
               </div>
               <div class="form-grid">
                 <label>Correct answer<input name="answer" required placeholder="has worked" /></label>
@@ -227,24 +229,28 @@
               <div><span class="eyebrow">Your question bank</span><h2>Ready to play</h2></div>
               <div class="filter-row">
                 <input id="question-search" type="search" placeholder="Search" aria-label="Search questions or tags" />
-                <select id="level-filter" aria-label="Filter questions by level"><option value="all">All</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option></select>
+                <select id="level-filter" aria-label="Filter questions by level"><option value="all">All</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
               </div>
             </div>
+            <div id="pool-controls"></div>
             <div id="question-list" class="question-list compact-question-list"></div>
           </article>
 
           <article class="panel import-panel creative-panel" id="bulk-tools-panel">
             <span class="panel-number warm-number" aria-hidden="true">2</span>
             <span class="paperclip" aria-hidden="true"></span>
-            <div class="panel-heading"><div><span class="eyebrow">Bulk tools</span><h2>Import CSV</h2></div></div>
-            <p>Required columns: <code>question, type, option_a, option_b, option_c, option_d, answer, explanation, level, tag</code></p>
+            <div class="panel-heading"><div><span class="eyebrow">Bring your own questions</span><h2>Import documents &amp; pools</h2></div></div>
+            <p>Upload a PDF, Word document (.docx), CSV or JSON question pool. Review questions and answers before saving.</p>
             <label class="upload-box">
-              <input type="file" id="csv-file" accept=".csv,text/csv" />
+              <input type="file" id="question-file" accept=".pdf,.docx,.csv,.json,.txt" />
               <span class="upload-icon" aria-hidden="true">☁</span>
-              <strong>Drop your CSV here</strong>
-              <small>or click to browse · .csv file</small>
+              <strong>Choose a question file</strong><small>PDF · Word .docx · CSV · JSON · TXT / up to 10 MB</small>
             </label>
-            <button class="secondary full csv-button" id="download-template" type="button">▣ Download CSV template</button>
+            <p class="import-hint">Text-based PDFs and numbered questions work best. Scanned pages need OCR first. Save older .doc files as .docx. Check that imported questions include any passage or picture they rely on.</p>
+            <div id="import-status" role="status" aria-live="polite"></div>
+            <div id="import-review" hidden></div>
+            <button class="secondary full csv-button" id="download-template" type="button">Download CSV template</button>
+            <button class="secondary full" id="download-text-template" type="button">Download document example</button>
             <div class="privacy-note"><strong>Prototype note:</strong> questions are stored in this browser until teacher accounts and database storage are enabled.</div>
           </article>
 
@@ -254,7 +260,7 @@
             <img src="assets/mail-rocket.svg" alt="" aria-hidden="true" />
             <ul class="setup-checklist">
               <li class="complete">Question bank saved</li>
-              <li class="complete">CSV import ready</li>
+              <li class="complete">Document &amp; pool import ready</li>
               <li id="launch-ready-item">Launch your email match</li>
             </ul>
             <span class="status-pill status-neutral" id="mission-status">Checking backend…</span>
@@ -440,6 +446,6 @@
     </section>
   </template>
 
-  <script src="app.js" defer></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
