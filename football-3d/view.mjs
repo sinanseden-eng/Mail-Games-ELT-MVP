@@ -2,6 +2,7 @@ import * as T from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { cacheKeeper, applyMatchKeeper } from "./dive.mjs";
 import { makeStadium, makeNet } from "./stadium.mjs";
+import { poseShooter } from "./shooter.mjs";
 import {
   replayPlan,
   keeperTime,
@@ -233,9 +234,17 @@ export class FootballView {
       };
       if (i === 0) cacheKeeper(actor);
       else {
-        actor.action.setLoop(T.LoopOnce, 1);
-        actor.action.clampWhenFinished = true;
-        actor.action.play();
+        actor.actions = {};
+        for (const [name, clipName] of Object.entries({
+          idle: "Idle_9", run: "Running", kick: "Kick_a_Soccer_Ball",
+        })) {
+          const animation = g.animations.find((c) => c.name === clipName);
+          if (!animation) throw new Error(`Missing shooter animation: ${clipName}`);
+          const action = mixer.clipAction(animation);
+          action.play();
+          action.paused = true;
+          actor.actions[name] = action;
+        }
       }
       this.actors.push(actor);
     }
@@ -289,15 +298,7 @@ export class FootballView {
     }
     this.poseKeeper(plan, t);
     const shooter = this.actors[1];
-    shooter.mixer.setTime(
-      round
-        ? Math.min(
-            shooter.action.getClip().duration - 0.00001,
-            Math.max(0, t - (TIMING.kick - 0.65)),
-          )
-        : 0,
-    );
-    shooter.root.updateMatrixWorld(true);
+    const approach = poseShooter(shooter, t, Boolean(round));
     const pos = round
       ? ballPosition(plan, t, contact, this.gloves())
       : { x: 0, y: 0.11, z: 4.7 };
@@ -325,6 +326,7 @@ export class FootballView {
     this.lastFrame = {
       plan,
       time: t,
+      shooter: approach,
       ball: pos,
       gloves: this.gloves().toArray(),
       contact: { x: contact.x, y: contact.y, z: contact.z },

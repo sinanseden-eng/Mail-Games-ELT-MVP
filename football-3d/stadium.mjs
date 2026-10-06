@@ -163,7 +163,7 @@ export function makeNet(goal, depth = 1.8) {
   const mat = new T.LineBasicMaterial({
     color: 0xd9e6db,
     transparent: true,
-    opacity: 0.32,
+    opacity: 0.18,
     linewidth: 1,
     depthWrite: false,
   });
@@ -189,10 +189,10 @@ export function makeNet(goal, depth = 1.8) {
     goal.add(lines);
     panels.push({ g, uv, kind });
   }
-  panel("back", 32, 12);
-  panel("roof", 32, 8);
-  panel("left", 8, 12);
-  panel("right", 8, 12);
+  panel("back", 24, 10);
+  panel("roof", 24, 6);
+  panel("left", 6, 10);
+  panel("right", 6, 10);
   function update(t, impact = null, sag = 1.6) {
     for (const { g, uv, kind } of panels) {
       const a = g.attributes.position;

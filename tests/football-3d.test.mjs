@@ -11,6 +11,25 @@ import {
 import { TIMING } from "../football-motion.mjs";
 import { PENALTY_MOVES, resolvePenaltyResult } from "../game-engine.mjs";
 import { ShootoutScene } from "../football-player.mjs";
+import { shooterFrame, SOURCE_KICK_CONTACT } from "../football-3d/shooter.mjs";
+
+test("the shooter approaches, plants and kicks on the shared ball-release clock", () => {
+  const idle = shooterFrame(3, false);
+  assert.equal(idle.z, 6.5);
+  assert.equal(idle.idleWeight, 1);
+  let z = idle.z;
+  for (let t = 0; t <= TIMING.end; t += 0.01) {
+    const frame = shooterFrame(t);
+    assert.ok(frame.z <= z + 1e-10);
+    assert.ok(frame.z >= 5.3 - 1e-10);
+    assert.ok(Math.abs(frame.idleWeight + frame.runWeight + frame.kickWeight - 1) < 1e-10);
+    if (t >= 0.56) assert.ok(Math.abs(frame.z - 5.3) < 1e-10);
+    z = frame.z;
+  }
+  assert.equal(shooterFrame(0.25).runWeight, 1);
+  assert.equal(shooterFrame(TIMING.kick).kickTime, SOURCE_KICK_CONTACT);
+  assert.equal(shooterFrame(TIMING.kick).kickWeight, 1);
+});
 
 test("all 144 server-rule combinations preserve choices, score outcomes and goal-line clearance", () => {
   for (const shotZone of PENALTY_MOVES)
