@@ -1,5 +1,5 @@
 import {getUser,login,signup,logout,handleAuthCallback,getSettings,requestPasswordRecovery,updateUser,acceptInvite,onAuthChange} from './vendor/identity.mjs';
-import {ShootoutScene} from './football-scene.mjs';
+import {ShootoutScene} from './football-player.mjs';
 import {SniperScene} from './sniper-scene.mjs';
 import {TurkeyFightScene} from './turkey-scene.mjs';
 import {PENALTY_MOVES,TURKEY_MOVES,SNIPER_SPOTS} from './game-engine.mjs';

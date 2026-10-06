@@ -58,3 +58,7 @@ Before classroom-wide use, complete one deployed teacher + two-student journey u
 - PR #6 adds a small production-root authentication callback bridge for the pilot: recognized Identity hashes go to the fixed PR #4 preview, with tokens remaining in fragments. Ordinary game navigation is unchanged. The classroom branch omits the pilot marker, restoring same-origin callback routing when the app is eventually merged.
 - Draft PR #4 remains unmerged until one real teacher and two students complete a match and phone push delivery is checked. Automated browser journeys used mocked Identity; they do not verify email delivery, real account recovery, or phone notifications.
 - The generic deployment connector's earlier automatic approval rejection was respected. Preview rebuilding and Identity activation used the Netlify dashboard after explicit user approval.
+
+## Football replay update — 6 October 2026
+
+The classroom football replay now uses the supplied goalkeeper and shooter models with the fixed TV angle, directional/centre saves, glove attachment, a 1.8 m deep fine-strand net and adjustable sag. Practice, local shootout and current email replay share this renderer. Model downloads are about 3.5 MB combined; the existing 2D replay remains available when 3D is unavailable. See `docs/FOOTBALL_3D.md` for behavior and validation. Scoring, question grading, independent secret choices and the real-account/device release gate are unchanged.
