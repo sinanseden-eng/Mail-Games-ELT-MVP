@@ -1,8 +1,9 @@
-import {getUser, verifyRequestOrigin} from '@netlify/identity';
+import {verifyRequestOrigin} from '@netlify/identity';
 import {getStore} from '@netlify/blobs';
 import webpush from 'web-push';
 import {createClassroomService, validateSubscription, fail} from './_shared/classroom-service.mjs';
 import {sendEmailMessage} from './_shared/email.mjs';
+import {getClassroomUser} from './_shared/classroom-auth.mjs';
 
 // Conditional-write SDK versions may treat non-412 errors as successful. Reject
 // failed writes at the transport boundary before they can acknowledge a turn.
@@ -25,7 +26,7 @@ export default async function handler(request, context) {
     const namespace = env('CLASSROOM_NAMESPACE');
     if (!/^[a-z0-9-]{3,60}$/.test(namespace)) return respond({error:'Classroom storage needs setup. Your existing email games are available.',setupRequired:'CLASSROOM_NAMESPACE'},503);
     if (context.deploy?.context !== 'production' && namespace === 'production') fail('Preview data must use a separate classroom namespace.',503);
-    const user = await getUser();
+    const user = await getClassroomUser();
     if (!user) return respond({error:'Sign in to open your classroom.'},401);
     const store = getStore({name:`classroom-${namespace}`,consistency:'strong',fetch:checkedBlobFetch});
     let service;

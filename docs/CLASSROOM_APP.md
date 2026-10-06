@@ -31,6 +31,8 @@ Preview and production must never point at the same Blob namespace. The function
 
 ## Data and concurrency
 
+The classroom function hydrates JWT-only Identity sessions from the signed-in user's own authoritative account using the SDK's server-side account lookup. This is necessary when the SDK receives an operator token and its `/user` hydration falls back to JWT claims that omit `confirmedAt`. Missing confirmation data is never inferred from user metadata or auto-confirmed. Lookup failures return a retryable verification error; an authoritative unconfirmed account remains blocked and receives confirmation instructions.
+
 Each teacher has an atomic workspace document in Netlify Blobs. Strong reads and ETag conditional writes keep game state, accuracy, question snapshots and notification outbox events in one commit. Concurrent retries of an already-accepted turn return the saved state without awarding points again. Invalid actors, moves, stale turn versions and unconfirmed users are rejected. Question explanations and answer keys are excluded from pending student turns.
 
 Each assigned match snapshots the chosen questions and shuffles them once. Both players consume the same queue in turn order; questions repeat only after that queue is exhausted. Teacher pool edits do not affect existing matches.

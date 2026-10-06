@@ -47,7 +47,7 @@ async function passwordScreen(callback){setView(`<section class="card auth-card"
 async function home(){
   const url=new URL(location);url.searchParams.delete('match');url.searchParams.delete('teacher');history.replaceState(null,'',url);currentMatch=null;
   if(!session){await showAuth();return;}
-  try{dashboard=await api();}catch(e){updateNav();setView(`<section class="card"><h2>We couldn’t open your classroom yet.</h2><p>${esc(e.message)}</p><button class="primary" id="retry-home">Try again</button> <a href="index.html">Open classroom demos</a></section>`);click('#retry-home',home);return;}
+  try{dashboard=await api();}catch(e){updateNav();const confirmationHelp=e.status===403&&e.message.startsWith('Confirm your email')?'<ol><li>Open the confirmation email sent when you registered. Check your spam or junk folder too.</li><li>Click the confirmation link, then return here and choose Try again.</li><li>If you already confirmed, sign out and sign in again to refresh your session.</li></ol>':'';setView(`<section class="card"><h2>We couldn’t open your classroom yet.</h2><p>${esc(e.message)}</p>${confirmationHelp}<button class="primary" id="retry-home">Try again</button> <a href="index.html">Open classroom demos</a></section>`);click('#retry-home',home);return;}
   updateNav();renderHome();
 }
 function renderHome(){
