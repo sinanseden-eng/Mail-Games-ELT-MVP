@@ -1,4 +1,5 @@
 import { TIMING } from "../football-motion.mjs";
+import { BALL_START } from "./motion.mjs";
 
 const clamp = (v) => Math.max(0, Math.min(1, v));
 export const SOURCE_KICK_CONTACT = 0.52;
@@ -12,7 +13,7 @@ export function shooterFrame(time, playing = true) {
     ? t / 0.5
     : 0.88 + 0.12 * (1 - (1 - clamp((t - 0.44) / 0.12)) ** 2);
   return {
-    z: 6.5 - 1.2 * Math.min(1, approach),
+    z: BALL_START.z + 1.8 - 1.2 * Math.min(1, approach),
     idleWeight,
     runWeight: Math.max(0, 1 - idleWeight - kickWeight),
     kickWeight,

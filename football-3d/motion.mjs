@@ -8,6 +8,8 @@ import {
 export const GOAL_LINE = -5.5;
 export const NET_DEPTH = 1.8;
 export const BALL_RADIUS = 0.11;
+// The painted spot and every stationary ball frame share one pitch position.
+export const BALL_START = Object.freeze({ x: 0, y: BALL_RADIUS, z: GOAL_LINE + 11 });
 export function zonePoint(id) {
   const { id: zone } = targetFor(id);
   const [row, column] = zone.split("-");
@@ -54,10 +56,10 @@ export function ballPosition(
 ) {
   const u = clamp((time - TIMING.kick) / (TIMING.contact - TIMING.kick));
   const p = {
-    x: contact.x * u,
+    x: BALL_START.x + (contact.x - BALL_START.x) * u,
     y:
       BALL_RADIUS + (contact.y - BALL_RADIUS) * u + 0.2 * Math.sin(Math.PI * u),
-    z: 4.7 + (contact.z - 4.7) * u,
+    z: BALL_START.z + (contact.z - BALL_START.z) * u,
   };
   if (time < TIMING.contact) return p;
   if (plan.catch) return { ...gloves };

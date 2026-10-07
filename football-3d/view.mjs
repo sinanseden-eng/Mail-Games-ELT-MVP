@@ -10,6 +10,8 @@ import {
   zonePoint,
   GOAL_LINE,
   NET_DEPTH,
+  BALL_START,
+  BALL_RADIUS,
 } from "./motion.mjs";
 import { TIMING, TARGETS } from "../football-motion.mjs";
 const V = (x = 0, y = 0, z = 0) => new T.Vector3(x, y, z);
@@ -169,7 +171,7 @@ export class FootballView {
     const bt = new T.CanvasTexture(ballTex);
     bt.colorSpace = T.SRGBColorSpace;
     this.ball = new T.Mesh(
-      new T.SphereGeometry(0.11, 20, 14),
+      new T.SphereGeometry(BALL_RADIUS, 20, 14),
       new T.MeshStandardMaterial({ map: bt, roughness: 0.7 }),
     );
     this.ball.castShadow = true;
@@ -221,7 +223,7 @@ export class FootballView {
       group.scale.setScalar((i === 0 ? 1.9 : 1.8) / (box.max.y - box.min.y));
       g.scene.position.y -= box.min.y;
       // The keeper's boot skin extends 18 mm below its ankle-based IK floor.
-      group.position.set(0, i === 0 ? 0.025 : 0, i === 0 ? -5 : 5.3);
+      group.position.set(0, i === 0 ? 0.025 : 0, i === 0 ? -5 : BALL_START.z + 1.8);
       group.rotation.y = i === 0 ? 0 : Math.PI;
       group.updateMatrixWorld(true);
       const mixer = new T.AnimationMixer(g.scene),
@@ -301,7 +303,7 @@ export class FootballView {
     const approach = poseShooter(shooter, t, Boolean(round));
     const pos = round
       ? ballPosition(plan, t, contact, this.gloves())
-      : { x: 0, y: 0.11, z: 4.7 };
+      : BALL_START;
     this.ball.position.set(pos.x, pos.y, pos.z);
     this.ball.rotation.set(t * 8, 0, t * 4);
     this.net.update(

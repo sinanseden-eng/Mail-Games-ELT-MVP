@@ -7,6 +7,7 @@ import {
   zonePoint,
   GOAL_LINE,
   BALL_RADIUS,
+  BALL_START,
 } from "../football-3d/motion.mjs";
 import { TIMING } from "../football-motion.mjs";
 import { PENALTY_MOVES, resolvePenaltyResult } from "../game-engine.mjs";
@@ -56,20 +57,33 @@ test('skip remains usable before model loading completes',async()=>{
 
 test("the shooter approaches, plants and kicks on the shared ball-release clock", () => {
   const idle = shooterFrame(3, false);
-  assert.equal(idle.z, 6.5);
+  assert.equal(idle.z, BALL_START.z + 1.8);
   assert.equal(idle.idleWeight, 1);
   let z = idle.z;
   for (let t = 0; t <= TIMING.end; t += 0.01) {
     const frame = shooterFrame(t);
     assert.ok(frame.z <= z + 1e-10);
-    assert.ok(frame.z >= 5.3 - 1e-10);
+    assert.ok(frame.z >= BALL_START.z + .6 - 1e-10);
     assert.ok(Math.abs(frame.idleWeight + frame.runWeight + frame.kickWeight - 1) < 1e-10);
-    if (t >= 0.56) assert.ok(Math.abs(frame.z - 5.3) < 1e-10);
+    if (t >= 0.56) assert.ok(Math.abs(frame.z - BALL_START.z - .6) < 1e-10);
     z = frame.z;
   }
   assert.equal(shooterFrame(0.25).runWeight, 1);
   assert.equal(shooterFrame(TIMING.kick).kickTime, SOURCE_KICK_CONTACT);
   assert.equal(shooterFrame(TIMING.kick).kickWeight, 1);
+});
+
+test("the ball stays centred over the eleven-metre penalty spot until release", () => {
+  assert.equal(BALL_START.z - GOAL_LINE, 11);
+  for (const outcome of ["goal", "save", "parry", "miss"]) {
+    const plan = replayPlan({ shotZone: "top-left", keeperZone: "bottom-right", outcome });
+    for (const t of [0, .25, TIMING.kick - .001, TIMING.kick]) {
+      assert.deepEqual(ballPosition(plan, t), BALL_START);
+    }
+    const released = ballPosition(plan, TIMING.kick + .01);
+    assert.ok(released.z < BALL_START.z);
+    assert.deepEqual(ballPosition(plan, TIMING.contact), plan.contact);
+  }
 });
 
 test("all 144 server-rule combinations preserve choices, score outcomes and goal-line clearance", () => {

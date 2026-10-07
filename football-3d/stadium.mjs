@@ -1,4 +1,5 @@
 import * as T from "three";
+import { BALL_START } from "./motion.mjs";
 export function makeStadium(scene) {
   const root = new T.Group();
   scene.add(root);
@@ -85,7 +86,7 @@ export function makeStadium(scene) {
     new T.MeshBasicMaterial({ color: 0xe7eddb }),
   );
   spot.rotation.x = -Math.PI / 2;
-  spot.position.set(0, 0.014, 5.5);
+  spot.position.set(BALL_START.x, 0.014, BALL_START.z);
   root.add(spot);
   const stands = new T.Group();
   root.add(stands);
