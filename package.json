@@ -2,18 +2,23 @@
   "name": "mailgames-elt-mvp",
   "version": "0.10.0",
   "private": true,
-  "description": "Mail Games ELT with The Penalty Club: browser-native 2D football, articulated keeper dives and a sagging reactive goal net.",
+  "description": "Mail Games ELT classroom app with TV-angle football, animated players and a sagging reactive goal net.",
   "scripts": {
     "serve": "npx netlify dev",
-    "check": "node --check document-reader.mjs && node --check question-import.mjs && node --check question-pools.mjs && node --check question-studio.mjs && node --check football.mjs && node --check football-scene.mjs && node --check football-motion.mjs && node --check football-camera.mjs && node --check app.js && node --check turn-0.9h5a2.js && node --check replay-0.9h5a2.js && node --check shootout-0.9h5a2.js && node --check shootout-scene-0.9h5a2.mjs && node --check penalty-visuals-0.9h5a2.mjs && node --check shootout-physics-0.9h5a2.mjs && node --check shootout-audio-0.9h5a2.mjs && node --check turn-0.9h5a1.js && node --check replay-0.9h5a1.js && node --check shootout-0.9h5a1.js && node --check shootout-scene-0.9h5a1.mjs && node --check penalty-visuals-0.9h5a1.mjs && node --check shootout-physics-0.9h5a1.mjs && node --check shootout-audio-0.9h5a1.mjs && node --check turn-0.9h5a.js && node --check replay-0.9h5a.js && node --check shootout-0.9h5a.js && node --check shootout-scene-0.9h5a.mjs && node --check penalty-visuals-0.9h5a.mjs && node --check shootout-physics-0.9h5a.mjs && node --check shootout-audio-0.9h5a.mjs && node --check turn-0.9h5.js && node --check replay-0.9h5.js && node --check shootout-0.9h5.js && node --check shootout-scene-0.9h5.mjs && node --check penalty-visuals-0.9h5.mjs && node --check shootout-physics-0.9h5.mjs && node --check shootout-audio-0.9h5.mjs && node --check turn.js && node --check replay.js && node --check shootout.js && node --check shootout-core.mjs && node --check shootout-net.mjs && node --check shootout-physics.mjs && node --check shootout-cinematics.mjs && node --check penalty-perspective.mjs && node --check penalty-visuals.mjs && node --check shootout-scene.mjs && node --check shootout-audio.mjs && node --check turkey-core.mjs && node --check turkey-scene.mjs && node --check turkey-audio.mjs && node --check sniper-core.mjs && node --check sniper-scene.mjs && node --check sniper-audio.mjs && find netlify/functions tests scripts -name \"*.mjs\" -print0 | xargs -0 -n1 node --check",
+    "check": "node --check document-reader.mjs && node --check question-import.mjs && node --check question-pools.mjs && node --check question-studio.mjs && node --check football.mjs && node --check football-scene.mjs && node --check football-motion.mjs && node --check football-camera.mjs && node --check app.js && node --check turn-0.9h5a2.js && node --check replay-0.9h5a2.js && node --check shootout-0.9h5a2.js && node --check shootout-scene-0.9h5a2.mjs && node --check penalty-visuals-0.9h5a2.mjs && node --check shootout-physics-0.9h5a2.mjs && node --check shootout-audio-0.9h5a2.mjs && node --check turn-0.9h5a1.js && node --check replay-0.9h5a1.js && node --check shootout-0.9h5a1.js && node --check shootout-scene-0.9h5a1.mjs && node --check penalty-visuals-0.9h5a1.mjs && node --check shootout-physics-0.9h5a1.mjs && node --check shootout-audio-0.9h5a1.mjs && node --check turn-0.9h5a.js && node --check replay-0.9h5a.js && node --check shootout-0.9h5a.js && node --check shootout-scene-0.9h5a.mjs && node --check penalty-visuals-0.9h5a.mjs && node --check shootout-physics-0.9h5a.mjs && node --check shootout-audio-0.9h5a.mjs && node --check turn-0.9h5.js && node --check replay-0.9h5.js && node --check shootout-0.9h5.js && node --check shootout-scene-0.9h5.mjs && node --check penalty-visuals-0.9h5.mjs && node --check shootout-physics-0.9h5.mjs && node --check shootout-audio-0.9h5.mjs && node --check turn.js && node --check replay.js && node --check shootout.js && node --check shootout-core.mjs && node --check shootout-net.mjs && node --check shootout-physics.mjs && node --check shootout-cinematics.mjs && node --check penalty-perspective.mjs && node --check penalty-visuals.mjs && node --check shootout-scene.mjs && node --check shootout-audio.mjs && node --check turkey-core.mjs && node --check turkey-scene.mjs && node --check turkey-audio.mjs && node --check sniper-core.mjs && node --check sniper-scene.mjs && node --check sniper-audio.mjs && find netlify/functions tests scripts -name \"*.mjs\" -print0 | xargs -0 -n1 node --check && node --check classroom.mjs && node --check classroom-sw.js && node --check game-engine.mjs && node --check game-rules.mjs && node --check football-player.mjs && find football-3d -name \"*.mjs\" -print0 | xargs -0 -n1 node --check",
     "test": "node --test tests/*.test.mjs",
-    "build": "node scripts/build-vendor.mjs"
+    "build": "node scripts/build-vendor.mjs && node scripts/build-classroom.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
+    "@netlify/blobs": "11.1.3",
+    "@netlify/identity": "2.0.0",
+    "esbuild": "0.28.2",
     "mammoth": "1.11.0",
-    "pdfjs-dist": "5.4.624"
+    "pdfjs-dist": "5.4.624",
+    "three": "0.180.0",
+    "web-push": "3.6.7"
   }
 }
