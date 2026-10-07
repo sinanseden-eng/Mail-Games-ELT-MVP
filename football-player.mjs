@@ -5,7 +5,43 @@ import { ShootoutScene as CanvasScene } from "./football-scene.mjs";
 export class ShootoutScene extends CanvasScene {
   constructor(canvas, caption, options = {}) {
     super(canvas, caption, options);
-    this.ready = this.loadPlayers();
+    this.ready = this.loadPlayers().finally(() => { this.playersReady = true; });
+  }
+  playReplay(round) {
+    this.cancelReplay();
+    if (this.destroyed) return Promise.resolve({ cancelled: true });
+    this.setCaption('Getting the players ready…');
+    return new Promise(resolve => {
+      const pending = { resolve, round };
+      this.pendingReplay = pending;
+      const start = () => {
+        if (this.destroyed || this.pendingReplay !== pending) return;
+        // Compile/render the starting pose before starting the replay clock.
+        // A cold model download must not consume the run-up and ball flight.
+        try { this.view?.render(round, 0, { reducedMotion: this.reducedMotion, sag: this.sag }); }
+        catch { this.fallback(); }
+        this.pendingReplay = null;
+        super.playReplay(round).then(resolve);
+      };
+      if (this.playersReady) start();
+      else Promise.resolve(this.ready).catch(() => false).then(start);
+    });
+  }
+  cancelReplay() {
+    if (this.pendingReplay) {
+      const pending = this.pendingReplay;
+      this.pendingReplay = null;
+      pending.resolve({ cancelled: true });
+    }
+    super.cancelReplay();
+  }
+  skipReplay() {
+    if (this.pendingReplay) {
+      const { round, resolve } = this.pendingReplay;
+      this.pendingReplay = null;
+      super.playReplay(round).then(resolve);
+    }
+    super.skipReplay();
   }
   async loadPlayers() {
     if (

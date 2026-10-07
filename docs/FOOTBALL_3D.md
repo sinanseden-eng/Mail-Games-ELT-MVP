@@ -13,6 +13,8 @@ The classroom app, Penalty Club practice, local two-player shootout and current 
 - Goal depth is 1.8 m, with one-pixel net strands at 18% opacity, fewer strands, static roof/back sag and impact deformation. The 2D fallback also uses finer, fainter strands. The practice tension control adjusts sag.
 - Reduce motion, pause, speed, skip, replay cancellation and audio events retain their existing behavior. Idle 3D frames render only when changed.
 - Models are separate, same-origin GLBs totaling about 3.5 MB. Login, answering and score updates never wait for the model download.
+- Replay playback waits for the players or the 2D fallback, and warms the starting frame before its 4.2-second clock begins. A rendering stall or background-tab suspension advances at most 0.25 seconds on the next frame, preserving the visible kick and flight. Pending replays can still be skipped or cancelled during loading.
+- Classroom football exposes Full animation / Reduced motion and Normal / Half speed controls. The motion choice persists on the device; an explicit Full animation choice overrides the system preference. A waiting player's polling update automatically plays a newly completed round, including the final penalty, without replaying old rounds on unrelated updates.
 - If WebGL, a download or rendering fails, the existing 2D scene remains playable. `?football2d` explicitly selects it. Scene destruction releases GPU resources and cancels replay promises.
 
 ## Validation

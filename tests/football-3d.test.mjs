@@ -13,6 +13,47 @@ import { PENALTY_MOVES, resolvePenaltyResult } from "../game-engine.mjs";
 import { ShootoutScene } from "../football-player.mjs";
 import { shooterFrame, SOURCE_KICK_CONTACT } from "../football-3d/shooter.mjs";
 
+class LoadingScene extends ShootoutScene {
+  loadPlayers() { return new Promise(resolve => { this.finishLoading = resolve; }); }
+  draw() {}
+}
+function loadingScene() {
+  globalThis.requestAnimationFrame=()=>0;globalThis.cancelAnimationFrame=()=>{};
+  return new LoadingScene({getContext:()=>({}),setAttribute(){}},null);
+}
+test('a cold model load cannot consume the run-up or ball flight',async()=>{
+  const scene=loadingScene();
+  const pending=scene.playReplay({outcome:'goal',shotZone:'top-left',keeperZone:'bottom-right'});
+  scene.loop(scene.lastTime+9000);
+  assert.equal(scene.replay,null);
+  assert.equal(scene.resultStill,null);
+  let warmupTime;
+  scene.view={render(round,time){warmupTime=time;},destroy(){}};
+  scene.finishLoading(true);
+  await scene.ready;await new Promise(resolve=>queueMicrotask(resolve));
+  assert.equal(warmupTime,0);
+  assert.equal(scene.replay.elapsed,0);
+  scene.updateReplay(.5);assert.equal(scene.replay.elapsed,.5);
+  scene.skipReplay();assert.deepEqual(await pending,{cancelled:false});scene.destroy();
+});
+test('leaving or replacing a replay while players load cancels only the old request',async()=>{
+  const scene=loadingScene();
+  const old=scene.playReplay({outcome:'goal'});
+  const next=scene.playReplay({outcome:'save'});
+  assert.deepEqual(await old,{cancelled:true});
+  scene.finishLoading(false);
+  await scene.ready;await new Promise(resolve=>queueMicrotask(resolve));
+  assert.equal(scene.replay.data.outcome,'save');
+  scene.destroy();assert.deepEqual(await next,{cancelled:true});
+});
+test('skip remains usable before model loading completes',async()=>{
+  const scene=loadingScene();const pending=scene.playReplay({outcome:'goal'});
+  scene.skipReplay();assert.deepEqual(await pending,{cancelled:false});
+  scene.finishLoading(false);
+  await scene.ready;await new Promise(resolve=>queueMicrotask(resolve));
+  assert.equal(scene.replay,null);assert.equal(scene.resultStill.outcome,'goal');scene.destroy();
+});
+
 test("the shooter approaches, plants and kicks on the shared ball-release clock", () => {
   const idle = shooterFrame(3, false);
   assert.equal(idle.z, 6.5);
