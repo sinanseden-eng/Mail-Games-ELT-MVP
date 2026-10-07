@@ -92,10 +92,22 @@ export function createClassroomService({store, env = () => '', now = () => Date.
     if (action === 'activate-teacher') {
       const expected = env('CLASSROOM_TEACHER_CODE') || env('MAILGAMES_TEST_CODE');
       if (!expected) fail('Teacher activation has not been configured yet.', 503);
+      const codeVersion = hash(expected);
       await updateProfile(user.id, p=>{
-        if(p.activationLockUntil>now())fail('Too many attempts. Try again in 15 minutes.',429);
-        const good=timingSafeEqual(Buffer.from(hash(body.code)),Buffer.from(hash(expected)));
-        if(good){p.teacher=true;p.activationAttempts=0;} else {p.activationAttempts=(p.activationAttempts||0)+1;if(p.activationAttempts>=5)p.activationLockUntil=now()+15*60000;}
+        // A rotated server secret starts a new attempt window. Legacy locks
+        // without a version still expire normally; deployment alone cannot
+        // reset a lock for an unchanged secret.
+        const rotated = p.activationCodeVersion && p.activationCodeVersion !== codeVersion;
+        if(rotated || (p.activationLockUntil && p.activationLockUntil<=now())){
+          p.activationAttempts=0;p.activationLockUntil=0;
+        }
+        if(p.activationLockUntil>now()){
+          const minutes=Math.max(1,Math.ceil((p.activationLockUntil-now())/60000));
+          fail(`Too many attempts. Try again in ${minutes} ${minutes===1?'minute':'minutes'}.`,429);
+        }
+        p.activationCodeVersion=codeVersion;
+        const good=timingSafeEqual(Buffer.from(hash(body.code)),Buffer.from(codeVersion));
+        if(good){p.teacher=true;p.activationAttempts=0;p.activationLockUntil=0;} else {p.activationAttempts=(p.activationAttempts||0)+1;if(p.activationAttempts>=5)p.activationLockUntil=now()+15*60000;}
         return good;
       }).then(good=>{if(!good)fail('Teacher activation code is incorrect.',403);});
       return {ok:true};

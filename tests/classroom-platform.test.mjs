@@ -30,6 +30,43 @@ test('teacher roles cannot be self-selected or forged through metadata',async()=
   await assert.rejects(s.run(outsider,'activate-teacher',{code:'wrong'}),/incorrect/);
   await assert.rejects(s.run({id:'unconfirmed'},'dashboard'),/Confirm your email/);
 });
+test('teacher code rotation clears the old attempt window without exposing secrets',async()=>{
+  const store=memoryStore();let code='old-private-code';
+  const service=createClassroomService({store,env:key=>key==='CLASSROOM_TEACHER_CODE'?code:''});
+  const activate=value=>service.execute(outsider,'activate-teacher',{code:value});
+  for(let i=0;i<5;i++)await assert.rejects(activate('wrong'),error=>error.statusCode===403);
+  await assert.rejects(activate(code),error=>error.statusCode===429);
+  code='new-private-code';
+  await assert.rejects(activate('old-private-code'),error=>error.statusCode===403);
+  assert.equal((await store.get(`profile/${outsider.id}`)).activationAttempts,1);
+  await activate(code);
+  const dashboard=await service.execute(outsider,'dashboard');
+  assert.equal(dashboard.user.role,'teacher');
+  assert.equal(JSON.stringify(dashboard).includes('private-code'),false);
+  assert.equal(JSON.stringify(dashboard).includes('activationCodeVersion'),false);
+});
+test('expired activation locks allow five fresh attempts; unchanged code keeps active locks',async()=>{
+  const store=memoryStore();let clock=1000;
+  const service=createClassroomService({store,env:key=>key==='MAILGAMES_TEST_CODE'?'fallback-private-code':'',now:()=>clock});
+  const activate=code=>service.execute(outsider,'activate-teacher',{code});
+  for(let i=0;i<5;i++)await assert.rejects(activate('wrong'),error=>error.statusCode===403);
+  clock+=14*60000;
+  await assert.rejects(activate('fallback-private-code'),error=>error.statusCode===429&&/1 minute\./.test(error.message));
+  clock+=60000;
+  for(let i=0;i<4;i++)await assert.rejects(activate('wrong'),error=>error.statusCode===403);
+  await activate('fallback-private-code');
+  const profile=await store.get(`profile/${outsider.id}`);
+  assert.equal(profile.teacher,true);assert.equal(profile.activationLockUntil,0);
+});
+test('legacy activation locks stay protected until expiry and private code takes precedence',async()=>{
+  const store=memoryStore();let clock=1000;
+  await store.setJSON(`profile/${outsider.id}`,{teacher:false,memberships:[],subscriptions:[],activationAttempts:5,activationLockUntil:clock+60000});
+  const service=createClassroomService({store,env:key=>({CLASSROOM_TEACHER_CODE:'classroom-private',MAILGAMES_TEST_CODE:'email-private'})[key]||'',now:()=>clock});
+  await assert.rejects(service.execute(outsider,'activate-teacher',{code:'classroom-private'}),error=>error.statusCode===429);
+  clock+=60000;
+  await assert.rejects(service.execute(outsider,'activate-teacher',{code:'email-private'}),error=>error.statusCode===403);
+  await service.execute(outsider,'activate-teacher',{code:'classroom-private'});
+});
 test('enrolment codes are one-person, revocable, and isolated by class ownership',async()=>{
   const s=await setup();await assert.rejects(s.run(outsider,'join',{code:s.invites[0].code}),/no longer available/);
   await s.run(a,'join',{code:s.invites[0].code});assert.equal((await s.run(a,'dashboard')).memberships.length,1);

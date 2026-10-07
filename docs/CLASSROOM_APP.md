@@ -29,6 +29,8 @@ Use the existing Netlify project with a branch deploy, not a second production a
 
 Preview and production must never point at the same Blob namespace. The function rejects an unset namespace and rejects `production` on non-production deploys. Never put Identity, provider or VAPID secrets in this repository.
 
+Teacher-code changes require rebuilding the deployment the teacher actually uses. For the pilot at `deploy-preview-4--mail-games-elt-mvp.netlify.app`, rebuild PR #4's **Deploy Preview**, not the production `main` deployment. `CLASSROOM_TEACHER_CODE` takes precedence over `MAILGAMES_TEST_CODE`; if it is absent, the latter is the activation code. Only the account owner sets or enters the private value. Five failed attempts lock an account for 15 minutes. The waiting period shown is the remaining time; expiry resets the attempt count. Future code rotations reset the previous code's attempt window using a server-only fingerprint. Existing locks without a fingerprint retain their original expiry, and redeploying an unchanged code does not clear a lock.
+
 ## Data and concurrency
 
 The classroom function hydrates JWT-only Identity sessions from the signed-in user's own authoritative account using the SDK's server-side account lookup. This is necessary when the SDK receives an operator token and its `/user` hydration falls back to JWT claims that omit `confirmedAt`. Missing confirmation data is never inferred from user metadata or auto-confirmed. Lookup failures return a retryable verification error; an authoritative unconfirmed account remains blocked and receives confirmation instructions.
