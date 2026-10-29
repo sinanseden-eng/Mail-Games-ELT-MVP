@@ -45,13 +45,16 @@ function refresh(){
   const a=shot&&mode==='flight'&&elapsed<shot.duration?shot.before:match.arena,tank=a.tanks[a.active];
   $('active-name').textContent=tank?.name||'Round complete';
   $('active-name').style.color=tank?.colour;
+  const activePortrait=$('active-portrait');activePortrait.src=TanxSprites[a.active%TanxSprites.length];activePortrait.alt='';
+  $('unit-state').textContent=tank?.hp>0?`${tank.hp} HP · ${tank.type==='cpu'?'CPU COMMANDER':'HUMAN COMMANDER'}`:'VEHICLE DISABLED';
   $('round-label').textContent=`ROUND ${String(match.round).padStart(2,'0')} / FIRST TO ${match.config.roundsToWin}`;
   $('wind-readout').textContent=a.wind===0?'CALM':`${a.wind<0?'←':'→'} ${Math.abs(a.wind)} px/s²`;
   $('roster').replaceChildren(...a.tanks.map((t,i)=>{
     const card=document.createElement('div');card.className=`tank-card ${i===a.active?'active':''}`;card.style.setProperty('--tank',t.colour);
     const name=document.createElement('div');name.className='tank-name';name.textContent=`${i+1} / ${t.name}${t.type==='cpu'?' · CPU':''}`;
+    const portrait=document.createElement('img');portrait.className='tank-portrait';portrait.src=TanxSprites[i%TanxSprites.length];portrait.alt='';
     const hp=document.createElement('div');hp.className='hp';const fill=document.createElement('span');fill.style.width=`${t.hp}%`;hp.append(fill);
-    const stats=document.createElement('div');stats.className='stats';stats.textContent=`${t.hp>0?`${t.hp} HP`:'OUT'}     ${match.wins[i]} WIN${match.wins[i]===1?'':'S'}`;card.append(name,hp,stats);return card;
+    const stats=document.createElement('div');stats.className='stats';stats.textContent=`${t.hp>0?`${t.hp} HP`:'OUT'}     ${match.wins[i]} WIN${match.wins[i]===1?'':'S'}`;card.append(name,portrait,hp,stats);return card;
   }));
   updateAim(false); setControls();
 }

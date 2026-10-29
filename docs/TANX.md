@@ -44,3 +44,16 @@ the same wind/terrain physics before difficulty-dependent aim error.
 Run `npm test`, `npm run check`, `npm run build`. `tests/tanx.test.mjs` covers
 terrain, opacity cuts, flight, wind, toggles, support/falls, both-direction AI,
 rounds/wins/draw limits, server validation, question grading, retries and turns.
+
+## Battlefield graphics edition
+
+The renderer now outputs at 1280×800 while physics coordinates remain 640×400.
+It caches sunset skies, layered ridges, forests and mist per terrain seed, and
+caches the textured soil/grass/scorched crater surface per terrain revision.
+Brighter model bakes are embedded in the offline file and reused in commander
+portraits. Barrels pivot independently. Damage adds smoke; destroyed vehicles
+leave wrecks. Shell tips interpolate between saved physics samples; muzzle
+flash, debris, expanding blast rings and short impact recoil are visual only.
+The HUD does not shake. System reduced-motion settings disable camera recoil
+and moving debris. Renderer tests cover loaded sprites, flight/impact/falling
+frames, non-mutation of server state, and the terrain alpha collision mask.

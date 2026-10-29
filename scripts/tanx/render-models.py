@@ -14,15 +14,18 @@ a=d['meshes'][0]['primitives'][0]['attributes'];pos=accessor(a['POSITION']);norm
 print(p.name,'vertices',len(pos),'bounds',pos.min(0),pos.max(0))
 v=d['bufferViews'][d['images'][0]['bufferView']];tex=np.asarray(Image.open(io.BytesIO(b[offset+v.get('byteOffset',0):offset+v.get('byteOffset',0)+v['byteLength']])).convert('RGB'))
 # Remove the fixed forward barrel: the game supplies a pivoting barrel.
-keep=~((pos[:,0]<-.2)&(pos[:,1]>.05));pos=pos[keep];norm=norm[keep];uv=uv[keep]
+tip=pos[pos[:,0]<-.8]
+barrel_y0,barrel_y1=tip[:,1].min()-.02,tip[:,1].max()+.02
+barrel_z=np.median(tip[:,2]);barrel_half=max(.055,np.max(np.abs(tip[:,2]-barrel_z))+.02)
+keep=~((pos[:,0]<-.06)&(pos[:,1]>barrel_y0)&(pos[:,1]<barrel_y1)&(np.abs(pos[:,2]-barrel_z)<barrel_half));pos=pos[keep];norm=norm[keep];uv=uv[keep]
 # Side view shows tracks and front armour, with a slight elevated camera.
 forward=np.array([.22,.24,1.]);forward/=np.linalg.norm(forward);right=np.cross([0.,1.,0.],forward);right/=np.linalg.norm(right);up=np.cross(forward,right)
 xy=np.stack([pos@right,-pos@up],1);z=pos@forward
 W,H=384,224;scale=min((W-20)/np.ptp(xy[:,0]),(H-16)/np.ptp(xy[:,1]));xy=(xy-(xy.min(0)+xy.max(0))/2)*scale+[W/2,H/2]
 x=np.floor(xy[:,0]).astype(int);y=np.floor(xy[:,1]).astype(int)
 uv=np.mod(uv,1);tx=np.clip((uv[:,0]*tex.shape[1]).astype(int),0,tex.shape[1]-1);ty=np.clip((uv[:,1]*tex.shape[0]).astype(int),0,tex.shape[0]-1)
-light=np.array([.65,1.,.3]);light/=np.linalg.norm(light);shade=.55+.6*np.maximum(0,norm@light);col=np.minimum(255,tex[ty,tx]*shade[:,None]).astype('uint8')
+light=np.array([.65,1.,.3]);light/=np.linalg.norm(light);shade=.8+.7*np.maximum(0,norm@light);col=np.minimum(255,tex[ty,tx]*shade[:,None]).astype('uint8')
 out=np.zeros((H,W,4),dtype='uint8');depth=np.full((H,W),-np.inf)
 for dx,dy in [(0,0),(1,0),(0,1),(-1,0),(0,-1)]:
  xx=np.clip(x+dx,0,W-1);yy=np.clip(y+dy,0,H-1);flat=yy*W+xx;order=np.lexsort((-z,flat));first=np.r_[True,flat[order][1:]!=flat[order][:-1]];idx=order[first];sel=z[idx]>depth[yy[idx],xx[idx]];idx=idx[sel];out[yy[idx],xx[idx],:3]=col[idx];out[yy[idx],xx[idx],3]=255;depth[yy[idx],xx[idx]]=z[idx]
-im=Image.fromarray(out);bbox=im.getbbox();im=im.crop(bbox);im.thumbnail((44,24),Image.Resampling.LANCZOS);im=im.quantize(colors=48,method=Image.Quantize.FASTOCTREE,dither=Image.Dither.NONE);im.save(sys.argv[2]);print('saved',sys.argv[2],im.size)
+im=Image.fromarray(out);bbox=im.getbbox();im=im.crop(bbox);im.thumbnail((160,96),Image.Resampling.LANCZOS);im=im.quantize(colors=128,method=Image.Quantize.FASTOCTREE,dither=Image.Dither.NONE);im.save(sys.argv[2]);print('saved',sys.argv[2],im.size)
