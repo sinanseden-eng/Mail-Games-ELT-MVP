@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#14283a"><title>TANX · Artillery Club</title>
+<style>
+:root{color-scheme:dark;--ink:#edf2dd;--muted:#98afbc;--lime:#d4f28a;--panel:#172c3e;--edge:#365264;--bg:#0b1b29;font-family:ui-monospace,Consolas,monospace}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 30% 0%,#29485a 0,transparent 65%),var(--bg);color:var(--ink);min-height:100vh}button,input,select{font:inherit}button,select,input[type=number],input[type=text]{border:1px solid var(--edge);border-radius:6px;background:#102536;color:var(--ink);padding:10px}button{cursor:pointer;min-height:44px;transition:background .15s}button:hover:enabled{background:#2b4c5e}button:disabled{opacity:.4;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #ffe08a;outline-offset:3px}.primary{background:var(--lime);color:#192e29;border-color:var(--lime);font-weight:800}.primary:hover:enabled{background:#e6ffac}.quiet{background:transparent}.danger{color:#ffa7aa}main{max-width:1260px;margin:auto;padding:24px 30px 36px}header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}.brand{display:flex;align-items:center;gap:13px}.brand-mark{width:43px;height:43px;display:grid;place-items:center;border:1px solid #aecb8e;color:var(--lime);font-size:25px;font-weight:bold;box-shadow:inset 0 0 0 4px #203c42}.brand h1{margin:0;letter-spacing:5px;font-size:27px}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--lime);text-transform:uppercase}.subtitle{font-size:11px;color:var(--muted);margin-top:5px}.actions{display:flex;gap:8px;flex-wrap:wrap}.layout{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:18px;align-items:start}.screen-shell{border:1px solid #57717b;border-radius:10px;padding:8px;background:#0c1723;box-shadow:0 22px 70px #0004;position:relative;overflow:hidden}.screen-shell:after{content:"";position:absolute;inset:8px;pointer-events:none;background:repeating-linear-gradient(transparent 0 3px,#0000000b 3px 4px);border-radius:4px}canvas{display:block;width:100%;aspect-ratio:8/5;image-rendering:pixelated;border-radius:4px;background:#152a46}canvas:focus{outline:none}.screen-bottom{display:flex;justify-content:space-between;font-size:10px;letter-spacing:1px;padding:12px 3px 4px;color:#91a9b2}.state-bar{display:flex;align-items:center;gap:10px;padding:16px 0;font-size:12px;color:#c0d4d9}.light{height:7px;width:7px;flex-shrink:0;background:var(--lime);border-radius:50%;box-shadow:0 0 12px #d4f26b55}.card{border:1px solid var(--edge);border-radius:10px;background:#172c3eea;padding:20px}.card h2{font-size:16px;margin:9px 0 20px}.control{margin-top:20px}.label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.label-row label{font-size:11px;color:#afc2ca;text-transform:uppercase;letter-spacing:1px}.value{font-size:19px;color:#fff2c7}input[type=range]{width:100%;accent-color:var(--lime);cursor:pointer;min-height:30px}.number-row{display:flex;gap:8px;margin-top:8px}.number-row input{width:100%;min-width:0;text-align:center}.number-row button{width:44px;flex-shrink:0}.fire{margin-top:22px;width:100%;padding:16px;font-size:16px;letter-spacing:2px}.charge{width:100%;margin-top:8px;font-size:11px;touch-action:none}.hint{font-size:10px;line-height:1.7;color:var(--muted);margin-top:14px}.roster{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px}.tank-card{border:1px solid var(--edge);padding:12px;border-radius:7px;background:#132737;font-size:11px;min-width:0}.tank-card.active{border-color:var(--lime);background:#223b40}.tank-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tank);font-weight:bold;margin-bottom:10px}.hp{height:4px;background:#0b1824;margin:8px 0}.hp span{display:block;height:100%;background:var(--tank)}.stats{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}.below{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.below h3{font-size:12px;margin:0 0 10px;color:#d7e7c9}.below p,.below li{font-size:11px;line-height:1.8;color:#a8bdc5}.below ul{padding-left:16px;margin:0}.log{height:95px;overflow:auto;font-size:11px;line-height:1.8;color:#a8bdc5}.log p{margin:0 0 5px}.wind{margin-top:20px;border:1px solid #38515b;border-radius:5px;padding:12px;display:flex;justify-content:space-between;font-size:11px;color:#b5d7d9}.legend{display:flex;justify-content:space-between;font-size:9px;color:#8ba6b0}.banner{padding:16px;border:1px solid #839771;border-radius:7px;background:#304641;margin:0 0 16px;font-size:12px;line-height:1.7}.banner button{margin-top:10px;width:100%}[hidden]{display:none!important}dialog{width:min(730px,calc(100% - 28px));max-height:92vh;overflow:auto;background:#122b3b;border:1px solid #607a83;border-radius:12px;padding:25px;color:var(--ink);box-shadow:0 35px 100px #0009}dialog::backdrop{background:#061521c9;backdrop-filter:blur(5px)}dialog h2{margin:9px 0 10px;font-size:26px}dialog p{font-size:12px;line-height:1.7;color:#afc4c9}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid label{display:block;font-size:11px;color:#bdd1d4}.grid label>input,.grid label>select{display:block;width:100%;margin-top:7px}.players{margin:18px 0}.player-setup{display:grid;grid-template-columns:28px 1fr 1fr;gap:9px;align-items:center;margin-bottom:9px}.player-setup input,.player-setup select{min-width:0;width:100%}.swatch{height:14px;width:14px;border-radius:3px}.checks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.checks label{display:flex;align-items:center;gap:8px;font-size:11px;color:#b9ccd0;min-height:25px}.checks input{accent-color:var(--lime);width:16px;height:16px}.dialog-actions{display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--edge);padding-top:18px;margin-top:18px}details{margin-top:16px}summary{cursor:pointer;font-size:12px;color:#d4e0bf}.touch-note{color:#7998a5;font-size:10px;text-align:center;margin-top:26px}.error{color:#ffb1b1}body.embedded{background:var(--bg)}body.embedded main{padding:0;max-width:100%}body.embedded header,body.embedded .below,body.embedded .touch-note,body.embedded .local-only{display:none}body.embedded .layout{grid-template-columns:1fr}body.embedded #controls{display:none}body.embedded .roster{margin:8px 0;grid-template-columns:repeat(2,minmax(0,1fr))}body.embedded .screen-shell{box-shadow:none}body.embedded .state-bar{padding:9px 0}body.embedded #round-banner{margin-top:8px}body.embedded .screen-bottom{padding:7px 3px 0}@media(max-width:950px){main{padding:18px}.layout{grid-template-columns:minmax(0,1fr) 240px}.card{padding:16px}.roster{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:680px){main{padding:12px}header{align-items:flex-start;margin-bottom:15px}.brand h1{font-size:22px}.subtitle{font-size:9px}.brand-mark{width:35px;height:35px}.actions button{padding:8px;font-size:10px}.layout{grid-template-columns:1fr}#controls{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}.control{margin-top:0}#controls>h2,#controls>.eyebrow{grid-column:1/-1}.fire,.charge,.hint,.wind{grid-column:1/-1}.below{grid-template-columns:1fr}.grid{gap:12px}.checks{grid-template-columns:1fr}.roster{gap:7px}.tank-card{padding:10px}.player-setup{grid-template-columns:18px 1fr 105px}dialog{padding:20px}.screen-bottom{font-size:8px}.state-bar{font-size:11px}.card h2{margin-bottom:14px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body><main>
+<header><div class="brand"><div class="brand-mark">T</div><div><h1>TANX</h1><div class="subtitle">ARTILLERY CLUB / AMIGA SPIRIT, BROWSER SOUL</div></div></div><div class="actions"><button id="sound" aria-pressed="false">Sound off</button><button id="pause">Pause</button><button id="setup-button">New match</button></div></header>
+<div id="round-banner" class="banner" hidden role="status"></div>
+<div class="layout"><section><div class="screen-shell"><canvas id="arena" width="640" height="400" tabindex="0" aria-label="Tanx battlefield with destructible hills and tanks"></canvas><div class="screen-bottom"><span>640 × 400 · COPPER SKY</span><span id="round-label">ROUND 01 / FIRST TO 2</span></div></div><div class="state-bar" role="status"><span class="light"></span><span id="status">Set up your first match.</span></div><div id="roster" class="roster"></div></section>
+<aside class="card" id="controls"><span class="eyebrow">Firing solution</span><h2 id="active-name">Player 1</h2><div class="control"><div class="label-row"><label for="angle">Turret angle</label><output class="value" id="angle-value">45°</output></div><input type="range" id="angle" min="0" max="180" value="45"><div class="legend"><span>0° RIGHT</span><span>90° UP</span><span>180° LEFT</span></div><div class="number-row"><button data-adjust="angle:-1" aria-label="Decrease turret angle">−</button><input id="angle-number" type="number" min="0" max="180" value="45" aria-label="Exact turret angle"><button data-adjust="angle:1" aria-label="Increase turret angle">+</button></div></div><div class="control"><div class="label-row"><label for="power">Shot power</label><output class="value" id="power-value">60%</output></div><input type="range" id="power" min="0" max="100" value="60"><div class="legend"><span>SOFT</span><span>FULL SEND</span></div><div class="number-row"><button data-adjust="power:-1" aria-label="Decrease shot power">−</button><input id="power-number" type="number" min="0" max="100" value="60" aria-label="Exact shot power"><button data-adjust="power:1" aria-label="Increase shot power">+</button></div></div><button class="primary fire" id="fire">FIRE →</button><button class="charge" id="charge">Hold to charge · release to fire</button><div class="wind"><span>WIND</span><strong id="wind-readout">CALM</strong></div><p class="hint">← → / A D aim · ↑ ↓ / W S power<br>Tap Space to fire. Hold Space to charge.<br>P pauses. Sound starts only when enabled.</p></aside></div>
+<div class="below"><section class="card"><h3>THE FIELD MANUAL</h3><ul><li>Angle is absolute: 0° fires right, 180° fires left.</li><li>Wind bends a shell in flight. Learn from the dotted trail.</li><li>Crater blasts hurt nearby tanks, including your own.</li><li>Destroy the support and tanks fall. Last tank wins.</li><li>A turn limit breaks stalemates. Tied health is a draw.</li></ul></section><section class="card"><h3>FIELD LOG</h3><div id="log" class="log" aria-live="polite"><p>Welcome, commander. Gravity has joined the opposing team.</p></div></section></div><p class="touch-note">ORIGINAL CODE-DRAWN ARENA · YOUR MESHY TANKS · NO DOWNLOADS, ACCOUNTS OR EXTERNAL ASSETS REQUIRED</p>
+<dialog id="setup"><form id="setup-form"><span class="eyebrow">Match briefing</span><h2>Pick your crew. Shape the battlefield.</h2><p>Two to four commanders, one keyboard or touchscreen. Every match is a fresh patch of trouble.</p><div class="grid"><label>Players<select id="player-count"><option value="2">2 commanders</option><option value="3">3 commanders</option><option value="4">4 commanders</option></select></label><label>Match length<select name="roundsToWin"><option value="1">Single round</option><option value="2" selected>First to 2 · best of 3 with two players</option><option value="3">First to 3 · best of 5 with two players</option></select></label></div><div id="player-setup" class="players"></div><div class="grid"><label>Terrain difficulty<select name="terrain"><option value="gentle">Gentle · easy sightlines</option><option value="rolling" selected>Rolling hills · classic</option><option value="mountains">Mountains · high-angle challenge</option></select></label><label>CPU accuracy<select name="difficulty"><option value="rookie">Rookie · ±15%</option><option value="veteran" selected>Veteran · ±5%</option><option value="elite">Elite · ±1%</option></select></label><label>Wind changes<select name="windMode"><option value="off">Wind off</option><option value="round">Once per round</option><option value="turn" selected>Every turn</option></select></label><label>Wind strength (0–35)<input type="number" name="windStrength" min="0" max="35" value="18" required></label></div><details><summary>Teacher controls · physics & difficulty</summary><p>Switch individual mechanics on or off. With damage off, practise trajectories; the turn limit still ends the round.</p><div class="grid"><label>Gravity (0 = straight shots)<input name="gravity" type="number" min="0" max="150" value="90" required></label><label>Blast radius (18–60 px)<input name="blastRadius" type="number" min="18" max="60" value="36" required></label><label>Turns per tank before health tiebreak<input name="turnLimit" type="number" min="4" max="80" value="40" required></label></div><div class="checks"><label><input name="destructible" type="checkbox" checked>Destructible terrain</label><label><input name="falling" type="checkbox" checked>Tanks fall when unsupported</label><label><input name="tankCollision" type="checkbox" checked>Shells collide with tanks</label><label><input name="terrainCollision" type="checkbox" checked>Shells collide with terrain</label><label><input name="damage" type="checkbox" checked>Blast damage</label><label><input name="fallDamage" type="checkbox" checked>Damage from hard landings</label></div></details><p id="setup-error" class="error" role="alert"></p><div class="dialog-actions"><button type="button" id="cancel-setup">Back</button><button class="primary" type="submit">Start match →</button></div></form></dialog>
+<script id="tanx-engine">
+const TanxCore=(()=>{
+// TANX — deterministic rules shared by offline play and the classroom server.
+// Coordinates are pixels in a 640 × 400 arena; time is measured in seconds.
+const WIDTH = 640, HEIGHT = 400, STEP = 1 / 120;
+const COLOURS = ['#ff6479', '#66caff', '#a9ed78', '#ffdb71'];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function random(seed) {
+  let s = Number(seed) >>> 0 || 1;
+  return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return (s >>> 0) / 4294967296; };
+}
+function settings(input = {}) {
+  const choose = (key, values, fallback) => {
+    const v = input[key] ?? fallback;
+    if (!values.includes(v)) throw new Error(`Invalid Tanx ${key}.`);
+    return v;
+  };
+  const integer = (key, lo, hi, fallback) => {
+    const n = input[key] == null ? fallback : Number(input[key]);
+    if (!Number.isInteger(n) || n < lo || n > hi) throw new Error(`Tanx ${key} must be ${lo}–${hi}.`);
+    return n;
+  };
+  const toggle = (key, fallback = true) => {
+    if (input[key] != null && typeof input[key] !== 'boolean') throw new Error(`Invalid Tanx ${key}.`);
+    return input[key] ?? fallback;
+  };
+  return {
+    terrain: choose('terrain', ['gentle', 'rolling', 'mountains'], 'rolling'),
+    windMode: choose('windMode', ['off', 'round', 'turn'], 'turn'),
+    windStrength: integer('windStrength', 0, 35, 18),
+    gravity: integer('gravity', 0, 150, 90),
+    destructible: toggle('destructible'), falling: toggle('falling'),
+    tankCollision: toggle('tankCollision'), terrainCollision: toggle('terrainCollision'),
+    damage: toggle('damage'), fallDamage: toggle('fallDamage'),
+    blastRadius: integer('blastRadius', 18, 60, 36),
+    roundsToWin: integer('roundsToWin', 1, 5, 2),
+    turnLimit: integer('turnLimit', 4, 80, 40),
+    difficulty: choose('difficulty', ['rookie', 'veteran', 'elite'], 'veteran')
+  };
+}
+
+// Terrain Engine: a binary pixel-alpha buffer, not a height-only collision map.
+// Circular cuts can create overhangs. The browser paints the same cuts with
+// destination-out; the server uses identical integer pixels without a canvas.
+class Terrain {
+  constructor(seed, kind = 'rolling', count = 2, craters = []) {
+    this.seed = seed; this.kind = kind; this.count = count;
+    this.data = new Uint8Array(WIDTH * HEIGHT);
+    this.craters = [];
+    const rng = random(seed), p = [rng() * 6.28, rng() * 6.28, rng() * 6.28];
+    const strength = {gentle: 13, rolling: 38, mountains: 70}[kind] ?? 38;
+    this.heights = Array.from({length: WIDTH}, (_, x) => Math.round(clamp(
+      255 + Math.sin(x / 101 + p[0]) * strength + Math.sin(x / 43 + p[1]) * strength * .42 + Math.sin(x / 19 + p[2]) * strength * .12,
+      145, 333)));
+    // A small level pad gives every tank a stable, unburied start.
+    for (let i = 0; i < count; i++) {
+      const x = spawnX(i, count), y = this.heights[x];
+      for (let dx = -13; dx <= 13; dx++) this.heights[x + dx] = y;
+    }
+    for (let x = 0; x < WIDTH; x++) for (let y = this.heights[x]; y < HEIGHT; y++) this.data[y * WIDTH + x] = 255;
+    for (const c of craters) this.carve(c.x, c.y, c.r);
+  }
+  solid(x, y) {
+    x = Math.floor(x); y = Math.floor(y);
+    return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && this.data[y * WIDTH + x] > 0;
+  }
+  carve(x, y, r) {
+    const crater = {x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100, r};
+    x = crater.x; y = crater.y;
+    this.craters.push(crater);
+    for (let py = Math.max(0, Math.floor(y - r)); py <= Math.min(HEIGHT - 1, Math.ceil(y + r)); py++)
+      for (let px = Math.max(0, Math.floor(x - r)); px <= Math.min(WIDTH - 1, Math.ceil(x + r)); px++)
+        if ((px - crater.x) ** 2 + (py - crater.y) ** 2 <= r * r) this.data[py * WIDTH + px] = 0;
+    return crater;
+  }
+  supported(tank, y = tank.y) {
+    return [-5, 0, 5].some(dx => this.solid(tank.x + dx, y));
+  }
+}
+function spawnX(index, count) { return Math.round(65 + index * (WIDTH - 130) / (count - 1)); }
+function windAt(seed, turn, config) {
+  if (config.windMode === 'off') return 0;
+  const rng = random((seed ^ Math.imul(config.windMode === 'round' ? 1 : turn + 1, 2654435761)) >>> 0);
+  return Math.round((rng() * 2 - 1) * config.windStrength);
+}
+function createArena(seed, config, players) {
+  const terrain = new Terrain(seed, config.terrain, players.length);
+  const tanks = players.map((p, i) => ({name: String(p.name || `Player ${i + 1}`).slice(0, 24), type: p.type === 'cpu' ? 'cpu' : 'human', colour: COLOURS[i], x: spawnX(i, players.length), y: terrain.heights[spawnX(i, players.length)], hp: 100, angle: i < players.length / 2 ? 45 : 135, power: 60}));
+  return {seed: seed >>> 0, tanks, craters: [], active: 0, turn: 0, wind: windAt(seed, 0, config)};
+}
+
+// Physics / Projectiles: fixed-step integration, swept one-pixel collision.
+function launch(tank, angle, power) {
+  const a = angle * Math.PI / 180, v = power * 3.1;
+  return {x: tank.x + Math.cos(a) * 15, y: tank.y - 10 - Math.sin(a) * 15,
+    vx: Math.cos(a) * v, vy: -Math.sin(a) * v, age: 0};
+}
+function stepProjectile(p, terrain, tanks, shooter, wind, config, dt = STEP) {
+  const ox = p.x, oy = p.y;
+  p.vx += wind * dt; p.vy += config.gravity * dt;
+  const nx = p.x + p.vx * dt, ny = p.y + p.vy * dt;
+  const steps = Math.max(1, Math.ceil(Math.hypot(nx - ox, ny - oy)));
+  p.age += dt;
+  for (let n = 1; n <= steps; n++) {
+    p.x = ox + (nx - ox) * n / steps; p.y = oy + (ny - oy) * n / steps;
+    if (p.x < 0 || p.x >= WIDTH || p.y >= HEIGHT || p.age > 16 || p.y < -2500) return {kind: 'miss', x: p.x, y: p.y};
+    if (config.tankCollision) for (let i = 0; i < tanks.length; i++) {
+      const t = tanks[i];
+      if (t.hp > 0 && (i !== shooter || p.age > .15) && Math.abs(p.x - t.x) <= 8 && p.y >= t.y - 14 && p.y <= t.y)
+        return {kind: 'tank', tank: i, x: p.x, y: p.y};
+    }
+    if (config.terrainCollision && terrain.solid(p.x, p.y)) return {kind: 'terrain', x: p.x, y: p.y};
+  }
+  return null;
+}
+function traceShot(arena, angle, power, config, target = null, sharedTerrain = null) {
+  const terrain = sharedTerrain || new Terrain(arena.seed, config.terrain, arena.tanks.length, arena.craters);
+  const p = launch(arena.tanks[arena.active], angle, power), path = [[p.x, p.y, 0]];
+  let hit, closest = Infinity, ticks = 0;
+  while (!hit) {
+    hit = stepProjectile(p, terrain, arena.tanks, arena.active, arena.wind, config);
+    if (target) closest = Math.min(closest, Math.hypot(p.x - target.x, p.y - target.y + 7));
+    if ((++ticks % 4 === 0 || hit) && !target) path.push([+p.x.toFixed(2), +p.y.toFixed(2), +p.age.toFixed(4)]);
+  }
+  return {path, hit, duration: p.age, closest, terrain};
+}
+function settleTanks(terrain, tanks, config) {
+  const falls = [];
+  if (!config.falling) return falls;
+  for (let i = 0; i < tanks.length; i++) {
+    const t = tanks[i]; if (t.hp <= 0) continue;
+    const from = t.y; let y = from;
+    while (y < HEIGHT + 12 && !terrain.supported(t, y)) y++;
+    t.y = y;
+    if (y >= HEIGHT) t.hp = 0;
+    else if (config.damage && config.fallDamage) t.hp = Math.max(0, t.hp - Math.max(0, Math.round((y - from - 13) * .65)));
+    if (y !== from) falls.push({tank: i, from, to: y});
+  }
+  return falls;
+}
+function resolveShot(arena, angle, power, config, enabled = true) {
+  if (!Number.isInteger(angle) || angle < 0 || angle > 180 || !Number.isInteger(power) || power < 0 || power > 100) throw new Error('Choose an angle of 0–180° and power of 0–100%.');
+  const before = structuredClone(arena), after = structuredClone(arena);
+  const shooter = after.active;
+  after.tanks[shooter].angle = angle; after.tanks[shooter].power = power;
+  const trace = enabled ? traceShot(after, angle, power, config) : {path: [], hit: null, duration: .8, terrain: new Terrain(after.seed, config.terrain, after.tanks.length, after.craters)};
+  const {hit, terrain} = trace, damage = Array(after.tanks.length).fill(0);
+  let crater = null;
+  if (hit && hit.kind !== 'miss') {
+    if (config.damage) after.tanks.forEach((tank, i) => {
+      if (tank.hp <= 0) return;
+      const distance = Math.max(0, Math.hypot(tank.x - hit.x, tank.y - 7 - hit.y) - 5);
+      const amount = hit.tank === i ? 90 : Math.round(75 * Math.max(0, 1 - distance / config.blastRadius) ** .75);
+      damage[i] = Math.min(tank.hp, amount); tank.hp -= damage[i];
+    });
+    if (config.destructible) {crater = terrain.carve(hit.x, hit.y, config.blastRadius); after.craters.push(crater);}
+  }
+  const falls = settleTanks(terrain, after.tanks, config);
+  after.turn++;
+  const living = after.tanks.map((t, i) => t.hp > 0 ? i : -1).filter(i => i >= 0);
+  const limited = after.turn >= config.turnLimit * after.tanks.length;
+  const over = living.length <= 1 || limited;
+  let winner = living.length === 1 ? living[0] : null;
+  if (limited && living.length > 1) {
+    const best = Math.max(...after.tanks.map(t => t.hp)), leaders = living.filter(i => after.tanks[i].hp === best);
+    winner = leaders.length === 1 ? leaders[0] : null;
+  }
+  if (living.length) for (let n = 1; n <= after.tanks.length; n++) {
+    const i = (shooter + n) % after.tanks.length;
+    if (after.tanks[i].hp > 0) {after.active = i; break;}
+  }
+  after.wind = windAt(after.seed, after.turn, config);
+  return {before, after, shooter, angle, power, enabled, path: trace.path,
+    hit, duration: trace.duration, damage, crater, falls, over, winner, limited};
+}
+
+// AI Controller: score trajectories using the actual wind and terrain, then add
+// deliberate difficulty-dependent error. It never sees a human's future shot.
+function planAI(arena, config, rng = Math.random) {
+  const tank = arena.tanks[arena.active];
+  const rivals = arena.tanks.map((t, i) => ({...t, i})).filter(t => t.hp > 0 && t.i !== arena.active);
+  const target = rivals.sort((a, b) => Math.abs(a.x - tank.x) - Math.abs(b.x - tank.x))[0];
+  if (!target) return {angle: 90, power: 0};
+  let best = {score: Infinity, angle: target.x > tank.x ? 45 : 135, power: 60};
+  const terrain = new Terrain(arena.seed, config.terrain, arena.tanks.length, arena.craters);
+  // Coarse grid followed by a local search handles hills and headwinds.
+  for (let a = 18; a <= 162; a += 9) for (let p = 20; p <= 100; p += 8) {
+    const shot = traceShot(arena, a, p, config, target, terrain);
+    let score = shot.closest + (shot.hit.tank === arena.active ? 400 : 0);
+    if (shot.hit.tank === target.i) score -= 30;
+    if (score < best.score) best = {score, angle: a, power: p};
+  }
+  const coarse = {...best};
+  for (let a = coarse.angle - 8; a <= coarse.angle + 8; a += 2)
+    for (let p = Math.max(1, coarse.power - 8); p <= Math.min(100, coarse.power + 8); p += 2) {
+      const shot = traceShot(arena, a, p, config, target, terrain);
+      const score = shot.closest + (shot.hit.tank === arena.active ? 400 : 0) - (shot.hit.tank === target.i ? 30 : 0);
+      if (score < best.score) best = {score, angle: a, power: p};
+    }
+  const error = {rookie: .15, veteran: .05, elite: .01}[config.difficulty];
+  return {angle: Math.round(clamp(best.angle + (rng() * 2 - 1) * 90 * error, 0, 180)), power: Math.round(clamp(best.power * (1 + (rng() * 2 - 1) * error), 0, 100))};
+}
+
+// Match Engine: round scores and serializable deterministic classroom state.
+function newMatch(config, players, seed = Date.now() >>> 0) {
+  return {config: settings(config), players, seed, round: 1, wins: players.map(() => 0), arena: createArena(seed, settings(config), players), finished: false, winner: null};
+}
+function playMatch(match, angle, power, enabled = true) {
+  if (match.finished) throw new Error('This Tanx match has ended.');
+  const next = structuredClone(match), replay = resolveShot(next.arena, angle, power, next.config, enabled);
+  next.arena = replay.after;
+  if (replay.over) {
+    if (replay.winner !== null) next.wins[replay.winner]++;
+    if (next.wins.some(n => n >= next.config.roundsToWin)) {next.finished = true; next.winner = replay.winner;}
+  }
+  return {match: next, replay};
+}
+function nextRound(match) {
+  const next = structuredClone(match);
+  next.round++;
+  next.arena = createArena((next.seed + Math.imul(next.round - 1, 1013904223)) >>> 0, next.config, next.players);
+  // Alternate the opening tank each round, including with four players.
+  next.arena.active = (next.round - 1) % next.players.length;
+  return next;
+}
+
+// Terrain buffer painting. Pixel opacity is identical to the simulation mask.
+function paintTerrain(canvas, terrain) {
+  canvas.width = WIDTH; canvas.height = HEIGHT;
+  const ctx = canvas.getContext('2d'), image = ctx.createImageData(WIDTH, HEIGHT);
+  const earth = [[95, 61, 56], [107, 72, 57], [121, 83, 59], [83, 58, 60]];
+  for (let y = 0; y < HEIGHT; y++) for (let x = 0; x < WIDTH; x++) {
+    if (y < terrain.heights[x]) continue;
+    const i = (y * WIDTH + x) * 4, top = y - terrain.heights[x];
+    const rgb = top < 2 ? [183, 228, 103] : top < 5 ? [84, 137, 76] : earth[Math.floor((y + Math.sin(x / 25) * 3) / 12) % 4];
+    const grain = ((x * 17 + y * 31) % 13 === 0) ? 13 : 0;
+    image.data[i] = rgb[0] + grain; image.data[i + 1] = rgb[1] + grain; image.data[i + 2] = rgb[2] + grain; image.data[i + 3] = 255;
+  }
+  ctx.putImageData(image, 0, 0);
+  ctx.globalCompositeOperation = 'destination-out';
+  // Erase integer runs so the painted alpha and server collision pixels match.
+  // Each erased run is part of a circular crater; no flattened heightmap cuts.
+  for (const {x, y, r} of terrain.craters) {
+    for (let py = Math.max(0, Math.floor(y - r)); py <= Math.min(HEIGHT - 1, Math.ceil(y + r)); py++) {
+      if ((py - y) ** 2 > r * r) continue;
+      const half = Math.sqrt(Math.max(0, r * r - (py - y) ** 2));
+      const left = Math.max(0, Math.ceil(x - half)), right = Math.min(WIDTH - 1, Math.floor(x + half));
+      if (right >= left) ctx.fillRect(left, py, right - left + 1, 1);
+    }
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// Canvas renderer; graphics are original code-drawn pixels, with no assets.
+class Renderer {
+  constructor(canvas, spriteUrls = []) {
+    this.canvas = canvas; canvas.width = WIDTH; canvas.height = HEIGHT; this.ctx = canvas.getContext('2d'); this.buffer = document.createElement('canvas'); this.key = '';
+    this.sprites = spriteUrls.map(url => {const image = new Image(); image.src = url; return image;});
+  }
+  draw(arena, config, {time = 0, shot = null, progress = 0, aim = null, round = 1, wins = []} = {}) {
+    const c = this.ctx; c.imageSmoothingEnabled = false;
+    const key = `${arena.seed}:${arena.craters.length}:${config.terrain}`;
+    if (key !== this.key) {paintTerrain(this.buffer, new Terrain(arena.seed, config.terrain, arena.tanks.length, arena.craters)); this.key = key;}
+    for (let y = 0; y < HEIGHT; y += 4) {const t = y / HEIGHT; c.fillStyle = `rgb(${Math.round(14 + t * 32)},${Math.round(26 + t * 79)},${Math.round(59 + t * 72)})`; c.fillRect(0, y, WIDTH, 4);}
+    // Distant copper mountains and stars stay fixed; the land does the moving.
+    for (let i = 0; i < 48; i++) {c.fillStyle = i % 3 ? '#8eaeb9' : '#c7d5bb'; c.fillRect((i * 131 + 31) % WIDTH, 45 + (i * 43) % 100, 1, 1);}
+    c.fillStyle = '#314d69'; c.beginPath(); c.moveTo(0, HEIGHT);
+    for (let x = 0; x <= WIDTH; x += 8) c.lineTo(x, 230 + Math.sin(x / 91) * 30 + Math.sin(x / 36) * 14);
+    c.lineTo(WIDTH, HEIGHT); c.fill();
+    c.drawImage(this.buffer, 0, 0);
+    const tanks = arena.tanks.map(t => ({...t}));
+    if (shot && progress >= shot.duration && shot.falls.length) for (const fall of shot.falls) {
+      const t = clamp((progress - shot.duration - .2) / .65, 0, 1);
+      tanks[fall.tank].y = fall.from + (fall.to - fall.from) * t * t;
+    }
+    tanks.forEach((t, i) => {
+      if (t.hp <= 0 && !(shot && progress < shot.duration + .8 && shot.before.tanks[i].hp > 0)) return;
+      const a = (aim && i === arena.active ? aim.angle : t.angle) * Math.PI / 180;
+      c.fillStyle = '#172333'; c.fillRect(Math.round(t.x - 9), Math.round(t.y - 4), 18, 5);
+      c.fillStyle = t.colour; c.fillRect(Math.round(t.x - 7), Math.round(t.y - 8), 14, 5); c.fillRect(Math.round(t.x - 4), Math.round(t.y - 11), 8, 4);
+      const sprite = this.sprites[i % this.sprites.length];
+      if (sprite?.complete && sprite.naturalWidth) {
+        c.save(); c.translate(Math.round(t.x), Math.round(t.y));
+        if (Math.cos(a) > 0) c.scale(-1, 1);
+        c.drawImage(sprite, -13, -16, 26, 16); c.restore();
+      }
+      c.strokeStyle = t.colour; c.lineWidth = 3; c.beginPath(); c.moveTo(t.x, t.y - 10); c.lineTo(t.x + Math.cos(a) * 14, t.y - 10 - Math.sin(a) * 14); c.stroke();
+      c.fillStyle = '#b4cbba'; for (let w = -5; w <= 5; w += 5) c.fillRect(Math.round(t.x + w), Math.round(t.y - 2), 2, 1);
+      if (i === arena.active && !shot) {c.fillStyle = '#f7efad'; c.fillRect(t.x - 2, t.y - 29 + Math.round(Math.sin(time * 4)), 5, 3); c.fillRect(t.x - 1, t.y - 26 + Math.round(Math.sin(time * 4)), 3, 2);}
+      c.fillStyle = '#102632'; c.fillRect(t.x - 13, t.y + 7, 26, 3); c.fillStyle = t.colour; c.fillRect(t.x - 13, t.y + 7, Math.round(t.hp * .26), 3);
+    });
+    if (shot?.path.length) {
+      const trail = shot.path.filter(p => p[2] <= Math.min(progress, shot.duration));
+      if (trail.length) {
+        c.lineWidth = 1; c.strokeStyle = '#f3dc9690'; c.beginPath(); trail.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke();
+        const tip = trail.at(-1); if (progress < shot.duration) {c.fillStyle = '#fff9d4'; c.fillRect(Math.round(tip[0] - 1), Math.round(tip[1] - 1), 3, 3);}
+      }
+      if (progress >= shot.duration && shot.hit?.kind !== 'miss') {
+        const age = progress - shot.duration, rng = random(shot.before.seed + shot.before.turn * 17);
+        if (age < .5) for (let i = 3; i > 0; i--) {c.fillStyle = ['#fff4c0', '#ffd76a', '#ef7546'][i - 1]; c.beginPath(); c.arc(shot.hit.x, shot.hit.y, Math.max(0, config.blastRadius * (1 - age / .5) * i / 3), 0, Math.PI * 2); c.fill();}
+        if (age < 1.4) for (let i = 0; i < 35; i++) {const a = rng() * Math.PI * 2, v = 12 + rng() * 90; c.fillStyle = i % 3 ? '#e2ac67' : '#fff0a0'; c.fillRect(Math.round(shot.hit.x + Math.cos(a) * v * age), Math.round(shot.hit.y + Math.sin(a) * v * age + 65 * age * age), 2, 2);}
+      }
+    }
+    c.fillStyle = '#0b1429d9'; c.fillRect(0, 0, WIDTH, 32);
+    c.font = 'bold 10px monospace'; c.textBaseline = 'middle';
+    c.fillStyle = '#f1e4bd'; c.fillText(`ROUND ${round}  /  TURN ${arena.turn + 1}`, 12, 16);
+    const wind = arena.wind, arrow = wind < 0 ? '<' : wind > 0 ? '>' : '-';
+    c.fillStyle = '#a9cddd'; c.fillText(`WIND ${arrow} ${Math.abs(wind)}  ${config.windMode === 'off' ? 'OFF' : 'PX/S²'}`, 260, 16);
+    c.fillStyle = '#e6d4a5'; c.fillText(wins.map((w, i) => `${i + 1}:${w}`).join('  '), 505, 16);
+  }
+}
+
+return {WIDTH,COLOURS,clamp,random,settings,Terrain,spawnX,windAt,createArena,launch,stepProjectile,traceShot,settleTanks,resolveShot,planAI,newMatch,playMatch,nextRound,paintTerrain,Renderer,HEIGHT,STEP};
+})();
+</script>
+<script>const TanxSprites=["data:image/png;base64,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","data:image/png;base64,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"];</script>
+<script id="tanx-ui">
+/* Offline UI, AI turn animation, Web Audio and the same-origin classroom bridge. */
+(() => {
+'use strict';
+const C = TanxCore, $ = id => document.getElementById(id);
+const embedded = window.parent !== window && new URLSearchParams(location.search).has('classroom');
+if (embedded) document.body.classList.add('embedded');
+const renderer = new C.Renderer($('arena'), TanxSprites);
+const buttons = ['fire', 'charge', 'angle', 'power', 'angle-number', 'power-number'];
+let match = C.newMatch({}, [{name:'Player 1',type:'human'},{name:'CPU 2',type:'cpu'}], 74831);
+let shot = null, elapsed = 0, mode = 'setup', paused = false, aim = {angle:45,power:60};
+let bot = null, botClock = 0, thinking = false, generation = 0, lastTime = performance.now();
+let charge = null, clock = 0, impactSound = false, hostState = null, bridgeToken = null;
+let replayResolve = null, aimSentAt = 0, hostCanAim = false;let angleCarry=0,powerCarry=0;
+const held = new Set();
+
+// Web Audio Sound FX. No sound, context or autoplay until a deliberate click.
+class AudioFX {
+  constructor(){this.enabled=false;this.context=null;}
+  async toggle(){
+    try {this.context ||= new (window.AudioContext || window.webkitAudioContext)();await this.context.resume();this.enabled=!this.enabled;}
+    catch {this.enabled=false;}
+    $('sound').textContent=this.enabled?'Sound on':'Sound unavailable';$('sound').setAttribute('aria-pressed',String(this.enabled));
+  }
+  tone(freq,duration=.05,type='square',volume=.025,delay=0){
+    if(!this.enabled || !this.context)return;
+    const ctx=this.context,t=ctx.currentTime+delay,o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(volume,t);g.gain.exponentialRampToValueAtTime(.0001,t+duration);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+duration);
+  }
+  noise(duration,cutoff,volume){
+    if(!this.enabled || !this.context)return;
+    const ctx=this.context,buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*duration),ctx.sampleRate),data=buffer.getChannelData(0);
+    for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);
+    const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=buffer;f.type='lowpass';f.frequency.setValueAtTime(cutoff,ctx.currentTime);f.frequency.exponentialRampToValueAtTime(65,ctx.currentTime+duration);g.gain.value=volume;s.connect(f);f.connect(g);g.connect(ctx.destination);s.start();
+  }
+  tick(){this.tone(400,.025,'square',.008);}
+  fire(){this.noise(.17,750,.17);this.tone(90,.18,'triangle',.18);}
+  explode(){this.noise(.65,1700,.24);this.tone(48,.5,'sawtooth',.09);}
+  victory(){[262,330,392,523,392,523].forEach((f,i)=>this.tone(f,.16,'square',.045,i*.13));}
+}
+const audio = new AudioFX();
+function log(text){const p=document.createElement('p');p.textContent=text;$('log').prepend(p);while($('log').children.length>30)$('log').lastChild.remove();}
+function status(text){$('status').textContent=text;}
+function canAim(){return !paused && mode==='aim' && match.arena.tanks[match.arena.active]?.type==='human';}
+function send(type,payload={}){if(embedded&&bridgeToken)window.parent.postMessage({source:'tanx-child',token:bridgeToken,type,...payload},location.origin);}
+function refresh(){
+  const a=match.arena,tank=a.tanks[a.active];
+  $('active-name').textContent=tank?.name||'Round complete';
+  $('active-name').style.color=tank?.colour;
+  $('round-label').textContent=`ROUND ${String(match.round).padStart(2,'0')} / FIRST TO ${match.config.roundsToWin}`;
+  $('wind-readout').textContent=a.wind===0?'CALM':`${a.wind<0?'←':'→'} ${Math.abs(a.wind)} px/s²`;
+  $('roster').replaceChildren(...a.tanks.map((t,i)=>{
+    const card=document.createElement('div');card.className=`tank-card ${i===a.active?'active':''}`;card.style.setProperty('--tank',t.colour);
+    const name=document.createElement('div');name.className='tank-name';name.textContent=`${i+1} / ${t.name}${t.type==='cpu'?' · CPU':''}`;
+    const hp=document.createElement('div');hp.className='hp';const fill=document.createElement('span');fill.style.width=`${t.hp}%`;hp.append(fill);
+    const stats=document.createElement('div');stats.className='stats';stats.textContent=`${t.hp>0?`${t.hp} HP`:'OUT'}     ${match.wins[i]} WIN${match.wins[i]===1?'':'S'}`;card.append(name,hp,stats);return card;
+  }));
+  updateAim(false); setControls();
+}
+function setControls(){for(const id of buttons)$(id).disabled=!canAim();document.querySelectorAll('[data-adjust]').forEach(b=>b.disabled=!canAim());$('pause').disabled=mode==='setup';$('pause').textContent=paused?'Resume':'Pause';}
+function updateAim(sound=true){
+  aim.angle=Math.round(C.clamp(Number(aim.angle)||0,0,180));aim.power=Math.round(C.clamp(Number(aim.power)||0,0,100));
+  $('angle').value=$('angle-number').value=aim.angle;$('power').value=$('power-number').value=aim.power;
+  $('angle-value').textContent=`${aim.angle}°`;$('power-value').textContent=`${aim.power}%`;
+  if(sound)audio.tick();
+  if(embedded){send('aim',{angle:aim.angle,power:aim.power});aimSentAt=performance.now();}
+}
+function readyTurn(){
+  shot=null;elapsed=0;charge=null;held.clear();bot=null;thinking=false;botClock=0;generation++;
+  if(match.finished){mode='match-over';showRound(true);return;}
+  const tank=match.arena.tanks[match.arena.active];aim={angle:tank.angle,power:tank.power};
+  mode=tank.type==='cpu'?'cpu':'aim';
+  status(`${tank.name} ${mode==='cpu'?'is calculating a shot…':'— aim, set power, fire.'}`);refresh();
+}
+function showRound(final=false){
+  const b=$('round-banner');b.hidden=false;b.replaceChildren();
+  const text=document.createElement('div');const winner=final?match.winner:shot?.winner;
+  text.textContent=winner==null?'ROUND DRAW · Equal health. Nobody gets a round point.':`${match.players[winner].name} ${final?'WINS THE MATCH!':'wins the round.'}`;b.append(text);
+  const next=document.createElement('button');next.className='primary';next.textContent=final?'Set up a new match →':'Next round · new terrain →';
+  next.onclick=()=>{b.hidden=true;if(final)openSetup();else {match=C.nextRound(match);readyTurn();}};b.append(next);setControls();
+  if(winner!=null)audio.victory();
+}
+function finishShot(){
+  const completed=shot;match.arena=completed.after;
+  if(embedded){mode=hostCanAim?'aim':'watch';shot=null;if(hostState)match=structuredClone(hostState);refresh();send('replay-ended');replayResolve?.();replayResolve=null;return;}
+  if(completed.over){mode=match.finished?'match-over':'round-over';showRound(match.finished);refresh();}
+  else readyTurn();
+}
+function fire(){
+  if(embedded || (!canAim()&&mode!=='cpu') || paused)return;
+  const tank=match.arena.tanks[match.arena.active];
+  const result=C.playMatch(match,aim.angle,aim.power);match=result.match;shot=result.replay;
+  elapsed=0;impactSound=false;mode='flight';held.clear();charge=null;
+  status(`${tank.name} fires · ${aim.angle}° / ${aim.power}%`);log(`${tank.name}: ${aim.angle}° / ${aim.power}% · wind ${shot.before.wind}.`);audio.fire();refresh();
+}
+function openSetup(){if(embedded)return;generation++;bot=null;thinking=false;held.clear();charge=null;paused=true;setControls();$('setup').showModal();}
+function populatePlayers(){
+  const old=[...$('player-setup').querySelectorAll('.player-setup')].map(row=>({name:row.querySelector('input').value,type:row.querySelector('select').value}));
+  $('player-setup').replaceChildren(...Array.from({length:Number($('player-count').value)},(_,i)=>{
+    const row=document.createElement('div');row.className='player-setup';
+    const swatch=document.createElement('span');swatch.className='swatch';swatch.style.background=C.COLOURS[i];
+    const name=document.createElement('input');name.maxLength=24;name.required=true;name.value=old[i]?.name||`Player ${i+1}`;name.setAttribute('aria-label',`Player ${i+1} name`);
+    const type=document.createElement('select');type.setAttribute('aria-label',`Player ${i+1} type`);type.innerHTML='<option value="human">Human</option><option value="cpu">CPU</option>';type.value=old[i]?.type||(i?'cpu':'human');
+    row.append(swatch,name,type);return row;
+  }));
+}
+$('player-count').onchange=populatePlayers;populatePlayers();
+$('setup-form').onsubmit=event=>{
+  event.preventDefault();
+  try{
+    const form=new FormData(event.currentTarget), config=Object.fromEntries(form);
+    for(const key of ['destructible','falling','tankCollision','terrainCollision','damage','fallDamage'])config[key]=form.has(key);
+    const players=[...$('player-setup').children].map(row=>({name:row.querySelector('input').value.trim(),type:row.querySelector('select').value}));
+    const seed=crypto.getRandomValues(new Uint32Array(1))[0];match=C.newMatch(config,players,seed);generation++;paused=false;$('setup').close();$('round-banner').hidden=true;$('setup-error').textContent='';log('New match · fresh terrain, fresh chances.');readyTurn();$('arena').focus();
+  }catch(error){$('setup-error').textContent=error.message;}
+};
+$('setup-button').onclick=openSetup;
+function closeSetup(){if(mode==='setup'){status('Start a match to take command.');return;}paused=false;$('setup').close();if(mode==='cpu')bot=null;setControls();}
+$('cancel-setup').onclick=()=>{if(mode==='setup'){$('setup-form').requestSubmit();}else closeSetup();};
+$('setup').addEventListener('cancel',event=>{if(mode==='setup')event.preventDefault();else {paused=false;setControls();}});
+$('sound').onclick=()=>audio.toggle();
+function togglePause(){if(mode==='setup')return;paused=!paused;held.clear();charge=null;setControls();status(paused?'Paused. The wind can wait.':mode==='flight'?'Shell in flight…':`${match.arena.tanks[match.arena.active].name} — your turn.`);}
+$('pause').onclick=togglePause;$('fire').onclick=fire;
+for(const id of ['angle','power','angle-number','power-number'])$(id).oninput=event=>{if(canAim()){aim[id.startsWith('angle')?'angle':'power']=event.target.value;updateAim();}};
+document.querySelectorAll('[data-adjust]').forEach(button=>button.onclick=()=>{if(!canAim())return;const [key,delta]=button.dataset.adjust.split(':');aim[key]+=Number(delta);updateAim();});
+function startCharge(){if(canAim()&&!charge)charge={started:performance.now(),power:aim.power};}
+function endCharge(){if(!charge)return;charge=null;fire();}
+$('charge').onpointerdown=event=>{event.preventDefault();$('charge').setPointerCapture(event.pointerId);startCharge();};
+$('charge').onpointerup=endCharge;$('charge').onpointercancel=()=>{charge=null;};
+window.addEventListener('keydown',event=>{
+  if(embedded||$('setup').open||/INPUT|SELECT|TEXTAREA/.test(event.target.tagName))return;
+  const key=event.key.toLowerCase();if(['arrowleft','arrowright','arrowup','arrowdown','a','d','w','s',' '].includes(key)){event.preventDefault();if(canAim()){held.add(key);if(key===' '&&!event.repeat)startCharge();}}
+  if(key==='p'&&!event.repeat)togglePause();
+});
+window.addEventListener('keyup',event=>{held.delete(event.key.toLowerCase());if(event.key===' '&&charge){event.preventDefault();endCharge();}});
+window.addEventListener('blur',()=>{held.clear();charge=null;});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){held.clear();charge=null;if(!embedded&&mode!=='setup'&&!paused)togglePause();}});
+
+// Same-origin message bridge. The iframe never grades an answer, saves a score,
+// or decides a network result; it only aims and renders server snapshots.
+window.addEventListener('message',event=>{
+  if(!embedded||event.source!==window.parent||event.origin!==location.origin||event.data?.source!=='tanx-host')return;
+  const data=event.data;
+  if(data.type==='init'){bridgeToken=data.token;}
+  if(!bridgeToken||data.token!==bridgeToken)return;
+  if(data.type==='state'||data.type==='init'){
+    generation++;shot=null;elapsed=0;paused=false;hostState=data.match;hostCanAim=Boolean(data.canAim);match=structuredClone(data.match);mode=data.canAim?'aim':'watch';
+    const tank=match.arena.tanks[match.arena.active];aim={angle:tank.angle,power:tank.power};$('controls').style.setProperty('display',data.canAim?'block':'none','important');
+    if(data.canAim){$('fire').hidden=true;$('charge').hidden=true;$('controls').querySelector('.hint').textContent='Choose your angle and power here. Answer the question beside the battlefield, then lock your shot.';}
+    $('round-banner').hidden=true;status(data.canAim?'Choose your firing solution. Answer the question to enable it.':'Waiting for the next commander.');refresh();send('ready',{angle:aim.angle,power:aim.power});send('resize',{height:document.documentElement.scrollHeight});
+  }
+  if(data.type==='replay'){
+    shot=data.replay;elapsed=0;impactSound=false;mode='flight';paused=false;match.arena=structuredClone(shot.after);refresh();status(shot.enabled?'Shell in flight…':'Incorrect answer · shot disabled, turn passed.');
+  }
+  if(data.type==='skip'&&shot)finishShot();
+  if(data.type==='aim'&&canAim()){aim={angle:data.angle,power:data.power};updateAim(false);}
+});
+function frame(now){
+  const dt=Math.min(.05,Math.max(0,(now-lastTime)/1000));lastTime=now;clock+=dt;
+  if(!paused){
+    if(canAim()){
+      const da=(held.has('arrowleft')||held.has('a')?1:0)-(held.has('arrowright')||held.has('d')?1:0);
+      const dp=(held.has('arrowup')||held.has('w')?1:0)-(held.has('arrowdown')||held.has('s')?1:0);
+      if(da||dp){angleCarry+=da*60*dt;powerCarry+=dp*45*dt;const a=Math.trunc(angleCarry),p=Math.trunc(powerCarry);angleCarry-=a;powerCarry-=p;aim.angle+=a;aim.power+=p;updateAim(false);}
+      if(charge){const heldFor=now-charge.started;if(heldFor>180){aim.power=C.clamp(charge.power+(heldFor-180)*.045,0,100);updateAim(false);}}
+    }
+    if(mode==='cpu'){
+      botClock+=dt;
+      if(!bot&&!thinking){thinking=true;const token=generation;setTimeout(()=>{if(token!==generation)return;bot=C.planAI(match.arena,match.config);bot.start={...aim};thinking=false;},50);}
+      if(bot){const t=C.clamp((botClock-.3)/1.25,0,1);aim.angle=bot.start.angle+(bot.angle-bot.start.angle)*t;aim.power=bot.start.power+(bot.power-bot.start.power)*t;updateAim(false);if(t>=1)fire();}
+    }
+    if(mode==='flight'&&shot){
+      elapsed+=dt;
+      if(!impactSound&&elapsed>=shot.duration){impactSound=true;if(shot.hit&&shot.hit.kind!=='miss')audio.explode();const damage=shot.damage.map((d,i)=>d?`${shot.before.tanks[i].name} −${d} HP`:null).filter(Boolean).join(', ');if(!embedded)log(!shot.enabled?'Question incorrect · turn passed.':damage||'No blast damage. A useful ranging shot.');}
+      if(elapsed>=shot.duration+1.25)finishShot();
+    }
+  }
+  let arena=match.arena;
+  if(shot&&mode==='flight'){
+    arena=structuredClone(shot.before);
+    if(elapsed>=shot.duration){arena.craters=shot.after.craters;arena.tanks=shot.after.tanks.map((t,i)=>({...t,y:shot.before.tanks[i].y}));}
+    arena.tanks[shot.shooter].angle=shot.angle;
+  }
+  renderer.draw(arena,match.config,{time:clock,shot:mode==='flight'?shot:null,progress:elapsed,aim:mode==='aim'||mode==='cpu'?aim:null,round:match.round,wins:match.wins});
+  requestAnimationFrame(frame);
+}
+if(embedded)new ResizeObserver(()=>send('resize',{height:document.body.scrollHeight})).observe(document.body);
+refresh();requestAnimationFrame(frame);
+if(!embedded)openSetup();else {mode='watch';send('loaded');}
+})();
+
+</script>
+</main></body></html>

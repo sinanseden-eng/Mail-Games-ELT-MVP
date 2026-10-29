@@ -51,6 +51,11 @@ export function createClassroomService({store, env = () => '', now = () => Date.
       currentActor: active ? next.actor : null, role: active ? next.role : null, myTurn: active && next.actor === actor,
       accuracy: Object.fromEntries(['A','B'].map(a => { const tries=m.attempts.filter(t=>t.actor===a); return [a,{correct:tries.filter(t=>t.correct).length,total:tries.length}]; })),
       feedback: m.attempts.filter(t => isTeacher || t.actor === actor).map(t => ({actor:t.actor, turnId:t.turnId, correct:t.correct, prompt:t.prompt, answer:t.answer, submitted:t.submitted, explanation:t.explanation}))};
+    if(m.gameType==='tanx'){
+      view.battle=structuredClone(m.state.battle);
+      view.battle.players.forEach((p,i)=>p.name=m.players[i===0?'A':'B'].name);
+      view.battle.arena.tanks.forEach((p,i)=>p.name=m.players[i===0?'A':'B'].name);
+    }
     if (view.myTurn) {
       const q = m.questions[m.version % m.questions.length];
       view.turn = {id: `${m.id}:${m.version}`, version: m.version, question: {prompt:q.prompt, type:q.type, options:q.options, level:q.level, tag:q.tag}};
@@ -155,7 +160,7 @@ export function createClassroomService({store, env = () => '', now = () => Date.
         const submitted=text(body.answer,500);if(!submitted)fail('Choose or type an answer.');
         if(q.type!=='gap-fill' && !q.options.includes(submitted))fail('Choose one of the answer options.');
         const correct=normal(submitted)===normal(q.answer);
-        const applied=applyTurn(match.gameType,match.state,{actor,move:body.move,emergence:body.emergence,target:body.target,answerCorrect:correct});
+        const applied=applyTurn(match.gameType,match.state,{actor,move:body.move,emergence:body.emergence,target:body.target,angle:body.angle,power:body.power,answerCorrect:correct});
         match.state=applied.state;match.version++;match.updatedAt=now();
         match.attempts.push({actor,turnId:body.turnId,prompt:q.prompt,answer:q.answer,submitted,correct,explanation:q.explanation});
         const recipients=match.state.finished ? Object.values(match.players).map(p=>p.userId).concat(teacherId) : [match.players[currentTurn(match.gameType,match.state).actor].userId];
@@ -212,7 +217,7 @@ export function createClassroomService({store, env = () => '', now = () => Date.
     if(action==='pool-delete')return mutate(user.id,w=>{find(w.pools,body.id);w.pools=w.pools.filter(p=>p.id!==body.id);return {ok:true};});
     if(action==='assign')return mutate(user.id,w=>{
       const c=find(w.classes,body.classId),pool=find(w.pools,body.poolId);
-      if(!['penalty','turkey','sniper'].includes(body.gameType))fail('Choose a game.');
+      if(!['penalty','tanx','sniper'].includes(body.gameType))fail('Choose Football, Tanx or Sniper.');
       const a=find(c.students,body.playerA),b=find(c.students,body.playerB);
       if(a.id===b.id || !a.userId || !b.userId || a.archived || b.archived || a.userId===b.userId)fail('Choose two different students who have joined this class.');
       if(w.matches.length>=50)fail('Export results and delete a completed match before creating another (50-match pilot limit).');
