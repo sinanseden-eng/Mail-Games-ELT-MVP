@@ -82,6 +82,7 @@ export function defaultState(gameType, options = {}) {
 }
 
 export function allowedMoves(gameType) {
+  if (gameType === 'tanx') return []; // Tanx validates continuous angle/power values.
   if (gameType === "penalty") return PENALTY_MOVES;
   if (gameType === "sniper") return SNIPER_SPOTS;
   return TURKEY_MOVES;

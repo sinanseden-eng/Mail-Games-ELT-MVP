@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {Terrain,settings,newMatch,nextRound,playMatch,planAI,resolveShot,launch,stepProjectile,windAt,settleTanks,STEP,WIDTH,HEIGHT} from '../tanx-core.mjs';
+import {Terrain,settings,newMatch,nextRound,playMatch,planAI,resolveShot,launch,stepProjectile,windAt,settleTanks,paintTerrain,STEP,WIDTH,HEIGHT} from '../tanx-core.mjs';
 import {defaultState,applyTurn,currentTurn} from '../game-engine.mjs';
 import {createClassroomService} from '../netlify/functions/_shared/classroom-service.mjs';
 const crew=[{name:'Red',type:'human'},{name:'Blue',type:'cpu'}];
@@ -21,6 +21,12 @@ test('wind modes are deterministic, bounded, and either per-round, per-turn or o
   const c=settings({windMode:mode});const values=Array.from({length:20},(_,turn)=>windAt(42,turn,c));assert.ok(values.every(v=>Math.abs(v)<=18));
   if(mode==='off')assert.ok(values.every(v=>v===0));else if(mode==='round')assert.equal(new Set(values).size,1);else assert.ok(new Set(values).size>1);
  }
+});
+test('destination-out terrain pixels match the server collision mask, including fractional edge craters',()=>{
+ let image;
+ const ctx={globalCompositeOperation:'source-over',createImageData(w,h){return {data:new Uint8ClampedArray(w*h*4)};},putImageData(v){image=v;},fillRect(x,y,w,h){assert.equal(this.globalCompositeOperation,'destination-out');for(let py=y;py<y+h;py++)for(let px=x;px<x+w;px++)image.data[(py*WIDTH+px)*4+3]=0;}};
+ const terrain=new Terrain(42);for(const crater of [[100.3,280.6,35],[0.1,330.2,28],[639.5,399.8,22]])terrain.carve(...crater);
+ paintTerrain({getContext:()=>ctx},terrain);for(let i=0;i<terrain.data.length;i++)assert.equal(image.data[i*4+3],terrain.data[i],`pixel ${i}`);
 });
 test('fixed-step shots can rise above the screen, return, miss at an edge, and cannot tunnel through a pixel',()=>{
  const c=settings({windMode:'off'}),m=newMatch(c,crew,34),t=new Terrain(m.arena.seed);

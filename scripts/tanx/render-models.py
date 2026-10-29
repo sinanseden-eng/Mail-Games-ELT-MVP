@@ -25,4 +25,4 @@ light=np.array([.65,1.,.3]);light/=np.linalg.norm(light);shade=.55+.6*np.maximum
 out=np.zeros((H,W,4),dtype='uint8');depth=np.full((H,W),-np.inf)
 for dx,dy in [(0,0),(1,0),(0,1),(-1,0),(0,-1)]:
  xx=np.clip(x+dx,0,W-1);yy=np.clip(y+dy,0,H-1);flat=yy*W+xx;order=np.lexsort((-z,flat));first=np.r_[True,flat[order][1:]!=flat[order][:-1]];idx=order[first];sel=z[idx]>depth[yy[idx],xx[idx]];idx=idx[sel];out[yy[idx],xx[idx],:3]=col[idx];out[yy[idx],xx[idx],3]=255;depth[yy[idx],xx[idx]]=z[idx]
-im=Image.fromarray(out);bbox=im.getbbox();im=im.crop(bbox);im.thumbnail((88,48),Image.Resampling.LANCZOS);im.save(sys.argv[2]);print('saved',sys.argv[2],im.size)
+im=Image.fromarray(out);bbox=im.getbbox();im=im.crop(bbox);im.thumbnail((44,24),Image.Resampling.LANCZOS);im=im.quantize(colors=48,method=Image.Quantize.FASTOCTREE,dither=Image.Dither.NONE);im.save(sys.argv[2]);print('saved',sys.argv[2],im.size)

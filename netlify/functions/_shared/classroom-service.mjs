@@ -55,6 +55,8 @@ export function createClassroomService({store, env = () => '', now = () => Date.
       view.battle=structuredClone(m.state.battle);
       view.battle.players.forEach((p,i)=>p.name=m.players[i===0?'A':'B'].name);
       view.battle.arena.tanks.forEach((p,i)=>p.name=m.players[i===0?'A':'B'].name);
+      view.history=structuredClone(m.state.history);
+      view.history.forEach(r=>[r.before,r.after].forEach(a=>a.tanks.forEach((p,i)=>p.name=m.players[i===0?'A':'B'].name)));
     }
     if (view.myTurn) {
       const q = m.questions[m.version % m.questions.length];

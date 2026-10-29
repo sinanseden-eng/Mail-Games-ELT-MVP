@@ -42,7 +42,7 @@ function status(text){$('status').textContent=text;}
 function canAim(){return !paused && mode==='aim' && match.arena.tanks[match.arena.active]?.type==='human';}
 function send(type,payload={}){if(embedded&&bridgeToken)window.parent.postMessage({source:'tanx-child',token:bridgeToken,type,...payload},location.origin);}
 function refresh(){
-  const a=match.arena,tank=a.tanks[a.active];
+  const a=shot&&mode==='flight'&&elapsed<shot.duration?shot.before:match.arena,tank=a.tanks[a.active];
   $('active-name').textContent=tank?.name||'Round complete';
   $('active-name').style.color=tank?.colour;
   $('round-label').textContent=`ROUND ${String(match.round).padStart(2,'0')} / FIRST TO ${match.config.roundsToWin}`;
@@ -71,7 +71,7 @@ function readyTurn(){
   status(`${tank.name} ${mode==='cpu'?'is calculating a shot…':'— aim, set power, fire.'}`);refresh();
 }
 function showRound(final=false){
-  const b=$('round-banner');b.hidden=false;b.replaceChildren();
+  const b=$('round-banner');b.hidden=false;b.replaceChildren();status(final?'Match complete. Set up a new challenge.':'Round complete. Ready for a fresh battlefield?');
   const text=document.createElement('div');const winner=final?match.winner:shot?.winner;
   text.textContent=winner==null?'ROUND DRAW · Equal health. Nobody gets a round point.':`${match.players[winner].name} ${final?'WINS THE MATCH!':'wins the round.'}`;b.append(text);
   const next=document.createElement('button');next.className='primary';next.textContent=final?'Set up a new match →':'Next round · new terrain →';
@@ -122,12 +122,12 @@ $('pause').onclick=togglePause;$('fire').onclick=fire;
 for(const id of ['angle','power','angle-number','power-number'])$(id).oninput=event=>{if(canAim()){aim[id.startsWith('angle')?'angle':'power']=event.target.value;updateAim();}};
 document.querySelectorAll('[data-adjust]').forEach(button=>button.onclick=()=>{if(!canAim())return;const [key,delta]=button.dataset.adjust.split(':');aim[key]+=Number(delta);updateAim();});
 function startCharge(){if(canAim()&&!charge)charge={started:performance.now(),power:aim.power};}
-function endCharge(){if(!charge)return;charge=null;fire();}
+function endCharge(){if(!charge)return;const heldFor=performance.now()-charge.started;if(heldFor>180){aim.power=C.clamp(charge.power+(heldFor-180)*.045,0,100);updateAim(false);}charge=null;fire();}
 $('charge').onpointerdown=event=>{event.preventDefault();$('charge').setPointerCapture(event.pointerId);startCharge();};
 $('charge').onpointerup=endCharge;$('charge').onpointercancel=()=>{charge=null;};
 window.addEventListener('keydown',event=>{
   if(embedded||$('setup').open||/INPUT|SELECT|TEXTAREA/.test(event.target.tagName))return;
-  const key=event.key.toLowerCase();if(['arrowleft','arrowright','arrowup','arrowdown','a','d','w','s',' '].includes(key)){event.preventDefault();if(canAim()){held.add(key);if(key===' '&&!event.repeat)startCharge();}}
+  const key=event.key.toLowerCase();if(['arrowleft','arrowright','arrowup','arrowdown','a','d','w','s',' '].includes(key)){event.preventDefault();if(canAim()){held.add(key);if(!event.repeat){if(key===' ')startCharge();else {if(['arrowleft','a'].includes(key))aim.angle++;if(['arrowright','d'].includes(key))aim.angle--;if(['arrowup','w'].includes(key))aim.power++;if(['arrowdown','s'].includes(key))aim.power--;updateAim(false);}}}}
   if(key==='p'&&!event.repeat)togglePause();
 });
 window.addEventListener('keyup',event=>{held.delete(event.key.toLowerCase());if(event.key===' '&&charge){event.preventDefault();endCharge();}});
@@ -169,7 +169,7 @@ function frame(now){
     }
     if(mode==='flight'&&shot){
       elapsed+=dt;
-      if(!impactSound&&elapsed>=shot.duration){impactSound=true;if(shot.hit&&shot.hit.kind!=='miss')audio.explode();const damage=shot.damage.map((d,i)=>d?`${shot.before.tanks[i].name} −${d} HP`:null).filter(Boolean).join(', ');if(!embedded)log(!shot.enabled?'Question incorrect · turn passed.':damage||'No blast damage. A useful ranging shot.');}
+      if(!impactSound&&elapsed>=shot.duration){impactSound=true;refresh();if(shot.hit&&shot.hit.kind!=='miss')audio.explode();const damage=shot.damage.map((d,i)=>d?`${shot.before.tanks[i].name} −${d} HP`:null).filter(Boolean).join(', ');if(!embedded)log(!shot.enabled?'Question incorrect · turn passed.':damage||'No blast damage. A useful ranging shot.');}
       if(elapsed>=shot.duration+1.25)finishShot();
     }
   }
