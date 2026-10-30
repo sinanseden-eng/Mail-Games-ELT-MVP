@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {Script} from 'node:vm';
 import {Scene,OrthographicCamera,Vector3} from 'three';
 import {Terrain,newMatch,resolveShot,WIDTH,HEIGHT} from '../tanx-core.mjs';
 import {terrainVolume,worldPoint,makeTank,Renderer3D} from '../tanx-3d.mjs';
@@ -59,4 +60,7 @@ test('offline deliverable embeds 3D engine and accessible view selection without
   assert.ok(html.includes('id="tanx-3d"'));assert.ok(html.includes('aria-label="Battlefield view"'));
   assert.ok(html.includes('Classic 2D'));assert.ok(html.includes('WEBGL UNAVAILABLE'));
   assert.ok(!/<script[^>]+src=/.test(html));assert.ok(!/<script[^>]+type="module"/.test(html));
+  const scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)];
+  assert.equal(scripts.length,4);
+  for(const script of scripts)assert.doesNotThrow(()=>new Script(script[1]));
 });

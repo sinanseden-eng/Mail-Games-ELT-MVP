@@ -9,6 +9,8 @@ const sprites=await Promise.all(['tank-a','tank-b'].map(async name=>`data:image/
 const spriteScript=`<script>const TanxSprites=${JSON.stringify(sprites)};</script>`;
 const three=await build({entryPoints:['tanx-3d.mjs'],bundle:true,format:'iife',globalName:'Tanx3D',platform:'browser',target:'es2022',minify:true,write:false,legalComments:'inline'});
 const graphics=`<script id="tanx-3d">${three.outputFiles[0].text.replaceAll('</script','<\\/script')}</script>`;
-const html=(await readFile('tanx.template.html','utf8')).replace('<!-- TANX_ENGINE -->',engine).replace('<!-- TANX_SPRITES -->',spriteScript).replace('<!-- TANX_3D -->',graphics).replace('<!-- TANX_UI -->',`<script id="tanx-ui">\n${await readFile('tanx-ui.js','utf8')}\n</script>`);
+const ui=`<script id="tanx-ui">\n${await readFile('tanx-ui.js','utf8')}\n</script>`;
+// Function replacements keep literal $& and $` tokens inside bundled code intact.
+const html=(await readFile('tanx.template.html','utf8')).replace('<!-- TANX_ENGINE -->',()=>engine).replace('<!-- TANX_SPRITES -->',()=>spriteScript).replace('<!-- TANX_3D -->',()=>graphics).replace('<!-- TANX_UI -->',()=>ui);
 const output=html.replace(/[\t ]+$/gm,'');
 await writeFile('tanx.html',output);console.log(`Tanx offline file: ${Buffer.byteLength(output)} bytes, no external dependencies.`);

@@ -135,7 +135,7 @@ export class Renderer3D {
     this.layer=this.renderer.domElement;this.layer.className='terrain-3d';this.layer.setAttribute('aria-hidden','true');
     this.lost=event=>{event.preventDefault();onLost();};this.layer.addEventListener('webglcontextlost',this.lost);
     canvas.before(this.layer);canvas.parentElement.classList.add('is-3d');
-    this.camera=new T.OrthographicCamera(-360,360,225,-225,.1,3500);this.setCamera(camera);
+    this.camera=new T.OrthographicCamera(-360,360,225,-225,.1,7000);this.setCamera(camera);
     this.scene.add(new T.HemisphereLight('#dcecff','#5c6043',2.3));
     const sun=new T.DirectionalLight('#ffe1ad',3.5);sun.position.set(-300,650,250);sun.target.position.set(0,120,0);sun.castShadow=true;
     sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-390,right:390,top:330,bottom:-330,near:1,far:1400});sun.shadow.normalBias=.5;sun.shadow.bias=-.00015;
