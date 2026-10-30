@@ -3,9 +3,25 @@
 import * as T from 'three';
 import {Terrain, WIDTH, HEIGHT, random, clamp, paintTerrain, replayTip} from './tanx-core.mjs';
 
-const DEPTH = 32;
+// A broad field, rather than a thin extrusion. Actors stay on the visible edge
+// so the foreground ridge cannot hide their tracks or the shell contact point.
+export const TERRAIN_DEPTH = 190;
+export const BATTLE_Z = TERRAIN_DEPTH + .25;
+const DEPTH = TERRAIN_DEPTH;
 const V = (x=0,y=0,z=0) => new T.Vector3(x,y,z);
-export function worldPoint(x,y,z=0) { return V(x-WIDTH/2,HEIGHT-y,z); }
+export function worldPoint(x,y,z=BATTLE_Z) { return V(x-WIDTH/2,HEIGHT-y,z); }
+
+export function createBattleCamera(mode='scenic') {
+  let camera;
+  if(mode==='side') {
+    camera=new T.OrthographicCamera(-350,350,218.75,-218.75,.5,7000);
+    camera.position.set(0,300,1050);camera.lookAt(0,175,BATTLE_Z);
+  } else {
+    camera=new T.PerspectiveCamera(38,WIDTH/HEIGHT,.5,7000);
+    camera.position.set(45,410,840);camera.lookAt(0,155,0);
+  }
+  camera.updateMatrixWorld();return camera;
+}
 
 // Extrude every exposed edge of the SAME pixel mask used by the server.
 // Unlike a heightfield, this preserves crater ceilings and isolated ledges.
@@ -89,16 +105,16 @@ export function makeTank(index,colour) {
   root.userData={body,turret,pivot,flash,marker};return root;
 }
 
-function makeLandscape(seed) {
+export function makeLandscape(seed) {
   const group=new T.Group(),rng=random(seed^0x24d119);
   const columns=90,rows=45,positions=[],colours=[],indices=[];
   const phase=rng()*6.28;
   const height=(x,z)=>{
-    const distance=clamp((-z-70)/900,0,1);
+    const distance=clamp((-z-DEPTH)/900,0,1);
     return 45+Math.pow(distance,.8)*(110+Math.sin(x/155+phase)*75+Math.sin(x/63+z/133)*27)+Math.sin(x/95+z/100)*17;
   };
   for(let j=0;j<=rows;j++)for(let i=0;i<=columns;i++) {
-    const x=-1800+i*3600/columns,z=-72-j*1700/rows,y=height(x,z);
+    const x=-1800+i*3600/columns,z=-DEPTH-2-j*1700/rows,y=height(x,z);
     positions.push(x,y,z);
     const colour=new T.Color(y>211?'#b7c6bc':y>170?'#7d9290':y>110?'#607c77':'#456f62');
     colour.multiplyScalar(.9+rng()*.18);colours.push(colour.r,colour.g,colour.b);
@@ -111,14 +127,14 @@ function makeLandscape(seed) {
   const trunks=new T.InstancedMesh(new T.CylinderGeometry(.65,.9,1,5),material('#5d5745'),trees);
   const dummy=new T.Object3D();
   for(let i=0;i<trees;i++) {
-    const x=(rng()-.5)*2400,z=-100-rng()*1100,y=height(x,z),h=12+rng()*21;
+    const x=(rng()-.5)*2400,z=-DEPTH-30-rng()*1100,y=height(x,z),h=12+rng()*21;
     dummy.position.set(x,y+h*.18,z);dummy.scale.set(1,h*.36,1);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);
     for(let j=0;j<2;j++){dummy.position.set(x,y+h*(.45+j*.25),z);dummy.scale.set(h*(.28-j*.06),h*.65,h*(.28-j*.06));dummy.updateMatrix();canopy.setMatrixAt(i*2+j,dummy.matrix);}
   }
   canopy.castShadow=true;trunks.castShadow=true;group.add(canopy,trunks);
   const rocks=new T.InstancedMesh(new T.DodecahedronGeometry(1,0),material('#849085',{flatShading:true}),90);
   for(let i=0;i<90;i++) {
-    const x=(rng()-.5)*1800,z=-85-rng()*900,s=2+rng()*9;
+    const x=(rng()-.5)*1800,z=-DEPTH-15-rng()*900,s=2+rng()*9;
     dummy.position.set(x,height(x,z)+s*.25,z);dummy.rotation.set(rng(),rng()*6,rng());dummy.scale.set(s,s*.6,s*.8);dummy.updateMatrix();rocks.setMatrixAt(i,dummy.matrix);
   }
   rocks.castShadow=true;group.add(rocks);return group;
@@ -127,7 +143,7 @@ function makeLandscape(seed) {
 export class Renderer3D {
   constructor(canvas,{onLost=()=>{},camera='scenic'}={}) {
     this.canvas=canvas;this.ctx=canvas.getContext('2d');canvas.width=1280;canvas.height=800;
-    this.scene=new T.Scene();this.scene.fog=new T.Fog('#b1bfc0',650,2300);
+    this.scene=new T.Scene();this.scene.fog=new T.Fog('#b1bfc0',900,2700);
     this.renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'default'});
     this.renderer.setSize(1280,800,false);this.renderer.outputColorSpace=T.SRGBColorSpace;
     this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.15;
@@ -135,7 +151,7 @@ export class Renderer3D {
     this.layer=this.renderer.domElement;this.layer.className='terrain-3d';this.layer.setAttribute('aria-hidden','true');
     this.lost=event=>{event.preventDefault();onLost();};this.layer.addEventListener('webglcontextlost',this.lost);
     canvas.before(this.layer);canvas.parentElement.classList.add('is-3d');
-    this.camera=new T.OrthographicCamera(-360,360,225,-225,.1,7000);this.setCamera(camera);
+    this.setCamera(camera);
     this.scene.add(new T.HemisphereLight('#dcecff','#5c6043',2.3));
     const sun=new T.DirectionalLight('#ffe1ad',3.5);sun.position.set(-300,650,250);sun.target.position.set(0,120,0);sun.castShadow=true;
     sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-390,right:390,top:330,bottom:-330,near:1,far:1400});sun.shadow.normalBias=.5;sun.shadow.bias=-.00015;
@@ -145,7 +161,7 @@ export class Renderer3D {
     // Preprocessor directives must begin on their own line in GLSL.
     skyMat.fragmentShader=skyMat.fragmentShader.replace(';#include',';\n#include');
     const sky=mesh(new T.SphereGeometry(2800,24,16),skyMat,this.scene,0,0,-200);sky.castShadow=false;sky.receiveShadow=false;
-    this.sun=mesh(new T.SphereGeometry(75,24,16),new T.MeshBasicMaterial({color:'#ffe9b9',fog:false}),this.scene,-560,570,-1450);this.sun.castShadow=false;
+    this.sun=mesh(new T.SphereGeometry(65,24,16),new T.MeshBasicMaterial({color:'#ffe9b9',fog:false}),this.scene,-430,400,-1350);this.sun.castShadow=false;
     this.terrainRoot=new T.Group();this.scene.add(this.terrainRoot);
     this.tankRoot=new T.Group();this.scene.add(this.tankRoot);this.tanks=[];
     this.landscape=null;this.key='';this.seed=null;
@@ -164,8 +180,7 @@ export class Renderer3D {
   }
   setCamera(mode) {
     this.view=mode==='side'?'side':'scenic';
-    this.camera.position.set(this.view==='side'?0:65,this.view==='side'?190:365,950);
-    this.camera.lookAt(0,190,0);this.camera.updateMatrixWorld();
+    this.camera=createBattleCamera(this.view);
   }
   updateTerrain(arena,config) {
     if(this.seed!==arena.seed) {
@@ -225,7 +240,7 @@ export class Renderer3D {
     this.drawHUD(arena,{round,wins,shot,progress,time,aim});
   }
   blast(shot,age,radius) {
-    this.blastRoot.position.copy(worldPoint(shot.hit.x,shot.hit.y,3));
+    this.blastRoot.position.copy(worldPoint(shot.hit.x,shot.hit.y,BATTLE_Z+3));
     const size=radius*Math.sin(clamp(age/.5,0,1)*Math.PI/2),fade=clamp(1-age/.65,0,1);
     this.fire.scale.set(size,size*.9,size*.7);this.fire.material.opacity=fade*.8;
     this.core.scale.setScalar(size*.52);this.core.material.opacity=fade;

@@ -22,6 +22,11 @@ texture; every exposed pixel edge is extruded, including crater ceilings and
 isolated ledges. Background mountains/trees are scenery, outside the battle
 plane. Geometry is rebuilt only when seed, terrain settings or craters change.
 View switching disposes GPU resources; no second animation loop is started.
+The playable ground spans 380 world units in depth. The scenic camera uses
+perspective; the side camera uses a slightly elevated orthographic view. Tanks,
+shells and impacts share the front battle plane so a foreground terrain lip
+cannot hide them. Camera regression checks keep both end positions in frame,
+require visible ground depth, and keep scenery behind the playable volume.
 Reduced-motion preference disables flying blast debris. `tests/tanx-3d.test.mjs`
 checks perimeter coverage, crater holes, muzzle alignment, camera bounds,
 non-mutation of game state and the self-contained HTML bundle.
