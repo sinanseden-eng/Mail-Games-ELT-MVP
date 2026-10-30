@@ -4,7 +4,7 @@
 const C = TanxCore, $ = id => document.getElementById(id);
 const embedded = window.parent !== window && new URLSearchParams(location.search).has('classroom');
 if (embedded) document.body.classList.add('embedded');
-const renderer = new C.Renderer($('arena'), TanxSprites);
+let renderer, graphicsAvailable=true;
 const buttons = ['fire', 'charge', 'angle', 'power', 'angle-number', 'power-number'];
 let match = C.newMatch({}, [{name:'Player 1',type:'human'},{name:'CPU 2',type:'cpu'}], 74831);
 let shot = null, elapsed = 0, mode = 'setup', paused = false, aim = {angle:45,power:60};
@@ -37,6 +37,26 @@ class AudioFX {
   victory(){[262,330,392,523,392,523].forEach((f,i)=>this.tone(f,.16,'square',.045,i*.13));}
 }
 const audio = new AudioFX();
+function chooseView(value=$('display-mode').value){
+  renderer?.dispose?.();
+  if(value!=='classic'&&graphicsAvailable){
+    try{
+      renderer=new Tanx3D.Renderer3D($('arena'),{camera:value,onLost:()=>{
+        graphicsAvailable=false;chooseView('classic');
+      }});
+      $('display-mode').value=value;$('render-note').textContent=value==='side'?'3D TERRAIN · SIDE CAMERA':'3D TERRAIN · SCENIC CAMERA';return;
+    }catch{
+      graphicsAvailable=false;
+      // A failed WebGL constructor may have attached a layer before failing.
+      document.querySelectorAll('.terrain-3d').forEach(layer=>layer.remove());
+      $('arena').parentElement.classList.remove('is-3d');
+    }
+  }
+  renderer=new C.Renderer($('arena'),TanxSprites);$('display-mode').value='classic';
+  $('render-note').textContent=graphicsAvailable?'CLASSIC 2D · SIDE CAMERA':'CLASSIC 2D · WEBGL UNAVAILABLE';
+  if(!graphicsAvailable)for(const option of $('display-mode').options)if(option.value!=='classic')option.disabled=true;
+}
+$('display-mode').onchange=()=>{chooseView();$('arena').focus();};
 function log(text){const p=document.createElement('p');p.textContent=text;$('log').prepend(p);while($('log').children.length>30)$('log').lastChild.remove();}
 function status(text){$('status').textContent=text;}
 function canAim(){return !paused && mode==='aim' && match.arena.tanks[match.arena.active]?.type==='human';}
@@ -182,10 +202,14 @@ function frame(now){
     if(elapsed>=shot.duration){arena.craters=shot.after.craters;arena.tanks=shot.after.tanks.map((t,i)=>({...t,y:shot.before.tanks[i].y}));}
     arena.tanks[shot.shooter].angle=shot.angle;
   }
-  renderer.draw(arena,match.config,{time:clock,shot:mode==='flight'?shot:null,progress:elapsed,aim:mode==='aim'||mode==='cpu'?aim:null,round:match.round,wins:match.wins});
+  const visual={time:clock,shot:mode==='flight'?shot:null,progress:elapsed,aim:mode==='aim'||mode==='cpu'?aim:null,round:match.round,wins:match.wins};
+  try{renderer.draw(arena,match.config,visual);}catch(error){
+    if(!renderer.dispose)throw error;
+    graphicsAvailable=false;chooseView('classic');renderer.draw(arena,match.config,visual);
+  }
   requestAnimationFrame(frame);
 }
 if(embedded)new ResizeObserver(()=>send('resize',{height:document.body.scrollHeight})).observe(document.body);
-refresh();requestAnimationFrame(frame);
+chooseView();refresh();requestAnimationFrame(frame);
 if(!embedded)openSetup();else {mode='watch';send('loaded');}
 })();

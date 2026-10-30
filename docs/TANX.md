@@ -5,6 +5,27 @@ fonts, CDNs, image requests or installation. `tanx.template.html`, `tanx-core.mj
 and `tanx-ui.js` are editable sources. `node scripts/build-tanx.mjs` regenerates
 that single deliverable, including the two uploaded Meshy tank sprite bakes.
 
+## 3D environment with side-view gameplay
+
+The default view is now a genuine WebGL scene: extruded destructible terrain,
+lit solid tanks, forested mountain geometry, sun, haze, shadows, shell trails,
+blast volumes and debris. The battle still uses one shared 2D coordinate plane:
+camera choice cannot change the trajectory, scoring, AI or server result.
+The view menu offers a scenic oblique camera, a straight side camera, and the
+previous Classic 2D renderer. A WebGL failure or context loss falls back to 2D.
+
+`tanx-3d.mjs` is bundled with the pinned Three.js dependency into the single
+offline HTML; no CDN, downloaded GLBs or runtime imports are needed. Solid tank
+models are lightweight procedural representations; the Meshy bakes remain in
+the portraits and classic view. Terrain fronts use the exact collision-mask
+texture; every exposed pixel edge is extruded, including crater ceilings and
+isolated ledges. Background mountains/trees are scenery, outside the battle
+plane. Geometry is rebuilt only when seed, terrain settings or craters change.
+View switching disposes GPU resources; no second animation loop is started.
+Reduced-motion preference disables flying blast debris. `tests/tanx-3d.test.mjs`
+checks perimeter coverage, crater holes, muzzle alignment, camera bounds,
+non-mutation of game state and the self-contained HTML bundle.
+
 ## Local play
 
 2–4 human/CPU commanders, randomly seeded terrain, 0–180° angle and 0–100% power.
