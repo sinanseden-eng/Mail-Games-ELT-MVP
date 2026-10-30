@@ -11,7 +11,7 @@ import {
   getZone,
   zoneLabel
 } from "./shootout-core.mjs?v=0.9.30";
-import { ShootoutScene } from "./football-scene.mjs";
+import { ShootoutScene } from "./football-player.mjs";
 import { createShootoutAudio } from "./shootout-audio-0.9h5a2.mjs";
 import { PENALTY_VIEWERS, perspectiveLabel } from "./penalty-perspective.mjs?v=0.9.30";
 

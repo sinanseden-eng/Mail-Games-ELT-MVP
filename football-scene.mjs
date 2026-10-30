@@ -76,29 +76,29 @@ function stadium(ctx) {
 }
 
 function drawNet(ctx, round, time, sag) {
-  const cols = 32, rows = 17;
+  const cols = 24, rows = 12;
   for (let i = 0; i <= cols; i++) {
     const u = i / cols;
-    line(ctx, [projectPitch(u, 0, 1), projectPitch(u, NET_DEPTH / 2, 1 - .09 * sag * Math.sin(Math.PI * u)), projectPitch(u, NET_DEPTH, 1)], '#c7e0bd69', .85);
+    line(ctx, [projectPitch(u, 0, 1), projectPitch(u, NET_DEPTH / 2, 1 - .09 * sag * Math.sin(Math.PI * u)), projectPitch(u, NET_DEPTH, 1)], '#c7e0bd38', .55);
   }
   for (let j = 0; j <= 7; j++) {
     const d = NET_DEPTH * j / 7, points = [];
     for (let i = 0; i <= cols; i++) points.push(projectPitch(i / cols, d, 1 - .09 * sag * Math.sin(Math.PI * i / cols) * Math.sin(Math.PI * j / 7)));
-    line(ctx, points, '#cee1c15c', .85);
+    line(ctx, points, '#cee1c132', .55);
   }
   for (const u of [0, 1]) {
-    for (let j = 0; j <= rows; j++) line(ctx, [projectPitch(u, 0, 1 - j / rows), tvNetPoint(u, j / rows, round, time, sag)], '#d0e4c682', .9);
-    for (let j = 0; j <= 10; j++) line(ctx, [projectPitch(u, NET_DEPTH * j / 10, 1), projectPitch(u, NET_DEPTH * j / 10)], '#c6e0c47c', .9);
+    for (let j = 0; j <= rows; j++) line(ctx, [projectPitch(u, 0, 1 - j / rows), tvNetPoint(u, j / rows, round, time, sag)], '#d0e4c646', .55);
+    for (let j = 0; j <= 6; j++) line(ctx, [projectPitch(u, NET_DEPTH * j / 6, 1), projectPitch(u, NET_DEPTH * j / 6)], '#c6e0c443', .55);
   }
   for (let i = 0; i <= cols; i++) {
     const points = [];
     for (let j = 0; j <= rows * 2; j++) points.push(tvNetPoint(i / cols, j / (rows * 2), round, time, sag));
-    line(ctx, points, '#d5e9cc9e', .95);
+    line(ctx, points, '#d5e9cc55', .6);
   }
   for (let j = 0; j <= rows; j++) {
     const points = [];
     for (let i = 0; i <= cols * 2; i++) points.push(tvNetPoint(i / (cols * 2), j / rows, round, time, sag));
-    line(ctx, points, '#d1e9c791', .95);
+    line(ctx, points, '#d1e9c74e', .6);
   }
 }
 
@@ -278,9 +278,9 @@ export class ShootoutScene {
   resultLabel(outcome) { return ({ goal: 'GOAL', save: 'SAVED', parry: 'PARRIED', miss: 'OFF TARGET' })[outcome] || 'REPLAY'; }
   loop(time) {
     if (this.destroyed) return;
-    // Analytic motion needs no physics substeps: use wall time so slower devices
-    // do not turn a fast dive into an extended float.
-    const dt = Math.max(0, (time - this.lastTime) / 1000); this.lastTime = time;
+    // Keep normal playback real-time down to 5 fps, but do not count a long
+    // rendering stall or background-tab suspension as watched animation.
+    const dt = Math.min(.25, Math.max(0, (time - this.lastTime) / 1000)); this.lastTime = time;
     this.updateReplay(dt);
     if (!this.paused) this.draw(time / 1000);
     this.frame = requestAnimationFrame(t => this.loop(t));

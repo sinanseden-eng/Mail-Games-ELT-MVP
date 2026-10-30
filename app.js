@@ -711,7 +711,7 @@ import { poolStore } from "./question-pools.mjs";
     if (!stage) return;
     stage.replaceChildren();
     answerState = null;
-    if (activePlayGame === "turkey") renderTurkeyGame(stage);
+    if (activePlayGame === "tanx") { const frame=document.createElement('iframe');frame.src='tanx.html';frame.title='Tanx local multiplayer';frame.style.cssText='width:100%;height:1100px;border:0;border-radius:16px';stage.append(frame); }
     else if (activePlayGame === "sniper") renderSniperGame(stage);
     else {
       stage.innerHTML = `<article class="panel"><span class="eyebrow">The Penalty Club</span><h2>One shot. Make it count.</h2><p>Step into the new football pitch. Practice your finish or answer English questions to unlock each shot and save.</p><div class="card-actions"><a class="primary button-link" href="football.html">Play football ↗</a><a class="secondary button-link" href="shootout.html">English match</a></div></article>`;

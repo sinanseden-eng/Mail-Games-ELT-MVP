@@ -96,9 +96,9 @@ test('answer-gated scoring and inactive moves survive the stored result', () => 
 });
 
 test('classroom, practice and email replay all use the new renderer', async () => {
-  for(const file of ['football.mjs','shootout-0.9h5a2.js','turn-0.9h5a2.js','replay-0.9h5a2.js']) {
+  for(const file of ['classroom.mjs','football.mjs','shootout-0.9h5a2.js','turn-0.9h5a2.js','replay-0.9h5a2.js']) {
     const source=await readFile(new URL(`../${file}`,import.meta.url),'utf8');
-    assert.match(source,/from ['"]\.\/football-scene\.mjs['"]/);
+    assert.match(source,/from ['"]\.\/football-player\.mjs['"]/);
     assert.doesNotMatch(source,/import.*blender|from.*shootout-scene-/);
   }
 });

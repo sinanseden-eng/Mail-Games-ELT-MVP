@@ -1,4 +1,4 @@
-import { ShootoutScene } from './football-scene.mjs';
+import { ShootoutScene } from './football-player.mjs';
 import { TARGETS, targetFor, replaySnapshot } from './football-motion.mjs';
 import { targetAtScreen } from './football-camera.mjs';
 import { createShootoutAudio } from './shootout-audio-0.9h5a2.mjs';
@@ -32,7 +32,7 @@ $('club-canvas').addEventListener('pointerdown', event => {
   if (busy) return;
   const rect=event.currentTarget.getBoundingClientRect();
   const x=(event.clientX-rect.left)/rect.width*1280, y=(event.clientY-rect.top)/rect.height*720;
-  const closest=targetAtScreen(x,y);
+  const closest=scene.view?scene.targetAtScreen(x,y):targetAtScreen(x,y);
   if (closest) selectTarget(closest.id);
 });
 function setBusy(value) {

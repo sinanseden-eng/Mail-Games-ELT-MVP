@@ -1,5 +1,10 @@
 // Shared by classroom, app and email games. Limits keep a lesson finite.
+import {settings as tanxSettings} from './tanx-core.mjs';
 export function gameSettings(gameType, input = {}) {
+  if (gameType === 'tanx') {
+    try {const config=tanxSettings(input);return {...config,maxRounds:config.turnLimit};}
+    catch(error){throw Object.assign(error,{statusCode:400});}
+  }
   const bounded = (value, fallback, min, max) => {
     const n = value == null ? fallback : Number(value);
     if (!Number.isInteger(n) || n < min || n > max) throw Object.assign(new Error(`Choose a whole number from ${min} to ${max}.`), {statusCode: 400});

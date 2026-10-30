@@ -1,4 +1,5 @@
 import {gameSettings, footballFinished} from "./game-rules.mjs";
+import {initialTanx,applyTanx} from './tanx-match.mjs';
 export const PENALTY_MOVES = [
   "top-left", "top-centre", "top-right",
   "bottom-left", "bottom-centre", "bottom-right"
@@ -24,6 +25,7 @@ const TURKEY_LABELS = {
 
 export function defaultState(gameType, options = {}) {
   const settings = gameSettings(gameType, options);
+  if (gameType === 'tanx') return initialTanx(settings,options.seed);
   if (gameType === "penalty") {
     return {
       ...settings,
@@ -80,12 +82,14 @@ export function defaultState(gameType, options = {}) {
 }
 
 export function allowedMoves(gameType) {
+  if (gameType === 'tanx') return []; // Tanx validates continuous angle/power values.
   if (gameType === "penalty") return PENALTY_MOVES;
   if (gameType === "sniper") return SNIPER_SPOTS;
   return TURKEY_MOVES;
 }
 
 export function currentTurn(gameType, state) {
+  if (gameType === 'tanx') return {actor:state.battle.arena.active===0?'A':'B',role:'commander'};
   if (gameType === "penalty") {
     const striker = state.kickIndex % 2 === 0 ? "A" : "B";
     return state.phase === "striker"
@@ -96,8 +100,9 @@ export function currentTurn(gameType, state) {
   return { actor: state.phase, role: "fighter" };
 }
 
-export function applyTurn(gameType, state, { actor, move, emergence, target, answerCorrect }) {
+export function applyTurn(gameType, state, { actor, move, emergence, target, angle, power, answerCorrect }) {
   if (state.finished) throw Object.assign(new Error("This match has finished."), {statusCode: 409});
+  if (gameType === 'tanx') return applyTanx(state,{actor,angle,power,answerCorrect});
   if (gameType !== "sniper" && !allowedMoves(gameType).includes(move)) throw Object.assign(new Error("Choose a valid move."), {statusCode: 400});
   const next = structuredClone(state);
   if (gameType === "penalty") return applyPenalty(next, { actor, move, answerCorrect });

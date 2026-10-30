@@ -53,7 +53,7 @@
         <div class="mail-orbit mail-one">✉</div>
         <div class="mail-orbit mail-two">✉</div>
         <div class="hero-ball">⚽</div>
-        <div class="hero-turkey">🦃</div>
+        <div class="hero-turkey">TANX</div>
         <div class="hero-bubble">Correct answer!</div>
       </div>
     </section>
@@ -88,25 +88,7 @@
         </div>
       </article>
 
-      <article class="game-card turkey-card">
-        <div class="card-visual barn-scene" aria-hidden="true">
-          <div class="barn"></div>
-          <div class="turkey fighter-a">🦃</div>
-          <div class="turkey fighter-b">🦃</div>
-          <div class="dust-cloud">POOF!</div>
-        </div>
-        <div class="game-card-copy">
-          <span class="game-label">Game 02</span>
-          <h3>Turkey Fight Mail</h3>
-          <p>Earn attacks and defences through English questions. Cartoon feathers fly; nobody needs to contact the school nurse.</p>
-          <ul>
-            <li>Attacks and damage-reducing defences</li>
-            <li>Secret attacks and defensive choices</li>
-            <li>Non-graphic comic action</li>
-          </ul>
-          <button class="primary warm" data-game="turkey">Play turkey demo</button>
-        </div>
-      </article>
+      <article class="game-card tanx-card"><div class="card-visual" style="background:#294951"><img src="assets/tanx/battlefield-preview.webp" alt="Sunset mountains, detailed tanks and destructible hills in Tanx" style="width:100%;height:100%;object-fit:cover"></div><div class="game-card-copy"><span class="game-label">Game 02</span><h3>Tanx Artillery Club</h3><p>Amiga-inspired artillery. Aim over the hills, read the wind and leave a crater. Gravity has opinions.</p><ul><li>2–4 humans or CPU tanks in local play</li><li>Destructible terrain and falling tanks</li><li>Teacher-controlled physics and question-powered classroom shots</li></ul><a class="primary button-link" href="tanx.html">Play Tanx ↗</a></div></article>
 
       <article class="game-card sniper-card">
         <div class="card-visual sniper-village-card" aria-hidden="true">
@@ -161,7 +143,7 @@
           <div class="studio-hero-copy">
             <span class="studio-kicker"><i aria-hidden="true">✦</i> Teacher Studio</span>
             <h1>Build <em>epic questions.</em><br />Power <strong>great games.</strong></h1>
-            <p>Create, import, and manage questions that decide every shot, save, block, and gloriously mistimed turkey move.</p>
+            <p>Create, import, and manage questions that decide every shot, save, block, and carefully aimed tank shell.</p>
             <div class="hero-actions studio-actions">
               <button class="secondary" id="load-sample" type="button">＋ Sample pool</button>
               <button class="primary" id="export-json" type="button">⇩ Export JSON</button>
@@ -172,7 +154,7 @@
           <div class="studio-hero-art" aria-hidden="true">
             <div class="hero-brush hero-brush-a"></div>
             <div class="hero-brush hero-brush-b"></div>
-            <img class="turkey-illustration" src="assets/turkey-mascot.svg" alt="" />
+            <span class="turkey-illustration" aria-hidden="true" style="font:900 35px monospace;color:#244e59">TANX</span>
             <img class="keeper-illustration" src="assets/goalkeeper.svg" alt="" />
             <span class="motion-mark mark-a">✦</span>
             <span class="motion-mark mark-b">×</span>
@@ -281,12 +263,12 @@
               <div><span class="eyebrow">Match builder</span><h2 id="launch-match-heading">Create the first turn</h2></div>
             </div>
             <form id="match-launch-form">
-              <div class="form-grid"><label>Football ties<select name="tieMode"><option value="draw">Draw after 5 kicks each</option><option value="sudden-death">Sudden death: up to 5 extra pairs, then draw</option></select></label><label>Turkey / Sniper round limit<input name="maxRounds" type="number" min="1" max="20" placeholder="8 Turkey / 5 Sniper" /></label></div>
+              <div class="form-grid"><label>Football ties<select name="tieMode"><option value="draw">Draw after 5 kicks each</option><option value="sudden-death">Sudden death: up to 5 extra pairs, then draw</option></select></label><label>Sniper round limit<input name="maxRounds" type="number" min="1" max="20" placeholder="5 Sniper" /></label></div>
               <div class="form-grid">
                 <label>Game
                   <select name="gameType">
                     <option value="penalty">⚽ Mail Penalty Shootout</option>
-                    <option value="turkey">🦃 Turkey Fight Mail</option>
+                    <option disabled>Tanx · assign inside Classroom</option>
                     <option value="sniper">🎯 Sniper Elite! (training prediction)</option>
                   </select>
                 </label>
@@ -372,7 +354,7 @@
 
     <section class="game-switcher" role="tablist" aria-label="Choose a game">
       <button role="tab" aria-selected="true" data-play-game="penalty">⚽ Mail Penalty Shootout</button>
-      <button role="tab" aria-selected="false" data-play-game="turkey">🦃 Turkey Fight Mail</button>
+      <button role="tab" aria-selected="false" data-play-game="tanx">Tanx · artillery</button>
       <button role="tab" aria-selected="false" data-play-game="sniper">🎯 Sniper Elite!</button>
     </section>
 
@@ -442,7 +424,8 @@
     </section>
   </template>
 
-  <script type="module" src="auth-redirect.mjs" data-classroom-pilot="true"></script>
+  <a href="classroom.html" style="position:fixed;right:18px;bottom:18px;z-index:50" class="primary button-link">Open classroom app ↗</a>
+  <script type="module" src="auth-redirect.mjs"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>
