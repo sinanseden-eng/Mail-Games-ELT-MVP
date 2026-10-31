@@ -162,7 +162,7 @@ export function createClassroomService({store, env = () => '', now = () => Date.
         const submitted=text(body.answer,500);if(!submitted)fail('Choose or type an answer.');
         if(q.type!=='gap-fill' && !q.options.includes(submitted))fail('Choose one of the answer options.');
         const correct=normal(submitted)===normal(q.answer);
-        const applied=applyTurn(match.gameType,match.state,{actor,move:body.move,emergence:body.emergence,target:body.target,angle:body.angle,power:body.power,answerCorrect:correct});
+        const applied=applyTurn(match.gameType,match.state,{actor,move:body.move,emergence:body.emergence,target:body.target,angle:body.angle,power:body.power,ammo:body.ammo,answerCorrect:correct});
         match.state=applied.state;match.version++;match.updatedAt=now();
         match.attempts.push({actor,turnId:body.turnId,prompt:q.prompt,answer:q.answer,submitted,correct,explanation:q.explanation});
         const recipients=match.state.finished ? Object.values(match.players).map(p=>p.userId).concat(teacherId) : [match.players[currentTurn(match.gameType,match.state).actor].userId];

@@ -8,7 +8,7 @@ export class TanxScene {
     this.frame.addEventListener('load',()=>{this.ready=true;this.send('init',{match:this.battle,canAim:this.canAim});if(this.pending)this.send('replay',{replay:this.pending.replay});});
     this.listener=event=>{
       if(event.source!==this.frame.contentWindow||event.origin!==location.origin||event.data?.source!=='tanx-child'||event.data.token!==this.token)return;
-      if(event.data.type==='aim'||event.data.type==='ready')this.onAim({angle:event.data.angle,power:event.data.power});
+      if(event.data.type==='aim'||event.data.type==='ready')this.onAim({angle:event.data.angle,power:event.data.power,...(event.data.ammo?{ammo:event.data.ammo}:{})});
       if(event.data.type==='resize')this.frame.style.height=`${Math.max(300,Math.min(1600,Number(event.data.height)||730))}px`;
       if(event.data.type==='replay-ended'){this.pending?.resolve({cancelled:false});this.pending=null;}
     };

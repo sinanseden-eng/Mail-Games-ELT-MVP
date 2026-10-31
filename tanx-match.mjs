@@ -4,11 +4,11 @@ export function initialTanx(config, seed) {
   return {battle: newMatch(config, [{name:'Player A',type:'human'},{name:'Player B',type:'human'}], seed),
     round:1,healthA:100,healthB:100,scoreA:0,scoreB:0,history:[],finished:false,winner:null};
 }
-export function applyTanx(state, {actor,angle,power,answerCorrect}) {
+export function applyTanx(state, {actor,angle,power,ammo='standard',answerCorrect}) {
   const expected = state.battle.arena.active === 0 ? 'A' : 'B';
   if (actor !== expected) throw Object.assign(new Error('This player is not expected to move now.'),{statusCode:409});
   let result;
-  try {result = playMatch(state.battle, angle, power, Boolean(answerCorrect));}
+  try {result = playMatch(state.battle, angle, power, Boolean(answerCorrect),ammo);}
   catch (error) {throw Object.assign(error,{statusCode:400});}
   let battle = result.match;
   // Bound a classroom match even if every answer is wrong or damage is off.

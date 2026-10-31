@@ -100,9 +100,9 @@ export function currentTurn(gameType, state) {
   return { actor: state.phase, role: "fighter" };
 }
 
-export function applyTurn(gameType, state, { actor, move, emergence, target, angle, power, answerCorrect }) {
+export function applyTurn(gameType, state, { actor, move, emergence, target, angle, power, ammo, answerCorrect }) {
   if (state.finished) throw Object.assign(new Error("This match has finished."), {statusCode: 409});
-  if (gameType === 'tanx') return applyTanx(state,{actor,angle,power,answerCorrect});
+  if (gameType === 'tanx') return applyTanx(state,{actor,angle,power,ammo,answerCorrect});
   if (gameType !== "sniper" && !allowedMoves(gameType).includes(move)) throw Object.assign(new Error("Choose a valid move."), {statusCode: 400});
   const next = structuredClone(state);
   if (gameType === "penalty") return applyPenalty(next, { actor, move, answerCorrect });

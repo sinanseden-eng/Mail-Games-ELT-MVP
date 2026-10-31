@@ -83,10 +83,10 @@ test('3D replay poses and camera changes do not alter shared match or replay res
   assert.equal(JSON.stringify({match,shot}),snapshot);
 });
 
-test('offline deliverable embeds 3D engine and accessible view selection without runtime imports',async()=>{
+test('offline deliverable embeds cinematic arenas and accessible view selection without runtime imports',async()=>{
   const html=await readFile(new URL('../tanx.html',import.meta.url),'utf8');
-  assert.ok(html.includes('id="tanx-3d"'));assert.ok(html.includes('aria-label="Battlefield view"'));
-  assert.ok(html.includes('Classic 2D'));assert.ok(html.includes('WEBGL UNAVAILABLE'));
+  assert.ok(html.includes('id="tanx-industrial"'));assert.ok(html.includes('aria-label="Battlefield view"'));
+  assert.ok(html.includes('Neon Industrial'));assert.ok(html.includes('Desert Frontier'));
   assert.ok(!/<script[^>]+src=/.test(html));assert.ok(!/<script[^>]+type="module"/.test(html));
   const scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)];
   assert.equal(scripts.length,4);

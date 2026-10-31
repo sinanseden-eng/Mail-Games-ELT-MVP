@@ -2,6 +2,15 @@
 // Coordinates are pixels in a 640 × 400 arena; time is measured in seconds.
 export const WIDTH = 640, HEIGHT = 400, STEP = 1 / 120;
 export const COLOURS = ['#ff6479', '#66caff', '#a9ed78', '#ffdb71'];
+export const AMMO = Object.freeze({
+  standard: {name:'Standard',radius:1,damage:1,description:'Balanced blast and damage'},
+  breach: {name:'Demolition',radius:1.4,damage:.65,description:'Wider crater · lower direct damage'},
+  precision: {name:'Precision',radius:.65,damage:1.2,description:'Smaller crater · higher direct damage'}
+});
+export function ammoProfile(key='standard') {
+  if(typeof key!=='string'||!Object.hasOwn(AMMO,key))throw new Error('Choose Standard, Demolition or Precision ammunition.');
+  return AMMO[key];
+}
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 export function random(seed) {
   let s = Number(seed) >>> 0 || 1;
@@ -23,6 +32,8 @@ export function settings(input = {}) {
     return input[key] ?? fallback;
   };
   return {
+    // Missing arena means the original map, preserving stored match replays.
+    arena: choose('arena', ['classic','industrial','desert'], 'classic'),
     terrain: choose('terrain', ['gentle', 'rolling', 'mountains'], 'rolling'),
     windMode: choose('windMode', ['off', 'round', 'turn'], 'turn'),
     windStrength: integer('windStrength', 0, 35, 18),
@@ -41,9 +52,10 @@ export function settings(input = {}) {
 // Circular cuts can create overhangs. The browser paints the same cuts with
 // destination-out; the server uses identical integer pixels without a canvas.
 export class Terrain {
-  constructor(seed, kind = 'rolling', count = 2, craters = []) {
-    this.seed = seed; this.kind = kind; this.count = count;
+  constructor(seed, kind = 'rolling', count = 2, craters = [], style = 'classic') {
+    this.seed = seed; this.kind = kind; this.count = count; this.style=style;
     this.data = new Uint8Array(WIDTH * HEIGHT);
+    this.materials=new Uint8Array(WIDTH*HEIGHT);this.collapses=[];this.structures=[];
     this.craters = [];
     const rng = random(seed), p = [rng() * 6.28, rng() * 6.28, rng() * 6.28];
     const strength = {gentle: 13, rolling: 38, mountains: 70}[kind] ?? 38;
@@ -56,7 +68,64 @@ export class Terrain {
       for (let dx = -13; dx <= 13; dx++) this.heights[x + dx] = y;
     }
     for (let x = 0; x < WIDTH; x++) for (let y = this.heights[x]; y < HEIGHT; y++) this.data[y * WIDTH + x] = 255;
+    this.baseHeights=this.heights.slice();
+    if(style!=='classic')this.buildIndustrial();
     for (const c of craters) this.carve(c.x, c.y, c.r);
+  }
+  buildIndustrial() {
+    this.data.fill(0);const rng=random(this.seed^0x19aef3),phase=rng()*6.28;
+    const amplitude={gentle:9,rolling:19,mountains:32}[this.kind]||19;
+    this.baseHeights=Array.from({length:WIDTH},(_,x)=>Math.round(clamp(
+      326-x*.055+Math.sin(x/67+phase)*amplitude+Math.sin(x/17+phase)*amplitude*.32+Math.sin(x/3.1+phase)*2.5,265,365)));
+    for(let x=0;x<WIDTH;x++)for(let y=this.baseHeights[x];y<HEIGHT;y++) {const i=y*WIDTH+x;this.data[i]=255;this.materials[i]=1;}
+    const rect=(x,y,w,h,material)=>{
+      for(let py=Math.max(0,Math.round(y));py<Math.min(HEIGHT,Math.round(y+h));py++)for(let px=Math.max(0,Math.round(x));px<Math.min(WIDTH,Math.round(x+w));px++){
+        const i=py*WIDTH+px;this.data[i]=255;this.materials[i]=material;
+      }
+    };
+    const brace=(x1,y1,x2,y2)=>{
+      const steps=Math.ceil(Math.hypot(x2-x1,y2-y1));for(let n=0;n<=steps;n++)rect(x1+(x2-x1)*n/steps,y1+(y2-y1)*n/steps,2,2,3);
+    };
+    for(let i=0;i<this.count;i++) {
+      const x=spawnX(i,this.count),top=242-(i%2)*52+Math.round(rng()*10-5);
+      rect(x-38,top+7,76,8,2);rect(x-36,top,72,7,this.style==='desert'?2:3);
+      if(this.style==='desert')for(let bx=x-34;bx<x+32;bx+=9)rect(bx,top-4,8,4,4);
+      for(const dx of [-25,23])rect(x+dx,top+15,4,HEIGHT-top-15,2);
+      brace(x-23,top+19,x+23,this.baseHeights[x]-2);brace(x+23,top+19,x-23,this.baseHeights[x]-2);
+      this.structures.push({x:x-38,y:top,w:76,h:15,kind:'perch'});
+    }
+    if(this.count===2) {
+      rect(232,281,176,7,this.style==='desert'?2:3);for(const x of [242,395])rect(x,288,5,HEIGHT-288,2);
+      brace(249,289,391,320);brace(391,289,249,320);
+      rect(426,247,10,HEIGHT-247,2);
+      this.structures.push({x:232,y:281,w:176,h:7,kind:'bridge'});
+    }
+    this.heights=Array.from({length:WIDTH},(_,x)=>{let y=0;while(y<HEIGHT&&!this.solid(x,y))y++;return y;});
+  }
+  collapseUnsupported() {
+    // Flood-fill from the bottom, then settle detached pieces bottom-first.
+    // Moving material pixels as well as opacity makes client/server rebuilds exact.
+    const seen=new Uint8Array(this.data.length),queue=new Int32Array(this.data.length),components=[];
+    let head=0,tail=0;
+    const add=i=>{if(i>=0&&i<this.data.length&&this.data[i]&&!seen[i]){seen[i]=1;queue[tail++]=i;}};
+    const flood=()=>{while(head<tail){const i=queue[head++],x=i%WIDTH;add(i-WIDTH);add(i+WIDTH);if(x)add(i-1);if(x<WIDTH-1)add(i+1);}};
+    for(let x=0;x<WIDTH;x++)add((HEIGHT-1)*WIDTH+x);flood();
+    for(let start=0;start<this.data.length;start++)if(this.data[start]&&!seen[start]){
+      head=tail=0;add(start);flood();
+      const pixels=queue.slice(0,tail),materials=Uint8Array.from(pixels,i=>this.materials[i]);
+      let maxY=0,minY=HEIGHT,minX=WIDTH,maxX=0;
+      for(const i of pixels){const x=i%WIDTH,y=Math.floor(i/WIDTH);maxY=Math.max(maxY,y);minY=Math.min(minY,y);minX=Math.min(minX,x);maxX=Math.max(maxX,x);}
+      components.push({pixels,materials,maxY,minY,minX,maxX});
+    }
+    for(const comp of components)for(const i of comp.pixels){this.data[i]=0;this.materials[i]=0;}
+    this.collapses=[];
+    for(const comp of components.sort((a,b)=>b.maxY-a.maxY)){
+      const bottoms=new Map();for(const i of comp.pixels){const x=i%WIDTH,y=Math.floor(i/WIDTH);bottoms.set(x,Math.max(bottoms.get(x)??-1,y));}
+      let drop=HEIGHT;
+      for(const[x,y]of bottoms){let dy=0;while(y+dy+1<HEIGHT&&!this.solid(x,y+dy+1))dy++;drop=Math.min(drop,dy);}
+      comp.pixels.forEach((i,n)=>{const target=i+drop*WIDTH;if(target<this.data.length){this.data[target]=255;this.materials[target]=comp.materials[n];}});
+      if(drop)this.collapses.push({x:(comp.minX+comp.maxX)/2,y:comp.minY,drop,cells:comp.pixels.length});
+    }
   }
   solid(x, y) {
     x = Math.floor(x); y = Math.floor(y);
@@ -68,7 +137,8 @@ export class Terrain {
     this.craters.push(crater);
     for (let py = Math.max(0, Math.floor(y - r)); py <= Math.min(HEIGHT - 1, Math.ceil(y + r)); py++)
       for (let px = Math.max(0, Math.floor(x - r)); px <= Math.min(WIDTH - 1, Math.ceil(x + r)); px++)
-        if ((px - crater.x) ** 2 + (py - crater.y) ** 2 <= r * r) this.data[py * WIDTH + px] = 0;
+        if ((px - crater.x) ** 2 + (py - crater.y) ** 2 <= r * r) {this.data[py * WIDTH + px] = 0;this.materials[py*WIDTH+px]=0;}
+    if(this.style!=='classic')this.collapseUnsupported();
     return crater;
   }
   supported(tank, y = tank.y) {
@@ -82,8 +152,9 @@ export function windAt(seed, turn, config) {
   return Math.round((rng() * 2 - 1) * config.windStrength);
 }
 export function createArena(seed, config, players) {
-  const terrain = new Terrain(seed, config.terrain, players.length);
-  const tanks = players.map((p, i) => ({name: String(p.name || `Player ${i + 1}`).slice(0, 24), type: p.type === 'cpu' ? 'cpu' : 'human', colour: COLOURS[i], x: spawnX(i, players.length), y: terrain.heights[spawnX(i, players.length)], hp: 100, angle: i < players.length / 2 ? 45 : 135, power: 60}));
+  const terrain = new Terrain(seed, config.terrain, players.length,[],config.arena);
+  const colours=config.arena==='classic'||!config.arena?COLOURS:['#73dfe7','#ff6674','#e1c48b','#b9a6ef'];
+  const tanks = players.map((p, i) => ({name: String(p.name || `Player ${i + 1}`).slice(0, 24), type: p.type === 'cpu' ? 'cpu' : 'human', colour: colours[i], x: spawnX(i, players.length), y: terrain.heights[spawnX(i, players.length)], hp: 100, angle: i < players.length / 2 ? 45 : 135, power: 60}));
   return {seed: seed >>> 0, tanks, craters: [], active: 0, turn: 0, wind: windAt(seed, 0, config)};
 }
 
@@ -104,7 +175,7 @@ export function stepProjectile(p, terrain, tanks, shooter, wind, config, dt = ST
     if (p.x < 0 || p.x >= WIDTH || p.y >= HEIGHT || p.age > 16 || p.y < -2500) return {kind: 'miss', x: p.x, y: p.y};
     if (config.tankCollision) for (let i = 0; i < tanks.length; i++) {
       const t = tanks[i];
-      if (t.hp > 0 && (i !== shooter || p.age > .15) && Math.abs(p.x - t.x) <= 8 && p.y >= t.y - 14 && p.y <= t.y)
+      if (t.hp > 0 && (i !== shooter || p.age > .15) && Math.abs(p.x - t.x) <= (config.arena&&config.arena!=='classic'?11:8) && p.y >= t.y - (config.arena&&config.arena!=='classic'?17:14) && p.y <= t.y)
         return {kind: 'tank', tank: i, x: p.x, y: p.y};
     }
     if (config.terrainCollision && terrain.solid(p.x, p.y)) return {kind: 'terrain', x: p.x, y: p.y};
@@ -112,7 +183,7 @@ export function stepProjectile(p, terrain, tanks, shooter, wind, config, dt = ST
   return null;
 }
 export function traceShot(arena, angle, power, config, target = null, sharedTerrain = null) {
-  const terrain = sharedTerrain || new Terrain(arena.seed, config.terrain, arena.tanks.length, arena.craters);
+  const terrain = sharedTerrain || new Terrain(arena.seed, config.terrain, arena.tanks.length, arena.craters,config.arena);
   const p = launch(arena.tanks[arena.active], angle, power), path = [[p.x, p.y, 0]];
   let hit, closest = Infinity, ticks = 0;
   while (!hit) {
@@ -136,22 +207,24 @@ export function settleTanks(terrain, tanks, config) {
   }
   return falls;
 }
-export function resolveShot(arena, angle, power, config, enabled = true) {
+export function resolveShot(arena, angle, power, config, enabled = true, ammo = 'standard') {
+  const profile=ammoProfile(ammo),blastRadius=Math.round(config.blastRadius*profile.radius);
   if (!Number.isInteger(angle) || angle < 0 || angle > 180 || !Number.isInteger(power) || power < 0 || power > 100) throw new Error('Choose an angle of 0–180° and power of 0–100%.');
   const before = structuredClone(arena), after = structuredClone(arena);
   const shooter = after.active;
   after.tanks[shooter].angle = angle; after.tanks[shooter].power = power;
-  const trace = enabled ? traceShot(after, angle, power, config) : {path: [], hit: null, duration: .8, terrain: new Terrain(after.seed, config.terrain, after.tanks.length, after.craters)};
+  after.tanks[shooter].ammo=ammo;
+  const trace = enabled ? traceShot(after, angle, power, config) : {path: [], hit: null, duration: .8, terrain: new Terrain(after.seed, config.terrain, after.tanks.length, after.craters,config.arena)};
   const {hit, terrain} = trace, damage = Array(after.tanks.length).fill(0);
   let crater = null;
   if (hit && hit.kind !== 'miss') {
     if (config.damage) after.tanks.forEach((tank, i) => {
       if (tank.hp <= 0) return;
       const distance = Math.max(0, Math.hypot(tank.x - hit.x, tank.y - 7 - hit.y) - 5);
-      const amount = hit.tank === i ? 90 : Math.round(75 * Math.max(0, 1 - distance / config.blastRadius) ** .75);
+      const amount = Math.round((hit.tank === i ? 90 : 75 * Math.max(0, 1 - distance / blastRadius) ** .75)*profile.damage);
       damage[i] = Math.min(tank.hp, amount); tank.hp -= damage[i];
     });
-    if (config.destructible) {crater = terrain.carve(hit.x, hit.y, config.blastRadius); after.craters.push(crater);}
+    if (config.destructible) {crater = terrain.carve(hit.x, hit.y, blastRadius); after.craters.push(crater);}
   }
   const falls = settleTanks(terrain, after.tanks, config);
   after.turn++;
@@ -168,8 +241,8 @@ export function resolveShot(arena, angle, power, config, enabled = true) {
     if (after.tanks[i].hp > 0) {after.active = i; break;}
   }
   after.wind = windAt(after.seed, after.turn, config);
-  return {before, after, shooter, angle, power, enabled, path: trace.path,
-    hit, duration: trace.duration, damage, crater, falls, over, winner, limited};
+  return {before, after, shooter, angle, power, ammo, blastRadius, enabled, path: trace.path,
+    hit, duration: trace.duration, damage, crater, structureFalls:crater?terrain.collapses:[], falls, over, winner, limited};
 }
 
 // AI Controller: score trajectories using the actual wind and terrain, then add
@@ -180,7 +253,7 @@ export function planAI(arena, config, rng = Math.random) {
   const target = rivals.sort((a, b) => Math.abs(a.x - tank.x) - Math.abs(b.x - tank.x))[0];
   if (!target) return {angle: 90, power: 0};
   let best = {score: Infinity, angle: target.x > tank.x ? 45 : 135, power: 60};
-  const terrain = new Terrain(arena.seed, config.terrain, arena.tanks.length, arena.craters);
+  const terrain = new Terrain(arena.seed, config.terrain, arena.tanks.length, arena.craters,config.arena);
   // Coarse grid followed by a local search handles hills and headwinds.
   for (let a = 18; a <= 162; a += 9) for (let p = 20; p <= 100; p += 8) {
     const shot = traceShot(arena, a, p, config, target, terrain);
@@ -203,9 +276,9 @@ export function planAI(arena, config, rng = Math.random) {
 export function newMatch(config, players, seed = Date.now() >>> 0) {
   return {config: settings(config), players, seed, round: 1, wins: players.map(() => 0), arena: createArena(seed, settings(config), players), finished: false, winner: null};
 }
-export function playMatch(match, angle, power, enabled = true) {
+export function playMatch(match, angle, power, enabled = true, ammo = 'standard') {
   if (match.finished) throw new Error('This Tanx match has ended.');
-  const next = structuredClone(match), replay = resolveShot(next.arena, angle, power, next.config, enabled);
+  const next = structuredClone(match), replay = resolveShot(next.arena, angle, power, next.config, enabled,ammo);
   next.arena = replay.after;
   if (replay.over) {
     if (replay.winner !== null) next.wins[replay.winner]++;

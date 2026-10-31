@@ -5,31 +5,39 @@ fonts, CDNs, image requests or installation. `tanx.template.html`, `tanx-core.mj
 and `tanx-ui.js` are editable sources. `node scripts/build-tanx.mjs` regenerates
 that single deliverable, including the two uploaded Meshy tank sprite bakes.
 
-## 3D environment with side-view gameplay
+## Fracture Arenas / cinematic 2.5D
 
-The default view is now a genuine WebGL scene: extruded destructible terrain,
-lit solid tanks, forested mountain geometry, sun, haze, shadows, shell trails,
-blast volumes and debris. The battle still uses one shared 2D coordinate plane:
-camera choice cannot change the trajectory, scoring, AI or server result.
-The view menu offers a scenic oblique camera, a straight side camera, and the
-previous Classic 2D renderer. A WebGL failure or context loss falls back to 2D.
+The opening setup offers two illustrated arena choices: Neon Industrial (night
+city, steel scaffolding and highway remnants) and Desert Frontier (late-afternoon
+architecture, sandstone/concrete outposts and sandbags). Teacher assignments have
+the same arena setting. The renderer is now `tanx-industrial.mjs`: Canvas-based
+2.5D depth, generated backdrop/material art, independently animated tank barrels,
+live wind/health/power/ammo HUD, fires, dust, smoke, blast light and falling debris.
+Cinematic and lower-effects Tactical views share identical physics. No WebGL,
+CDN, model download or runtime import is required by the standalone HTML.
+The earlier `tanx-3d.mjs` remains source history but is no longer bundled.
 
-`tanx-3d.mjs` is bundled with the pinned Three.js dependency into the single
-offline HTML; no CDN, downloaded GLBs or runtime imports are needed. Solid tank
-models are lightweight procedural representations; the Meshy bakes remain in
-the portraits and classic view. Terrain fronts use the exact collision-mask
-texture; every exposed pixel edge is extruded, including crater ceilings and
-isolated ledges. Background mountains/trees are scenery, outside the battle
-plane. Geometry is rebuilt only when seed, terrain settings or craters change.
-View switching disposes GPU resources; no second animation loop is started.
-The playable ground spans 380 world units in depth. The scenic camera uses
-perspective; the side camera uses a slightly elevated orthographic view. Tanks,
-shells and impacts share the front battle plane so a foreground terrain lip
-cannot hide them. Camera regression checks keep both end positions in frame,
-require visible ground depth, and keep scenery behind the playable volume.
-Reduced-motion preference disables flying blast debris. `tests/tanx-3d.test.mjs`
-checks perimeter coverage, crater holes, muzzle alignment, camera bounds,
-non-mutation of game state and the self-contained HTML bundle.
+Two-player tanks start at x=65 and x=575, on perches separated vertically by
+about 50 pixels. Material IDs encode rubble, concrete, steel and sandbags in the
+same solid mask used by the server. Blasts erase material pixels; a flood-fill
+identifies disconnected pieces and settles them bottom-first. These pieces can
+support tanks or obstruct later shots. Rebuilding from seed + ordered crater
+history reproduces both opacity and materials. Foreground textures are masked
+from those pixels, rather than baking structures into a background picture.
+Missing `arena` settings map to the original classic terrain so saved matches
+keep their original simulation geometry.
+
+Ammunition is an enum checked by the server: Standard uses baseline blast/damage;
+Demolition uses 1.4× radius with 0.65× damage; Precision uses 0.65× radius with
+1.2× damage. All are fictional gameplay values. The classroom iframe forwards
+ammo with angle/power; question grading and turn resolution remain authoritative.
+Wrong answers create no shell, crater, blast damage or structure collapse.
+The HUD remains steady during light camera recoil. Reduced-motion disables recoil
+and flying debris; Tactical view also removes ambient smoke/searchlights.
+
+`tests/tanx-arenas.test.mjs` covers separated spawns, material determinism, support
+collapse and debris collision, tank drops, ammo validation/trade-offs, both AI
+and classroom integration, and actual loaded-asset rendering in both themes.
 
 ## Local play
 
@@ -71,15 +79,11 @@ Run `npm test`, `npm run check`, `npm run build`. `tests/tanx.test.mjs` covers
 terrain, opacity cuts, flight, wind, toggles, support/falls, both-direction AI,
 rounds/wins/draw limits, server validation, question grading, retries and turns.
 
-## Battlefield graphics edition
+## Artwork and packaging
 
-The renderer now outputs at 1280×800 while physics coordinates remain 640×400.
-It caches sunset skies, layered ridges, forests and mist per terrain seed, and
-caches the textured soil/grass/scorched crater surface per terrain revision.
-Brighter model bakes are embedded in the offline file and reused in commander
-portraits. Barrels pivot independently. Damage adds smoke; destroyed vehicles
-leave wrecks. Shell tips interpolate between saved physics samples; muzzle
-flash, debris, expanding blast rings and short impact recoil are visual only.
-The HUD does not shake. System reduced-motion settings disable camera recoil
-and moving debris. Renderer tests cover loaded sprites, flight/impact/falling
-frames, non-mutation of server state, and the terrain alpha collision mask.
+`assets/tanx/README.md` records the source tank bakes and generated art prompts.
+`scripts/build-tanx.mjs` embeds both tank PNGs, three WebP artwork assets, the
+shared engine, renderer and UI into one HTML. Original large Meshy GLBs remain
+outside the runtime. `battlefield-preview.webp` is exported from the real game
+renderer for the main hub card. Native render checks exercise 1280×800 output;
+public-preview browser checks cover the setup, both arenas, aiming and replay.

@@ -4,10 +4,10 @@
 const C = TanxCore, $ = id => document.getElementById(id);
 const embedded = window.parent !== window && new URLSearchParams(location.search).has('classroom');
 if (embedded) document.body.classList.add('embedded');
-let renderer, graphicsAvailable=true;
-const buttons = ['fire', 'charge', 'angle', 'power', 'angle-number', 'power-number'];
-let match = C.newMatch({}, [{name:'Player 1',type:'human'},{name:'CPU 2',type:'cpu'}], 74831);
-let shot = null, elapsed = 0, mode = 'setup', paused = false, aim = {angle:45,power:60};
+let renderer;
+const buttons = ['fire', 'charge', 'angle', 'power', 'angle-number', 'power-number', 'ammo'];
+let match = C.newMatch({arena:'industrial'}, [{name:'Player 1',type:'human'},{name:'CPU 2',type:'cpu'}], 74831);
+let shot = null, elapsed = 0, mode = 'setup', paused = false, aim = {angle:45,power:60,ammo:'standard'};
 let bot = null, botClock = 0, thinking = false, generation = 0, lastTime = performance.now();
 let charge = null, clock = 0, impactSound = false, hostState = null, bridgeToken = null;
 let replayResolve = null, aimSentAt = 0, hostCanAim = false;let angleCarry=0,powerCarry=0;
@@ -39,22 +39,8 @@ class AudioFX {
 const audio = new AudioFX();
 function chooseView(value=$('display-mode').value){
   renderer?.dispose?.();
-  if(value!=='classic'&&graphicsAvailable){
-    try{
-      renderer=new Tanx3D.Renderer3D($('arena'),{camera:value,onLost:()=>{
-        graphicsAvailable=false;chooseView('classic');
-      }});
-      $('display-mode').value=value;$('render-note').textContent=value==='side'?'3D TERRAIN · SIDE CAMERA':'3D TERRAIN · SCENIC CAMERA';return;
-    }catch{
-      graphicsAvailable=false;
-      // A failed WebGL constructor may have attached a layer before failing.
-      document.querySelectorAll('.terrain-3d').forEach(layer=>layer.remove());
-      $('arena').parentElement.classList.remove('is-3d');
-    }
-  }
-  renderer=new C.Renderer($('arena'),TanxSprites);$('display-mode').value='classic';
-  $('render-note').textContent=graphicsAvailable?'CLASSIC 2D · SIDE CAMERA':'CLASSIC 2D · WEBGL UNAVAILABLE';
-  if(!graphicsAvailable)for(const option of $('display-mode').options)if(option.value!=='classic')option.disabled=true;
+  renderer=new TanxIndustrial.Renderer($('arena'),TanxSprites,TanxArt,{tactical:value==='tactical'});
+  $('display-mode').value=value;
 }
 $('display-mode').onchange=()=>{chooseView();$('arena').focus();};
 function log(text){const p=document.createElement('p');p.textContent=text;$('log').prepend(p);while($('log').children.length>30)$('log').lastChild.remove();}
@@ -63,6 +49,7 @@ function canAim(){return !paused && mode==='aim' && match.arena.tanks[match.aren
 function send(type,payload={}){if(embedded&&bridgeToken)window.parent.postMessage({source:'tanx-child',token:bridgeToken,type,...payload},location.origin);}
 function refresh(){
   const a=shot&&mode==='flight'&&elapsed<shot.duration?shot.before:match.arena,tank=a.tanks[a.active];
+  document.body.dataset.theme=match.config.arena==='desert'?'desert':'industrial';$('render-note').textContent=match.config.arena==='desert'?'DESERT FRONTIER / DUST SECTOR':'NEON INDUSTRIAL / SECTOR 07';
   $('active-name').textContent=tank?.name||'Round complete';
   $('active-name').style.color=tank?.colour;
   const activePortrait=$('active-portrait');activePortrait.src=TanxSprites[a.active%TanxSprites.length];activePortrait.alt='';
@@ -82,14 +69,14 @@ function setControls(){for(const id of buttons)$(id).disabled=!canAim();document
 function updateAim(sound=true){
   aim.angle=Math.round(C.clamp(Number(aim.angle)||0,0,180));aim.power=Math.round(C.clamp(Number(aim.power)||0,0,100));
   $('angle').value=$('angle-number').value=aim.angle;$('power').value=$('power-number').value=aim.power;
-  $('angle-value').textContent=`${aim.angle}°`;$('power-value').textContent=`${aim.power}%`;
+  $('angle-value').textContent=`${aim.angle}°`;$('power-value').textContent=`${aim.power}%`;aim.ammo||='standard';$('ammo').value=aim.ammo;$('ammo-note').textContent=C.AMMO[aim.ammo].description;
   if(sound)audio.tick();
-  if(embedded){send('aim',{angle:aim.angle,power:aim.power});aimSentAt=performance.now();}
+  if(embedded){send('aim',{angle:aim.angle,power:aim.power,ammo:aim.ammo});aimSentAt=performance.now();}
 }
 function readyTurn(){
   shot=null;elapsed=0;charge=null;held.clear();bot=null;thinking=false;botClock=0;generation++;
   if(match.finished){mode='match-over';showRound(true);return;}
-  const tank=match.arena.tanks[match.arena.active];aim={angle:tank.angle,power:tank.power};
+  const tank=match.arena.tanks[match.arena.active];aim={angle:tank.angle,power:tank.power,ammo:tank.ammo||'standard'};
   mode=tank.type==='cpu'?'cpu':'aim';
   status(`${tank.name} ${mode==='cpu'?'is calculating a shot…':'— aim, set power, fire.'}`);refresh();
 }
@@ -110,9 +97,9 @@ function finishShot(){
 function fire(){
   if(embedded || (!canAim()&&mode!=='cpu') || paused)return;
   const tank=match.arena.tanks[match.arena.active];
-  const result=C.playMatch(match,aim.angle,aim.power);match=result.match;shot=result.replay;
+  const result=C.playMatch(match,aim.angle,aim.power,true,aim.ammo);match=result.match;shot=result.replay;
   elapsed=0;impactSound=false;mode='flight';held.clear();charge=null;
-  status(`${tank.name} fires · ${aim.angle}° / ${aim.power}%`);log(`${tank.name}: ${aim.angle}° / ${aim.power}% · wind ${shot.before.wind}.`);audio.fire();refresh();
+  status(`${tank.name} fires · ${aim.angle}° / ${aim.power}%`);log(`${tank.name}: ${C.AMMO[aim.ammo].name} · ${aim.angle}° / ${aim.power}% · wind ${shot.before.wind}.`);audio.fire();refresh();
 }
 function openSetup(){if(embedded)return;generation++;bot=null;thinking=false;held.clear();charge=null;paused=true;setControls();$('setup').showModal();}
 function populatePlayers(){
@@ -141,6 +128,7 @@ $('cancel-setup').onclick=()=>{if(mode==='setup'){$('setup-form').requestSubmit(
 $('setup').addEventListener('cancel',event=>{if(mode==='setup')event.preventDefault();else {paused=false;setControls();}});
 $('sound').onclick=()=>audio.toggle();
 function togglePause(){if(mode==='setup')return;paused=!paused;held.clear();charge=null;setControls();status(paused?'Paused. The wind can wait.':mode==='flight'?'Shell in flight…':`${match.arena.tanks[match.arena.active].name} — your turn.`);}
+$('ammo').onchange=event=>{if(canAim()){aim.ammo=event.target.value;updateAim();}};
 $('pause').onclick=togglePause;$('fire').onclick=fire;
 for(const id of ['angle','power','angle-number','power-number'])$(id).oninput=event=>{if(canAim()){aim[id.startsWith('angle')?'angle':'power']=event.target.value;updateAim();}};
 document.querySelectorAll('[data-adjust]').forEach(button=>button.onclick=()=>{if(!canAim())return;const [key,delta]=button.dataset.adjust.split(':');aim[key]+=Number(delta);updateAim();});
@@ -166,15 +154,15 @@ window.addEventListener('message',event=>{
   if(!bridgeToken||data.token!==bridgeToken)return;
   if(data.type==='state'||data.type==='init'){
     generation++;shot=null;elapsed=0;paused=false;hostState=data.match;hostCanAim=Boolean(data.canAim);match=structuredClone(data.match);mode=data.canAim?'aim':'watch';
-    const tank=match.arena.tanks[match.arena.active];aim={angle:tank.angle,power:tank.power};$('controls').style.setProperty('display',data.canAim?'block':'none','important');
+    const tank=match.arena.tanks[match.arena.active];aim={angle:tank.angle,power:tank.power,ammo:tank.ammo||'standard'};$('controls').style.setProperty('display',data.canAim?'grid':'none','important');
     if(data.canAim){$('fire').hidden=true;$('charge').hidden=true;$('controls').querySelector('.hint').textContent='Choose your angle and power here. Answer the question beside the battlefield, then lock your shot.';}
-    $('round-banner').hidden=true;status(data.canAim?'Choose your firing solution. Answer the question to enable it.':'Waiting for the next commander.');refresh();send('ready',{angle:aim.angle,power:aim.power});send('resize',{height:document.documentElement.scrollHeight});
+    $('round-banner').hidden=true;status(data.canAim?'Choose your firing solution. Answer the question to enable it.':'Waiting for the next commander.');refresh();send('ready',{angle:aim.angle,power:aim.power,ammo:aim.ammo});send('resize',{height:document.documentElement.scrollHeight});
   }
   if(data.type==='replay'){
     shot=data.replay;elapsed=0;impactSound=false;mode='flight';paused=false;match.arena=structuredClone(shot.after);refresh();status(shot.enabled?'Shell in flight…':'Incorrect answer · shot disabled, turn passed.');
   }
   if(data.type==='skip'&&shot)finishShot();
-  if(data.type==='aim'&&canAim()){aim={angle:data.angle,power:data.power};updateAim(false);}
+  if(data.type==='aim'&&canAim()){aim={angle:data.angle,power:data.power,ammo:data.ammo||'standard'};updateAim(false);}
 });
 function frame(now){
   const dt=Math.min(.05,Math.max(0,(now-lastTime)/1000));lastTime=now;clock+=dt;
@@ -203,13 +191,11 @@ function frame(now){
     arena.tanks[shot.shooter].angle=shot.angle;
   }
   const visual={time:clock,shot:mode==='flight'?shot:null,progress:elapsed,aim:mode==='aim'||mode==='cpu'?aim:null,round:match.round,wins:match.wins};
-  try{renderer.draw(arena,match.config,visual);}catch(error){
-    if(!renderer.dispose)throw error;
-    graphicsAvailable=false;chooseView('classic');renderer.draw(arena,match.config,visual);
-  }
+  renderer.draw(arena,match.config,visual);
   requestAnimationFrame(frame);
 }
 if(embedded)new ResizeObserver(()=>send('resize',{height:document.body.scrollHeight})).observe(document.body);
+$('preview-industrial').src=TanxArt.city;$('preview-desert').src=TanxArt.desert;
 chooseView();refresh();requestAnimationFrame(frame);
 if(!embedded)openSetup();else {mode='watch';send('loaded');}
 })();
