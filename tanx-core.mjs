@@ -80,7 +80,7 @@ export class Terrain {
     for(let x=0;x<WIDTH;x++)for(let y=this.baseHeights[x];y<HEIGHT;y++) {const i=y*WIDTH+x;this.data[i]=255;this.materials[i]=1;}
     const rect=(x,y,w,h,material)=>{
       for(let py=Math.max(0,Math.round(y));py<Math.min(HEIGHT,Math.round(y+h));py++)for(let px=Math.max(0,Math.round(x));px<Math.min(WIDTH,Math.round(x+w));px++){
-        const i=py*WIDTH+px;this.data[i]=255;this.materials[i]=material;
+        const i=py*WIDTH+px;this.data[i]=material?255:0;this.materials[i]=material;
       }
     };
     const brace=(x1,y1,x2,y2)=>{
@@ -90,13 +90,19 @@ export class Terrain {
       const x=spawnX(i,this.count),top=242-(i%2)*52+Math.round(rng()*10-5);
       rect(x-38,top+7,76,8,2);rect(x-36,top,72,7,this.style==='desert'?2:3);
       if(this.style==='desert')for(let bx=x-34;bx<x+32;bx+=9)rect(bx,top-4,8,4,4);
-      for(const dx of [-25,23])rect(x+dx,top+15,4,HEIGHT-top-15,2);
-      brace(x-23,top+19,x+23,this.baseHeights[x]-2);brace(x+23,top+19,x-23,this.baseHeights[x]-2);
+      if(this.style==='desert'){
+        rect(x-33,top+15,66,HEIGHT-top-15,2);
+        rect(x-17,top+24,34,27,0); // A genuine window opening in the solid mask.
+        rect(x-10,top+61,20,Math.max(4,this.baseHeights[x]-top-61),0);
+      }else{
+        for(const dx of [-25,23])rect(x+dx,top+15,4,HEIGHT-top-15,2);
+        brace(x-23,top+19,x+23,this.baseHeights[x]-2);brace(x+23,top+19,x-23,this.baseHeights[x]-2);
+      }
       this.structures.push({x:x-38,y:top,w:76,h:15,kind:'perch'});
     }
     if(this.count===2) {
       rect(232,281,176,7,this.style==='desert'?2:3);for(const x of [242,395])rect(x,288,5,HEIGHT-288,2);
-      brace(249,289,391,320);brace(391,289,249,320);
+      if(this.style!=='desert'){brace(249,289,391,320);brace(391,289,249,320);}
       rect(426,247,10,HEIGHT-247,2);
       this.structures.push({x:232,y:281,w:176,h:7,kind:'bridge'});
     }

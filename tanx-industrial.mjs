@@ -118,7 +118,7 @@ export class Renderer {
     ellipse(c,x,y+1,15,2.3,'#00000099');
     if(tank.hp<=0){c.fillStyle='#293236';c.fillRect(x-11,y-5,22,5);c.fillStyle='#424745';c.beginPath();c.moveTo(x-8,y-5);c.lineTo(x-3,y-12);c.lineTo(x+8,y-9);c.lineTo(x+11,y-5);c.fill();glow(c,x,y-6,14,'#f17b3b33');return;}
     if(sprite?.complete&&sprite.naturalWidth){
-      c.save();c.translate(x,y);if(Math.cos(a)>0)c.scale(-1,1);c.filter=this.isDesert?'sepia(.65) saturate(.65) brightness(1.6)':'brightness(1.4)';c.shadowColor='#000';c.shadowBlur=3;c.drawImage(sprite,-14,-17,28,17);c.restore();
+      c.save();c.translate(x,y);if(Math.cos(a)>0)c.scale(-1,1);c.filter=this.isDesert?'sepia(1) saturate(.9) brightness(1.9)':'brightness(1.4)';c.shadowColor='#000';c.shadowBlur=3;c.drawImage(sprite,-14,-17,28,17);c.restore();
     }else{c.fillStyle='#1e3038';c.fillRect(x-11,y-5,22,5);c.fillStyle='#758080';c.fillRect(x-9,y-10,18,6);}
     const ex=x+Math.cos(a)*15,ey=y-10-Math.sin(a)*15;
     c.lineCap='round';c.strokeStyle='#101a22';c.lineWidth=3.3;c.beginPath();c.moveTo(x,y-10);c.lineTo(ex,ey);c.stroke();

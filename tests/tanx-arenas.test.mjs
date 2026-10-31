@@ -15,7 +15,10 @@ test('new arenas separate supported tanks on unequal-height perches with determi
     assert.deepEqual(a.data,b.data);assert.deepEqual(a.materials,b.materials);
     for(const t of m.arena.tanks){assert.ok(a.supported(t));assert.ok(!a.solid(t.x,t.y-1));}
     if(count===2){assert.ok(m.arena.tanks[1].x-m.arena.tanks[0].x>WIDTH*.75);assert.ok(Math.abs(m.arena.tanks[1].y-m.arena.tanks[0].y)>30);}
-    assert.ok(a.materials.includes(2));if(arena==='desert')assert.ok(a.materials.includes(4));else assert.ok(a.materials.includes(3));
+    assert.ok(a.materials.includes(2));if(arena==='desert'){
+      assert.ok(a.materials.includes(4));assert.ok(!a.materials.includes(3));
+      const perch=a.structures[0];assert.ok(!a.solid(perch.x+38,perch.y+30));assert.ok(a.solid(perch.x+9,perch.y+30));
+    }else assert.ok(a.materials.includes(3));
   }
 });
 
