@@ -1,6 +1,6 @@
 // Cinematic 2.5D, rendered with Canvas so the entire arena works without WebGL.
 // Every solid foreground surface is drawn from the authoritative material mask.
-import {WIDTH,HEIGHT,Terrain,random,clamp,replayTip,AMMO} from './tanx-core.mjs';
+import {WIDTH,HEIGHT,Terrain,random,clamp,replayTip,AMMO,TERRAINS} from './tanx-core.mjs';
 const S=2;
 function canvas(w=WIDTH,h=HEIGHT){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
 function image(url,loaded){const im=new Image();im.onload=loaded;im.src=url;return im;}
@@ -20,9 +20,9 @@ export class Renderer {
   }
   prepare(arena,config){
     if(this.seed!==arena.seed){this.seed=arena.seed;this.lastTrace=null;}
-    const key=JSON.stringify([arena.seed,arena.craters,config.terrain,config.arena,arena.tanks.length,this.revision]);
+    const key=JSON.stringify([arena.seed,arena.craters,config.terrain,config.terrainVersion,config.arena,arena.tanks.length,this.revision]);
     if(this.key===key)return;
-    this.isDesert=config.arena==='desert';this.terrain=new Terrain(arena.seed,config.terrain,arena.tanks.length,arena.craters,config.arena);
+    this.isDesert=config.arena==='desert';this.terrain=new Terrain(arena.seed,config.terrain,arena.tanks.length,arena.craters,config.arena,config.terrainVersion??1);
     const t=this.terrain,c=this.surface.getContext('2d');c.setTransform(S,0,0,S,0,0);c.clearRect(0,0,WIDTH,HEIGHT);
     // Receding top edges give the collision plane physical depth without
     // shifting the muzzle, shell or exact contact position on that plane.
@@ -165,7 +165,8 @@ export class Renderer {
     }
     const tank=arena.tanks[arena.active],angle=aim?.angle??shot?.angle??tank.angle,power=aim?.power??shot?.power??tank.power,ammo=aim?.ammo??shot?.ammo??tank.ammo??'standard';
     c.fillStyle='#08151ce8';c.fillRect(0,HEIGHT-31,WIDTH,31);c.fillStyle='#7adce455';c.fillRect(0,HEIGHT-31,WIDTH,.5);
-    text(c,`R${String(round).padStart(2,'0')} / T${String(arena.turn+1).padStart(2,'0')}`,14,HEIGHT-16,7,'#8da8b4');
+    text(c,`R${String(round).padStart(2,'0')} / T${String(arena.turn+1).padStart(2,'0')}`,14,HEIGHT-21,7,'#8da8b4');
+    text(c,TERRAINS[config.terrain]?.name.toUpperCase()||'TERRAIN',14,HEIGHT-10,5.5,'#8da8b4');
     text(c,'SHOT POWER',125,HEIGHT-22,6,'#b2d4d8');c.fillStyle='#42606c';c.fillRect(125,HEIGHT-15,125,4);c.fillStyle='#a3e5e3';c.fillRect(125,HEIGHT-15,power*1.25,4);text(c,`${power}%`,257,HEIGHT-13,8,'#d9f3f0');
     text(c,`ANGLE ${angle}°`,315,HEIGHT-16,8,'#a5dfe1');text(c,AMMO[ammo]?.name.toUpperCase()||'STANDARD',415,HEIGHT-16,7,'#c7b48b');
     text(c,wins.map((w,i)=>`P${i+1} ${w}`).join(' / '),WIDTH-14,HEIGHT-16,7,'#9fb1b9','right');

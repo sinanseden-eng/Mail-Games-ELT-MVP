@@ -101,7 +101,18 @@ function fire(){
   elapsed=0;impactSound=false;mode='flight';held.clear();charge=null;
   status(`${tank.name} fires · ${aim.angle}° / ${aim.power}%`);log(`${tank.name}: ${C.AMMO[aim.ammo].name} · ${aim.angle}° / ${aim.power}% · wind ${shot.before.wind}.`);audio.fire();refresh();
 }
-function openSetup(){if(embedded)return;generation++;bot=null;thinking=false;held.clear();charge=null;paused=true;setControls();$('setup').showModal();}
+function openSetup(){if(embedded)return;generation++;bot=null;thinking=false;held.clear();charge=null;paused=true;setControls();drawTerrainPreview();$('setup').showModal();}
+function drawTerrainPreview(){
+  const form=$('setup-form'),kind=form.elements.terrain.value,arena=form.elements.arena.value,info=C.TERRAINS[kind];
+  $('terrain-detail').textContent=`${info.level} · ${info.description}`;
+  const players=Array.from({length:Number($('player-count').value)},(_,i)=>({name:`Player ${i+1}`}));
+  const sample=C.newMatch({arena,terrain:kind},players,74831),t=new C.Terrain(sample.seed,kind,players.length,[],arena,sample.config.terrainVersion);
+  const target=$('terrain-preview'),c=target.getContext('2d'),mask=document.createElement('canvas');mask.width=C.WIDTH;mask.height=C.HEIGHT;
+  const mc=mask.getContext('2d'),p=mc.createImageData(C.WIDTH,C.HEIGHT),desert=arena==='desert';
+  for(let i=0;i<t.data.length;i++)if(t.data[i]){const m=t.materials[i]||1,col=m===1?(desert?[168,135,87]:[96,121,120]):[184,188,175];p.data.set([...col,255],i*4);}
+  mc.putImageData(p,0,0);c.fillStyle=desert?'#40392c':'#12252f';c.fillRect(0,0,target.width,target.height);c.drawImage(mask,0,0,target.width,target.height);
+  sample.arena.tanks.forEach((tank,i)=>{const x=tank.x/C.WIDTH*target.width,y=tank.y/C.HEIGHT*target.height;c.fillStyle=tank.colour;c.fillRect(x-5,y-5,10,4);c.font='9px monospace';c.textAlign='center';c.fillText(String(i+1),x,y-9);});
+}
 function populatePlayers(){
   const old=[...$('player-setup').querySelectorAll('.player-setup')].map(row=>({name:row.querySelector('input').value,type:row.querySelector('select').value}));
   $('player-setup').replaceChildren(...Array.from({length:Number($('player-count').value)},(_,i)=>{
@@ -112,7 +123,9 @@ function populatePlayers(){
     row.append(swatch,name,type);return row;
   }));
 }
-$('player-count').onchange=populatePlayers;populatePlayers();
+$('player-count').onchange=()=>{populatePlayers();drawTerrainPreview();};populatePlayers();
+$('setup-form').elements.terrain.onchange=drawTerrainPreview;
+document.querySelectorAll('input[name="arena"]').forEach(input=>input.addEventListener('change',drawTerrainPreview));
 $('setup-form').onsubmit=event=>{
   event.preventDefault();
   try{

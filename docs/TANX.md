@@ -17,15 +17,30 @@ Cinematic and lower-effects Tactical views share identical physics. No WebGL,
 CDN, model download or runtime import is required by the standalone HTML.
 The earlier `tanx-3d.mjs` remains source history but is no longer bundled.
 
-Two-player tanks start at x=65 and x=575, on perches separated vertically by
-about 50 pixels. Material IDs encode rubble, concrete, steel and sandbags in the
-same solid mask used by the server. Blasts erase material pixels; a flood-fill
-identifies disconnected pieces and settles them bottom-first. These pieces can
-support tanks or obstruct later shots. Rebuilding from seed + ordered crater
-history reproduces both opacity and materials. Foreground textures are masked
-from those pixels, rather than baking structures into a background picture.
-Missing `arena` settings map to the original classic terrain so saved matches
-keep their original simulation geometry.
+New matches place every tank directly on natural earth or rock, with a small
+level firing pocket blended into the surrounding landscape. No starting tower,
+scaffold, concrete pad or elevated outpost is generated beneath a tank. Two-player
+positions remain x=65 and x=575, about 80% of the arena width apart.
+
+Both arena themes and teacher assignments offer five terrain profiles:
+
+- Plain Lands (`gentle`): low relief and open sightlines.
+- Hills (`rolling`): several broad hills enclosing sheltered firing positions.
+- Mountains (`mountains`): tall ridges and valleys that require higher arcs.
+- Deep Canyons (`canyon`): steep rims, deep drops and breakable bridge ends.
+- Fortress Ridges (`fortress`): repeated jagged ridges and ruined cover walls.
+
+The setup includes a live silhouette sample with marked natural starting
+positions and a short difficulty description. The HUD names the active terrain.
+This relief is collision geometry, not background scenery: hills block low shots,
+craters open routes, and disconnected cover settles into collidable debris.
+Natural pockets are kept clear of tanks and muzzles; deep-canyon spawn positions
+stay above the HUD. Other ruins and bridge remnants remain outside spawn zones.
+
+Terrain generation is versioned. New matches use `terrainVersion: 2`; stored
+configs without that field reconstruct with version 1. Ordered crater history
+rebuilds both material and opacity pixels for the appropriate version, preserving
+existing classroom matches and their stored replay paths.
 
 Ammunition is an enum checked by the server: Standard uses baseline blast/damage;
 Demolition uses 1.4× radius with 0.65× damage; Precision uses 0.65× radius with
@@ -35,6 +50,8 @@ Wrong answers create no shell, crater, blast damage or structure collapse.
 The HUD remains steady during light camera recoil. Reduced-motion disables recoil
 and flying debris; Tactical view also removes ambient smoke/searchlights.
 
+`tests/tanx-terrain.test.mjs` checks all five profiles in both themes, natural
+2–4-player placement, actual cover, reachable AI shots and legacy-map hashes.
 `tests/tanx-arenas.test.mjs` covers separated spawns, material determinism, support
 collapse and debris collision, tank drops, ammo validation/trade-offs, both AI
 and classroom integration, and actual loaded-asset rendering in both themes.
@@ -45,7 +62,7 @@ and classroom integration, and actual loaded-asset rendering in both themes.
 Arrow keys/A-D/W-S adjust aiming; tap Space to fire, hold Space to charge and
 release to fire; P pauses. Touch has sliders, exact numbers, ± controls, Fire and
 hold-to-charge. Sound is synthesized with Web Audio after explicit opt-in.
-The setup includes gentle/rolling/mountain terrain, Rookie/Veteran/Elite CPU,
+The setup includes five terrain profiles, Rookie/Veteran/Elite CPU,
 first to 1/2/3 round wins, wind per round/per turn/off, gravity (including zero),
 blast radius, per-tank turn cap, and toggles for terrain destruction, falling,
 terrain/tank collision, blast damage and fall damage. Draws award no round win.

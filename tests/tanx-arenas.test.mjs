@@ -7,10 +7,10 @@ import {Renderer} from '../tanx-industrial.mjs';
 import {defaultState,applyTurn} from '../game-engine.mjs';
 import {createClassroomService} from '../netlify/functions/_shared/classroom-service.mjs';
 
-test('new arenas separate supported tanks on unequal-height perches with deterministic material masks',()=>{
+test('legacy arena snapshots retain supported perches and deterministic material masks',()=>{
   assert.equal(settings({}).arena,'classic');
   for(const arena of ['industrial','desert'])for(const terrain of ['gentle','rolling','mountains'])for(const count of [2,3,4]){
-    const players=Array.from({length:count},(_,i)=>({name:`P${i}`})),m=newMatch({arena,terrain},players,42);
+    const players=Array.from({length:count},(_,i)=>({name:`P${i}`})),m=newMatch({arena,terrain,terrainVersion:1},players,42);
     const a=new Terrain(42,terrain,count,[],arena),b=new Terrain(42,terrain,count,[],arena);
     assert.deepEqual(a.data,b.data);assert.deepEqual(a.materials,b.materials);
     for(const t of m.arena.tanks){assert.ok(a.supported(t));assert.ok(!a.solid(t.x,t.y-1));}
@@ -24,7 +24,7 @@ test('new arenas separate supported tanks on unequal-height perches with determi
 
 test('destroying supports drops physical structure pieces, preserves their materials and lowers the tank',()=>{
   for(const arena of ['industrial','desert']){
-    const m=newMatch({arena},[{name:'A'},{name:'B'}],42),t=new Terrain(42,'rolling',2,[],arena);
+    const m=newMatch({arena,terrainVersion:1},[{name:'A'},{name:'B'}],42),t=new Terrain(42,'rolling',2,[],arena);
     const before=structuredClone(m.arena.tanks);t.carve(575,246,48);
     assert.ok(t.collapses.some(c=>c.cells>100&&c.drop>20));
     const falls=settleTanks(t,m.arena.tanks,m.config);assert.ok(falls.some(f=>f.tank===1&&f.to>f.from+20));
@@ -73,7 +73,7 @@ test('both cinematic themes render loaded assets, craters and effects without ch
       }
     }
     assert.equal(JSON.stringify({m,shot}),snapshot);assert.equal(target.width,1280);assert.equal(target.height,800);
-    const terrain=new Terrain(42,'rolling',2,shot.after.craters,arena);assert.deepEqual(renderer.terrain.data,terrain.data);
+    const terrain=new Terrain(42,'rolling',2,shot.after.craters,arena,m.config.terrainVersion);assert.deepEqual(renderer.terrain.data,terrain.data);
     const rgba=target.getContext('2d').getImageData(0,0,target.width,target.height).data;for(let i=3;i<rgba.length;i+=4)assert.equal(rgba[i],255);
   }
 });
@@ -85,9 +85,9 @@ test('teacher can assign either arena and submitted ammo is graded and stored au
   await run(teacher,'activate-teacher',{code:'code'});const{classId}=await run(teacher,'class-create',{name:'Class'}),{invites}=await run(teacher,'roster-add',{classId,names:'Ada\nMert'});
   await run(a,'join',{code:invites[0].code});await run(b,'join',{code:invites[1].code});
   const{poolId}=await run(teacher,'pool-save',{name:'Words',questions:[{prompt:'Huge means…',type:'multiple-choice',options:['enormous','tiny'],answer:'enormous'}]});
-  for(const arena of ['industrial','desert']){
-    const{matchId}=await run(teacher,'assign',{classId,poolId,playerA:invites[0].id,playerB:invites[1].id,gameType:'tanx',settings:{arena,windMode:'off'}});
-    const{match:current}=await run(a,'match',{teacherId:'teacher',matchId});assert.equal(current.battle.config.arena,arena);
+  for(const arena of ['industrial','desert'])for(const terrain of ['canyon','fortress']){
+    const{matchId}=await run(teacher,'assign',{classId,poolId,playerA:invites[0].id,playerB:invites[1].id,gameType:'tanx',settings:{arena,terrain,windMode:'off'}});
+    const{match:current}=await run(a,'match',{teacherId:'teacher',matchId});assert.equal(current.battle.config.arena,arena);assert.equal(current.battle.config.terrain,terrain);assert.equal(current.battle.config.terrainVersion,2);
     const result=await run(a,'submit',{teacherId:'teacher',matchId,version:current.turn.version,turnId:current.turn.id,answer:'enormous',angle:55,power:80,ammo:'breach'});
     assert.equal(result.match.history.at(-1).ammo,'breach');assert.equal(result.match.battle.config.arena,arena);
   }
