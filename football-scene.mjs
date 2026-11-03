@@ -295,7 +295,9 @@ export class ShootoutScene {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, W, H);
     if (this.background) ctx.drawImage(this.background, 0, 0); else stadium(ctx);
-    const displayedTime = this.reducedMotion && round ? (time < TIMING.contact ? 0 : TIMING.end) : time;
+    // Player travel, ball flight and net response explain the result. Keep
+    // them on the replay clock even when decorative motion is reduced.
+    const displayedTime = time;
     drawNet(ctx, round, displayedTime, this.sag);
     const ball = tvBallAt(round, displayedTime, this.sag);
     if (ball.ground) ellipse(ctx, ball.ground.x + 3, ball.ground.y + 2, 7 + clamp(ball.height) * 3, 2.5, `rgba(5, 38, 37, ${.28 - clamp(ball.height) * .16})`);

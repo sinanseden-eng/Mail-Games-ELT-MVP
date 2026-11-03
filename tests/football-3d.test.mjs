@@ -13,6 +13,40 @@ import { TIMING } from "../football-motion.mjs";
 import { PENALTY_MOVES, resolvePenaltyResult } from "../game-engine.mjs";
 import { ShootoutScene } from "../football-player.mjs";
 import { shooterFrame, SOURCE_KICK_CONTACT } from "../football-3d/shooter.mjs";
+import { FootballView } from "../football-3d/view.mjs";
+import { makeNet } from "../football-3d/stadium.mjs";
+import { Group, Vector3 } from "three";
+
+test('3D reduced motion preserves intermediate shooter, keeper, ball and net frames',()=>{
+  // Exercise the production renderer without requiring a GPU. Keep the real
+  // shooter sampler and net geometry; stub only the rig and GPU draw calls.
+  const view=Object.create(FootballView.prototype);
+  const actions=Object.fromEntries(['idle','run','kick'].map(name=>[name,{
+    setEffectiveWeight(){},getClip:()=>({duration:10})
+  }]));
+  view.actors=[{}, {group:new Group(),root:new Group(),mixer:{update(){}},actions}];
+  view.ball=new Group();view.marker=new Group();view.guide=new Group();
+  view.net=makeNet(new Group());view.layer={style:{}};
+  view.renderer={render(){}};
+  view.gloves=()=>new Vector3(-2.8,2,-4.61);
+  let keeperSample;
+  view.poseKeeper=(_plan,time)=>{keeperSample=time;};
+  const goal={outcome:'goal',shotZone:'middle-centre',keeperZone:'top-left'};
+  const samples=[];
+  for(const time of [.25,.7,1.2,TIMING.net+.2,2.5]) {
+    view.render(goal,time,{reducedMotion:true,sag:1.6});
+    assert.equal(view.lastFrame.time,time);
+    assert.equal(keeperSample,time);
+    assert.deepEqual(view.lastFrame.shooter,shooterFrame(time));
+    assert.deepEqual(view.ball.rotation.toArray().slice(0,3),[0,0,0]);
+    samples.push({ball:view.ball.position.toArray(),net:Array.from(view.net.panels[0].g.attributes.position.array)});
+  }
+  assert.notDeepEqual(samples[0].ball,samples[2].ball);
+  assert.notDeepEqual(samples[2].ball,samples[3].ball);
+  assert.notDeepEqual(samples[0].net,samples[3].net,'goal impact must deform the net');
+  assert.notDeepEqual(samples[3].net,samples[4].net,'net must settle after impact');
+  for(const panel of view.net.panels)panel.g.dispose();view.net.material.dispose();
+});
 
 class LoadingScene extends ShootoutScene {
   loadPlayers() { return new Promise(resolve => { this.finishLoading = resolve; }); }

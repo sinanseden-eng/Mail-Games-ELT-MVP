@@ -282,13 +282,9 @@ export class FootballView {
         outcome: "save",
       },
     );
-    const t = round
-      ? reducedMotion
-        ? time < TIMING.contact
-          ? 0
-          : TIMING.end
-        : time
-      : 0;
+    // Essential match motion must remain visible with the OS/app reduced
+    // motion setting. Snapping to the final pose hides the entire penalty.
+    const t = round ? time : 0;
     const key = JSON.stringify([plan.data, t, sag, preview, guide]);
     if (!this.needsRender && key === this.frameKey) return;
     this.frameKey = key;
@@ -305,7 +301,7 @@ export class FootballView {
       ? ballPosition(plan, t, contact, this.gloves())
       : BALL_START;
     this.ball.position.set(pos.x, pos.y, pos.z);
-    this.ball.rotation.set(t * 8, 0, t * 4);
+    this.ball.rotation.set(reducedMotion ? 0 : t * 8, 0, reducedMotion ? 0 : t * 4);
     this.net.update(
       t,
       round && plan.data.outcome === "goal"
