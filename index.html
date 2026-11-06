@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="question-studio.css" />
+  <link rel="stylesheet" href="home.css" />
 </head>
 <body>
   <div class="site-shell">
@@ -22,6 +23,7 @@
         <button class="nav-link" data-route="home">Home</button>
         <button class="nav-link" data-route="teacher">Teacher Studio</button>
         <button class="nav-link" data-route="play">Play Demo</button>
+        <a class="nav-link classroom-link" href="classroom.html">Classroom app ↗</a>
       </nav>
     </header>
 
@@ -34,92 +36,44 @@
   </div>
 
   <template id="home-template">
-    <section class="hero">
-      <div class="hero-copy">
-        <span class="eyebrow">Answer first. Act second.</span>
-        <h1>English questions that actually control the game.</h1>
-        <p>Teachers create ELT questions. Students answer correctly to activate shots, saves, attacks, blocks, and counters—then continue the match by email.</p>
-        <div class="hero-actions">
-          <button class="primary" data-route="teacher">Create a question set</button>
-          <button class="secondary" data-route="play">Try the classroom demo</button>
-        </div>
-        <div class="feature-row" aria-label="Key features">
-          <span>✓ Teacher editable</span>
-          <span>✓ CSV import</span>
-          <span>✓ Email-ready turns</span>
-        </div>
+    <section class="launch-poster" aria-labelledby="poster-heading">
+      <img class="launch-poster-art" src="assets/home/three-games-poster.webp" alt="Illustrated game poster: a penalty kick under floodlights, tanks on rocky hills and a scout overlooking village cover." width="1774" height="887" fetchpriority="high" />
+      <div class="launch-poster-copy">
+        <span class="launch-kicker">MAIL GAMES ELT / THE THREE-GAME COLLECTION</span>
+        <h1 id="poster-heading">Know the answer.<br /><em>Make your move.</em></h1>
+        <p>One question pool. Three ways to play.</p>
+        <button class="launch-explore" type="button" data-explore-games>Explore the games <span aria-hidden="true">↓</span></button>
       </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="mail-orbit mail-one">✉</div>
-        <div class="mail-orbit mail-two">✉</div>
-        <div class="hero-ball">⚽</div>
-        <div class="hero-turkey">TANX</div>
-        <div class="hero-bubble">Correct answer!</div>
+      <div class="poster-game-labels" aria-label="Featured games">
+        <button type="button" data-teaser="football"><small>01 / THE PENALTY CLUB</small><strong>FOOTBALL</strong><span>Pick your corner. Own the moment. <b aria-hidden="true">▶</b></span></button>
+        <button type="button" data-teaser="tanx"><small>02 / FRACTURE ARENAS</small><strong>TANX</strong><span>Read the wind. Reshape the ground. <b aria-hidden="true">▶</b></span></button>
+        <button type="button" data-teaser="sniper"><small>03 / THE PREDICTION DUEL</small><strong>SNIPER</strong><span>Choose your cover. Read your rival. <b aria-hidden="true">▶</b></span></button>
       </div>
+      <span class="poster-art-note">Game artwork · Watch a teaser for gameplay</span>
     </section>
 
-    <section class="game-grid" aria-labelledby="games-heading">
-      <div class="section-heading">
-        <span class="eyebrow">Three games, one learning engine</span>
-        <h2 id="games-heading">Choose your classroom chaos</h2>
-      </div>
+    <div class="launch-strip" aria-label="How to join in"><span><b>3</b> games. Your next move.</span><span>Teacher questions power the action.</span><a href="classroom.html">Open the classroom app <span aria-hidden="true">↗</span></a></div>
 
+    <section class="game-grid launch-games" id="games" aria-labelledby="games-heading">
+      <div class="section-heading launch-heading"><div><span class="eyebrow">Watch it. Try it. Challenge a classmate.</span><h2 id="games-heading">Choose your next obsession.</h2></div><p>Watch a short gameplay teaser, then jump into a demo.</p></div>
       <article class="game-card penalty-card">
-        <div class="card-visual stadium-scene" aria-hidden="true">
-          <div class="stadium-lights"></div>
-          <div class="goal-mini">
-            <span></span><span></span><span></span>
-            <span></span><span></span><span></span>
-          </div>
-          <div class="player-avatar striker-avatar">S</div>
-          <div class="player-avatar keeper-avatar">K</div>
-          <div class="mini-ball">⚽</div>
-        </div>
-        <div class="game-card-copy">
-          <span class="game-label">Game 01</span>
-          <h3>Mail Penalty Shootout</h3>
-          <p>The floodlights are on. Pick your corner and beat the keeper in the new Penalty Club, with animated kicks, diving saves and a net that ripples with every goal.</p>
-          <ul>
-            <li>Nine practice targets · six match zones</li>
-            <li>Striker and keeper questions</li>
-            <li>Goals, catches, parries and off-target attempts</li>
-          </ul>
-          <div class="card-actions"><a class="primary button-link" href="football.html">Play football ↗</a><a class="secondary prototype-link" href="shootout.html">Play an English match</a></div>
-        </div>
+        <div class="card-visual launch-football"><img src="assets/home/three-games-poster.webp" alt="Football poster artwork with a striker and diving goalkeeper" loading="lazy" /><button class="teaser-play" type="button" data-teaser="football" aria-label="Watch Football gameplay teaser"><span aria-hidden="true">▶</span> Watch teaser</button><span class="visual-caption">GAME ARTWORK</span></div>
+        <div class="game-card-copy"><span class="game-label">01 / SPORT &amp; PREDICTION</span><h3>The Penalty Club</h3><p class="game-hook">One shot. Make it count.</p><p>Run up, pick your corner and beat the keeper. Watch the dive, the save or the net stretch with your finish.</p><ul><li>Animated run-ups, kicks and diving saves</li><li>Nine practice targets and a reactive net</li><li>Striker vs goalkeeper English matches</li></ul><div class="card-actions"><a class="primary button-link" href="football.html">Play Football <span aria-hidden="true">↗</span></a><a class="game-secondary-link" href="shootout.html">Try an English match →</a></div></div>
       </article>
-
-      <article class="game-card tanx-card"><div class="card-visual" style="background:#294951"><img src="assets/tanx/battlefield-preview.webp" alt="Neon industrial hills and tanks on natural firing positions in Tanx" style="width:100%;height:100%;object-fit:cover"></div><div class="game-card-copy"><span class="game-label">Game 02</span><h3>Tanx Artillery Club</h3><p>Choose neon industrial ruins or a dusty desert frontier. Read the wind, choose your ammo and break the enemy’s high ground.</p><ul><li>2–4 humans or CPU tanks in local play</li><li>Destructible platforms, collapsing supports and falling tanks</li><li>Teacher-controlled physics and question-powered classroom shots</li></ul><a class="primary button-link" href="tanx.html">Play Tanx ↗</a></div></article>
-
+      <article class="game-card tanx-card">
+        <div class="card-visual launch-tanx"><img src="assets/tanx/battlefield-preview.webp" alt="Tanx gameplay: tanks on natural ground behind industrial hills" loading="lazy" /><button class="teaser-play" type="button" data-teaser="tanx" aria-label="Watch Tanx gameplay teaser"><span aria-hidden="true">▶</span> Watch teaser</button><span class="visual-caption">GAMEPLAY</span></div>
+        <div class="game-card-copy"><span class="game-label">02 / STRATEGY &amp; DESTRUCTION</span><h3>Tanx</h3><p class="game-hook">The landscape is part of the duel.</p><p>Choose your angle, judge the wind and fire across hills and valleys. Every crater changes the next shot.</p><ul><li>Neon Industrial and Desert Frontier arenas</li><li>Five terrain choices, from plains to canyons</li><li>Local 2–4 player battles or classroom duels</li></ul><div class="card-actions"><a class="primary button-link" href="tanx.html">Play Tanx <span aria-hidden="true">↗</span></a><a class="game-secondary-link" href="classroom.html">Assign a classroom duel →</a></div></div>
+      </article>
       <article class="game-card sniper-card">
-        <div class="card-visual sniper-village-card" aria-hidden="true">
-          <span class="sniper-card-tag">4 secret positions</span>
-        </div>
-        <div class="game-card-copy">
-          <span class="game-label">Game 03</span>
-          <h3>Sniper Elite!</h3>
-          <p>Answer to activate a cinematic training shot, choose where to emerge, and predict the rival's hidden position.</p>
-          <ul>
-            <li>Four emergence locations</li>
-            <li>Two secret choices per player</li>
-            <li>Cinematic replays in email matches</li>
-          </ul>
-          <button class="primary sniper-primary" data-game="sniper">Play classroom demo</button>
-        </div>
+        <div class="card-visual launch-sniper"><img src="assets/sniper-village-background.png" alt="Sniper's village arena with rooftops, windows, broken walls and supply crates" loading="lazy" /><button class="teaser-play" type="button" data-teaser="sniper" aria-label="Watch Sniper gameplay teaser"><span aria-hidden="true">▶</span> Watch teaser</button><span class="visual-caption">ARENA ARTWORK</span></div>
+        <div class="game-card-copy"><span class="game-label">03 / COVER &amp; SECRET CHOICES</span><h3>Sniper Elite!</h3><p class="game-hook">Four positions. Two secret choices.</p><p>Choose where to emerge, predict your rival’s cover and reveal the result in a cinematic training duel.</p><ul><li>Four cover positions to outguess your rival</li><li>Answer correctly to activate your shot</li><li>Scope views and cinematic replays</li></ul><div class="card-actions"><button class="primary sniper-primary" type="button" data-game="sniper">Play Sniper <span aria-hidden="true">↗</span></button><a class="game-secondary-link" href="classroom.html">Assign a classroom duel →</a></div></div>
       </article>
     </section>
 
-    <section class="how-it-works">
-      <div class="section-heading">
-        <span class="eyebrow">The learning loop</span>
-        <h2>From question to consequence</h2>
-      </div>
-      <div class="steps">
-        <article><span>1</span><h3>Teacher prepares</h3><p>Add questions manually or import a CSV question pack.</p></article>
-        <article><span>2</span><h3>Student answers</h3><p>A correct answer activates the chosen move at full strength.</p></article>
-        <article><span>3</span><h3>Opponent responds</h3><p>The next player receives a secure turn link by email.</p></article>
-        <article><span>4</span><h3>Game resolves</h3><p>The server compares the choices and reveals the result.</p></article>
-      </div>
-    </section>
+    <section class="launch-teacher" aria-labelledby="teacher-launch-heading"><div><span class="eyebrow">Your lesson. Their next move.</span><h2 id="teacher-launch-heading">Bring the questions.<br />We’ll bring the game.</h2><p>Add your own questions or import PDF, Word, CSV and JSON files for review. Open the classroom app to pair students and assign a match.</p></div><div class="hero-actions"><button class="primary" data-route="teacher">Open Teacher Studio</button><a class="secondary button-link" href="classroom.html">Manage classroom matches ↗</a></div></section>
+    <section class="how-it-works"><div class="section-heading"><span class="eyebrow">The learning loop</span><h2>From question to consequence.</h2></div><div class="steps"><article><span>1</span><h3>Prepare</h3><p>Create or import a question pool and review its answers.</p></article><article><span>2</span><h3>Assign</h3><p>Choose a game and pair students in the classroom app.</p></article><article><span>3</span><h3>Answer &amp; choose</h3><p>Students answer questions and lock in their moves.</p></article><article><span>4</span><h3>Watch &amp; continue</h3><p>The game reveals the result. The next turn begins.</p></article></div></section>
+
+    <dialog class="game-teaser-dialog" aria-labelledby="teaser-title"><header><div><span class="eyebrow">GAMEPLAY TEASER / SOUND OFF</span><h2 id="teaser-title"></h2></div><button type="button" data-close-teaser aria-label="Close gameplay teaser">×</button></header><div class="teaser-screen"><canvas id="teaser-canvas" aria-label="Gameplay teaser"></canvas></div><p id="teaser-caption" role="status">Getting the game ready…</p><footer><button type="button" class="secondary" data-replay-teaser disabled>Watch again ↻</button><a class="primary button-link" data-teaser-play-link>Play the game ↗</a></footer></dialog>
   </template>
 
   <template id="teacher-template">

@@ -4,9 +4,11 @@ import { SniperScene } from "./sniper-scene.mjs";
 import { validateQuestion } from "./question-import.mjs";
 import { initQuestionStudio } from "./question-studio.mjs";
 import { poolStore } from "./question-pools.mjs";
+import { initHomeTeasers } from "./home-teasers.mjs";
 
 (() => {
   "use strict";
+  let disposeHome = null;
 
   const STORAGE = {
     questions: "mailgames.questions.v1",
@@ -205,6 +207,7 @@ import { poolStore } from "./question-pools.mjs";
   }
 
   function render() {
+    disposeHome?.(); disposeHome = null;
     cancelGameTimers();
     const route = routeFromHash();
     document.body.dataset.route = route;
@@ -223,6 +226,7 @@ import { poolStore } from "./question-pools.mjs";
 
   function renderHome() {
     app.append(cloneTemplate("home-template"));
+    disposeHome = initHomeTeasers(app, game => { activePlayGame = game; setRoute("play"); });
   }
 
   function renderTeacher() {
