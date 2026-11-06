@@ -1,6 +1,7 @@
 /* Home-page promotion only; game screens and Teacher Studio retain their layout. */
 body[data-route="home"] { background:#f4f4ee; }
 body[data-route="home"] main { width:min(1320px,calc(100% - 48px)); padding-top:26px; }
+body[data-route="home"] main:focus { outline:none; }
 .classroom-link { text-decoration:none; font-size:.82rem; }
 .launch-poster { position:relative; min-height:650px; overflow:hidden; border-radius:24px; background:#071b24; color:#fff; isolation:isolate; }
 .launch-poster-art { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; z-index:-2; }

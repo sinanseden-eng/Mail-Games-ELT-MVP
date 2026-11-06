@@ -16,6 +16,8 @@ export function initHomeTeasers(root, openDemo = () => {}) {
   async function watch(game) {
     const info=GAMES[game];if(!info||disposed)return;
     stop();const ticket=generation;selected=game;
+    canvas.width=1280;canvas.height=720;
+    canvas.setAttribute('aria-label',`${info.title} gameplay teaser`);
     dialog.querySelector('#teaser-title').textContent=info.title;
     caption.textContent='Getting the game ready…';replay.disabled=true;
     play.href=info.href;
