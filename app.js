@@ -4,13 +4,14 @@ import { SniperScene } from "./sniper-scene.mjs";
 import { sniperGuideMarkup, sniperHistoryMarkup, sniperResultMarkup } from "./sniper-ui.mjs";
 import { replayMotionPreference, saveReplayMotion } from "./classroom-playback.mjs";
 import { validateQuestion } from "./question-import.mjs";
-import { initQuestionStudio } from "./question-studio.mjs";
+import { initQuestionStudio, setStudioPanel } from "./question-studio.mjs";
 import { poolStore } from "./question-pools.mjs";
 import { initHomeTeasers } from "./home-teasers.mjs";
 
 (() => {
   "use strict";
   let disposeHome = null;
+  let studioQuestionPage = 1;
 
   const STORAGE = {
     questions: "mailgames.questions.v1",
@@ -237,21 +238,12 @@ import { initHomeTeasers } from "./home-teasers.mjs";
     initQuestionStudio({ getQuestions, saveQuestions, refreshQuestionList, showToast });
     const typeSelect = form.elements.type;
 
-    document.querySelectorAll("[data-studio-target]").forEach(button => {
-      button.addEventListener("click", () => {
-        const target = document.getElementById(button.dataset.studioTarget);
-        if (!target) return;
-        document.querySelectorAll(".rail-link[data-studio-target]").forEach(link => link.classList.remove("active"));
-        button.classList.add("active");
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    });
-
     function syncTypeFields() {
       const type = typeSelect.value;
       const options = ["optionA", "optionB", "optionC", "optionD", "optionE"];
       options.forEach((name, index) => {
         const input = form.elements[name];
+        input.readOnly = type === "true-false";
         const label = input.closest("label");
         if (type === "gap-fill") label.style.display = "none";
         else {
@@ -262,6 +254,8 @@ import { initHomeTeasers } from "./home-teasers.mjs";
           }
         }
       });
+      form.elements.answer.placeholder = type === "gap-fill" ? "e.g. at" : type === "true-false" ? "True or False" : "Use the exact option text";
+      form.dispatchEvent(new Event("input", {bubbles:true}));
     }
 
     typeSelect.addEventListener("change", syncTypeFields);
@@ -291,7 +285,7 @@ import { initHomeTeasers } from "./home-teasers.mjs";
       if (index >= 0) questions[index] = question; else questions.push(question);
       try { saveQuestions(questions); } catch { return showToast("Storage is full. Export a backup before adding more questions."); }
       delete form.dataset.editId;
-      form.querySelector('[type="submit"]').textContent = "Add question";
+      form.querySelector('[type="submit"]').textContent = "Save question";
       form.reset();
       typeSelect.value = "multiple-choice";
       syncTypeFields();
@@ -327,6 +321,13 @@ import { initHomeTeasers } from "./home-teasers.mjs";
     const testCodeInput = document.getElementById("mail-test-code");
     const deliveryMatchId = document.getElementById("delivery-match-id");
     const deliveryResult = document.getElementById("delivery-result");
+    function syncLaunchSettings() {
+      const sniper = launchForm.elements.gameType.value === "sniper";
+      document.getElementById("studio-football-settings").hidden = sniper;
+      document.getElementById("studio-sniper-settings").hidden = !sniper;
+    }
+    launchForm.elements.gameType.addEventListener("change", syncLaunchSettings);
+    syncLaunchSettings();
 
     async function checkMissionControl() {
       missionStatus.textContent = "Checking…";
@@ -373,11 +374,11 @@ import { initHomeTeasers } from "./home-teasers.mjs";
         missionStatus.className = "status-pill status-error";
         if (launchReadyItem) {
           launchReadyItem.classList.remove("ready");
-          launchReadyItem.textContent = "Mission Control unavailable";
+          launchReadyItem.textContent = "Email service unavailable";
         }
         missionDetails.textContent = location.protocol === "file:"
           ? "Run the project through Netlify or `netlify dev` to use server-backed matches."
-          : `Mission Control could not be reached: ${error.message}`;
+          : `Email service could not be reached: ${error.message}`;
         return null;
       }
     }
@@ -562,7 +563,7 @@ import { initHomeTeasers } from "./home-teasers.mjs";
         setLaunchMessage(
           "fail",
           "Match not created",
-          `${error.message}. Check Mission Control above and confirm the Supabase schema and Netlify variables are configured.`
+          `${error.message}. Open Email service & delivery tools to check the connection settings.`
         );
         await checkMissionControl();
       } finally {
@@ -573,6 +574,15 @@ import { initHomeTeasers } from "./home-teasers.mjs";
 
     document.getElementById("question-search").addEventListener("input", refreshQuestionList);
     document.getElementById("level-filter").addEventListener("change", refreshQuestionList);
+    document.getElementById("question-type-filter").addEventListener("change", refreshQuestionList);
+    document.getElementById("clear-question-filters").addEventListener("click", () => {
+      document.getElementById("question-search").value = "";
+      document.getElementById("level-filter").value = "all";
+      document.getElementById("question-type-filter").value = "all";
+      refreshQuestionList();
+    });
+    document.getElementById("question-page-previous").onclick = () => { studioQuestionPage--; refreshQuestionList({keepPage:true}); };
+    document.getElementById("question-page-next").onclick = () => { studioQuestionPage++; refreshQuestionList({keepPage:true}); };
     refreshQuestionList();
     checkMissionControl();
   }
@@ -628,16 +638,26 @@ import { initHomeTeasers } from "./home-teasers.mjs";
     }).filter(question => question.prompt && question.answer && (question.type === "gap-fill" || question.options.length >= 2));
   }
 
-  function refreshQuestionList() {
+  function refreshQuestionList({keepPage = false} = {}) {
     const list = document.getElementById("question-list");
     if (!list) return;
     const search = normalize(document.getElementById("question-search")?.value);
     const level = document.getElementById("level-filter")?.value || "all";
+    const type = document.getElementById("question-type-filter")?.value || "all";
     const questions = getQuestions();
     const filtered = questions.filter(question => {
       const haystack = normalize(`${question.prompt} ${question.tag} ${question.answer}`);
-      return (!search || haystack.includes(search)) && (level === "all" || question.level === level);
+      return (!search || haystack.includes(search)) && (level === "all" || question.level === level) && (type === "all" || question.type === type);
     });
+    if (!keepPage) studioQuestionPage = 1;
+    const pageCount = Math.max(1, Math.ceil(filtered.length / 12));
+    studioQuestionPage = Math.max(1, Math.min(studioQuestionPage, pageCount));
+    const visible = filtered.slice((studioQuestionPage - 1) * 12, studioQuestionPage * 12);
+    document.getElementById("question-filter-summary").textContent = `${filtered.length} of ${questions.length} question${questions.length === 1 ? "" : "s"}`;
+    document.getElementById("question-pagination").hidden = pageCount <= 1;
+    document.getElementById("question-page-summary").textContent = `Page ${studioQuestionPage} of ${pageCount}`;
+    document.getElementById("question-page-previous").disabled = studioQuestionPage === 1;
+    document.getElementById("question-page-next").disabled = studioQuestionPage === pageCount;
 
     document.getElementById("question-count").textContent = `${questions.length} question${questions.length === 1 ? "" : "s"}`;
     const launchSummary = document.getElementById("launch-question-summary");
@@ -649,24 +669,27 @@ import { initHomeTeasers } from "./home-teasers.mjs";
     list.replaceChildren();
     if (!filtered.length) {
       const empty = document.createElement("div");
-      empty.className = "empty-state";
-      empty.textContent = "No questions match this filter. Even the grammar goblins have gone home.";
+      empty.className = "studio-empty-state";
+      empty.innerHTML = questions.length
+        ? '<h3>No matching questions.</h3><p>Try another word, level or question type.</p>'
+        : '<h3>A new pool. A fresh start.</h3><p>Add your first question or import a document to get ready for a match.</p><button type="button" class="primary">Create a question</button>';
+      empty.querySelector("button")?.addEventListener("click", () => setStudioPanel("question-editor-panel"));
       list.append(empty);
       return;
     }
 
-    filtered.forEach(question => {
+    visible.forEach(question => {
       const item = document.createElement("article");
       item.className = "question-item";
       item.innerHTML = `
         <div>
           <h3>${escapeHtml(question.prompt)}</h3>
-          <p>Answer: <strong>${escapeHtml(question.answer)}</strong>${question.explanation ? ` · ${escapeHtml(question.explanation)}` : ""}</p>
           <div class="question-meta">
             <span class="chip">${escapeHtml(question.level)}</span>
             <span class="chip">${escapeHtml(question.tag || "General English")}</span>
-            <span class="chip">${escapeHtml(question.type)}</span>
+            <span class="chip">${escapeHtml({"multiple-choice":"Multiple choice","true-false":"True / False","gap-fill":"Gap fill"}[question.type] || question.type)}</span>
           </div>
+          <details><summary>View answer &amp; explanation</summary><p>Answer: <strong>${escapeHtml(question.answer)}</strong>${question.explanation ? `<br>${escapeHtml(question.explanation)}` : ""}</p></details>
         </div>
         <div class="question-actions"><button class="secondary edit-question" type="button">Edit</button><button class="danger delete-question" type="button">Delete</button></div>
       `;
@@ -677,7 +700,8 @@ import { initHomeTeasers } from "./home-teasers.mjs";
         form.elements.type.dispatchEvent(new Event("change"));
         ["optionA", "optionB", "optionC", "optionD", "optionE"].forEach((name, i) => form.elements[name].value = question.options[i] || "");
         form.querySelector('[type="submit"]').textContent = "Save changes";
-        form.scrollIntoView({ behavior: "smooth", block: "center" });
+        form.dispatchEvent(new Event("input", {bubbles:true}));
+        setStudioPanel("question-editor-panel");
       };
       item.querySelector(".delete-question").addEventListener("click", () => {
         if (!confirm("Delete this question from the current pool?")) return;
