@@ -120,9 +120,41 @@ body.sniper-game-page .control-eyebrow { color: #b26e22; }
   box-shadow: 0 0 0 3px rgba(37,136,216,.12);
 }
 .sniper-choice-section.target .sniper-spot-button.selected {
-  border-color: var(--sniper-red);
-  background: #fff0ed;
-  box-shadow: 0 0 0 3px rgba(214,69,58,.12);
+  border-color: #a86908;
+  background: #fff6df;
+  box-shadow: 0 0 0 3px rgba(242,181,62,.18);
+}
+
+/* Clear choices and resolved history shared by demo, classroom and email turns. */
+.sniper-guide, .sniper-history, .sniper-round-result, .sniper-confirmation {
+  color: #263647;
+  background: #f3f6fa;
+  border: 1px solid #d5deea;
+  border-radius: 12px;
+  padding: 15px;
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.sniper-guide summary { cursor: pointer; font-weight: 800; }
+.sniper-guide ol { padding-left: 22px; margin: 12px 0; }
+.sniper-guide li { padding: 3px 0; }
+.sniper-guide p, .sniper-round-result p { margin: 10px 0 0; }
+.sniper-guide small, .sniper-history small { display: block; color: #536276; }
+.sniper-example { background: #fff4d8; border-left: 3px solid #bd861b; padding: 10px; }
+.sniper-history ol { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 12px 0; }
+.sniper-history li { border: 1px solid #d2dbe7; background: white; padding: 7px 10px; border-radius: 8px; }
+.sniper-history li span { font-weight: 750; }
+.sniper-history p { margin: 10px 0; }
+.sniper-confirmation { border-left: 4px solid #ac7614; background: #fff8e8; }
+.sniper-choice-section p { font-size: 13px; line-height: 1.5; color: #526174; margin: 0 0 9px; }
+.sniper-choice-section.target h3 { color: #895708; }
+.sniper-choice-section.emergence .move-button.selected { background: #e4f2ff; color: #175285; border-color: #2588d8; box-shadow: 0 0 0 2px #2588d8; }
+.sniper-choice-section.target .move-button.selected { background: #fff2cf; color: #78500c; border-color: #ac7614; box-shadow: 0 0 0 2px #ac7614; }
+#sniper-last-result { padding: 0 16px; }
+.sniper-demo-board canvas { display: block; }
+@media (min-width: 900px) {
+  .sniper-demo-board { position: sticky; top: 88px; }
 }
 .sniper-selection-summary {
   display: grid;

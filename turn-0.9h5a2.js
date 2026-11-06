@@ -1,5 +1,6 @@
+import { sniperGuideMarkup, sniperHistoryMarkup, sniperResultMarkup } from "./sniper-ui.mjs";
 import {footballRoundLabel} from "./game-rules.mjs";
-import { ShootoutScene } from "./football-scene.mjs";
+import { ShootoutScene } from "./football-player.mjs";
 import { createShootoutAudio } from "./shootout-audio-0.9h5a2.mjs";
 import { zoneLabel } from "./shootout-core.mjs?v=0.9.30";
 import { TurkeyFightScene } from "./turkey-scene.mjs?v=0.9.30";
@@ -486,31 +487,36 @@ function renderSniperTurn() {
   elements.status.textContent = `${player}: English challenge`;
   elements.role.textContent = `Sniper ${turn.actor} · prediction turn`;
   elements.player.textContent = player;
-  scene.setIdle({ actor: turn.actor, active: true, caption: "Answer the English question, then choose where to emerge and where to predict." });
+  scene.setIdle({ actor: turn.actor, active: true, caption: "Answer → choose your hiding place → predict your opponent’s hiding place." });
 
   const spots = (turn.moves?.length ? turn.moves : SNIPER_SPOTS).map(id => sniperSpot(id));
   const spotButtons = group => spots.map(spot => `<button type="button" class="sniper-spot-button locked" data-${group}="${attr(SNIPER_SPOTS[spot.number - 1])}"><strong>${spot.number}</strong><span>${html(spot.label)}</span></button>`).join("");
 
   app.innerHTML = `
     <span class="control-eyebrow">Sniper Elite! · secure prediction turn</span>
-    <h1 class="control-title">${html(player)}, choose two secret positions.</h1>
-    <p class="control-copy">This is a non-graphic training exercise. Your emergence spot and prediction remain hidden until both students submit.</p>
+    ${sniperGuideMarkup(state.maxRounds,Number(state.round || 1) === 1)}
+    <h1 class="control-title">${html(player)}, answer, hide and predict.</h1>
+    <p class="control-copy">This is a non-graphic training exercise. Your hiding place and prediction remain hidden until both students submit. A wrong answer means you won’t fire this round.</p>
     ${questionMarkup(turn.question, "sniper")}
     <section class="sniper-choice-section emergence">
-      <h3>Choose your emergence spot</h3>
+      <h3>2. Your hiding place · blue YOU marker</h3>
       <div class="sniper-spot-grid">${spotButtons("emergence")}</div>
     </section>
     <section class="sniper-choice-section target">
-      <h3>Predict the opponent's position</h3>
+      <h3>3. Where will your opponent appear? · amber YOUR GUESS marker</h3>
       <div class="sniper-spot-grid">${spotButtons("target")}</div>
     </section>
     <div class="sniper-selection-summary">
       <div><small>Your cover</small><strong id="sniper-emergence-summary">Not selected</strong></div>
       <div><small>Your prediction</small><strong id="sniper-target-summary">Not selected</strong></div>
     </div>
+    ${sniperHistoryMarkup(state.history || [],turn.actor)}
     <div class="control-actions"><button class="primary" id="submit-turn" type="button" disabled>Lock both choices</button></div>
     <div class="turn-submit-state" id="status">Answer first to unlock the four positions.</div>`;
 
+  scene.onSelect = ({kind, spot}) => {
+    if (currentAnswer() && !submitting) app.querySelector(`[data-${kind}="${spot}"]`)?.click();
+  };
   bindAnswerInputs(unlockSniperIfReady);
   app.querySelectorAll("[data-emergence]").forEach(button => {
     button.addEventListener("click", () => {
@@ -544,7 +550,7 @@ function unlockSniperIfReady() {
     if (statusTarget) statusTarget.textContent = "Answer first to unlock the four positions.";
     scene.setIdle({ actor: turnData.turn.actor, active: true, caption: "Answer first. Choose cover and prediction second." });
   } else {
-    if (statusTarget) statusTarget.textContent = selectedEmergence && selectedTarget ? "Ready to lock both choices." : "Choose one emergence spot and one predicted target.";
+    if (statusTarget) statusTarget.textContent = selectedEmergence && selectedTarget ? "Ready to lock both choices." : "Choose your hiding place and predict your opponent’s hiding place.";
     scene.setIdle({ actor: turnData.turn.actor, emergence: selectedEmergence || null, target: selectedTarget || null, active: true, caption: "The four positions are unlocked." });
   }
   syncSniperSelection();
@@ -564,6 +570,7 @@ function syncSniperSelection() {
       ? `${sniperSpotLabel(selectedEmergence)} selected; predicting ${sniperSpotLabel(selectedTarget)}.`
       : "Choose both secret positions."
   });
+  app.querySelectorAll("[data-emergence], [data-target]").forEach(button => button.setAttribute("aria-pressed", String(button.classList.contains("selected"))));
   setSubmitReady(Boolean(currentAnswer() && selectedEmergence && selectedTarget && !submitting), "Answer and both positions selected. Ready to submit.");
 }
 
@@ -573,6 +580,7 @@ async function submitSniperTurn() {
   void audio.unlock();
   audio.handleEvent({ type: "ui-lock" });
   submitting = true;
+  scene.onSelect = null;
   const button = document.getElementById("submit-turn");
   button.disabled = true;
   button.textContent = "Locking choices…";
@@ -598,12 +606,12 @@ function showSniperWaiting(data) {
     active: data.answerCorrect,
     caption: data.answerCorrect
       ? "Both choices are hidden and the training shot is active."
-      : "The emergence spot is locked, but the incorrect answer disables the shot."
+      : "Your hiding place is locked. Your incorrect answer means you won’t fire this round."
   });
   app.innerHTML = waitingMarkup({
     eyebrow: "Two choices locked secretly",
     title: "Wait for the rival prediction.",
-    feedback: data.answerCorrect ? "Correct answer—the training shot is active." : "Incorrect answer—you will still emerge, but your shot is disabled.",
+    feedback: data.answerCorrect ? "Correct answer—the training shot is active." : "Incorrect answer—you still have cover, but you won’t fire this round.",
     correct: data.answerCorrect,
     explanation: data.explanation,
     copy: "Player B cannot see your emergence spot, prediction, or answer result. When Player B submits, you will receive a replay email.",
@@ -622,8 +630,8 @@ async function runTurnSniperReplay(replay) {
   app.innerHTML = `
     <div class="sniper-playback-card">
       <span class="control-eyebrow">Both players locked · cinematic replay</span>
-      <h1 class="control-title">Wide view → scope POV → impact camera</h1>
-      <p class="control-copy">Each firing moment switches briefly into that soldier’s scope. The target reaction is then shown clearly without blood or graphic injury.</p>
+      <h1 class="control-title">Preview both guesses → both shots together</h1>
+      <p class="control-copy">Preview each locked prediction, then watch both shots happen together. Both players can lose a life. The training presentation uses no blood or graphic injury.</p>
       <div class="result-summary"><strong>Player A:</strong> ${html(sniperSpotLabel(replay.emergenceA))} → predicts ${html(sniperSpotLabel(replay.targetA))}<br /><strong>Player B:</strong> ${html(sniperSpotLabel(replay.emergenceB))} → predicts ${html(sniperSpotLabel(replay.targetB))}</div>
       <div class="control-actions sniper-playback-controls">
         <button class="secondary" id="sniper-pause" type="button" aria-pressed="false">Pause</button>
@@ -664,7 +672,8 @@ function renderSniperResult(data) {
       <div><small>Player B cover</small><strong>${html(sniperSpotLabel(replay.emergenceB))}</strong></div>
       <div><small>Player B prediction</small><strong>${html(sniperSpotLabel(replay.targetB))}</strong></div>
     </div>
-    ${resultDeliveryMarkup(data, `Health: ${replay.healthA}–${replay.healthB}`)}
+    ${sniperResultMarkup(replay)}
+    ${resultDeliveryMarkup(data, `Lives remaining: ${replay.healthA}–${replay.healthB}`)}
     <div class="control-actions"><button class="secondary" id="replay-again" type="button">Replay scope sequence</button><a class="primary button-link" href="/#home">Return home</a></div>`;
   bindTurnSniperReplayAgain(data);
 }
@@ -782,8 +791,8 @@ function updateSniperScore(match, state) {
   elements.nameB.textContent = `${match.players.B} · Sniper B`;
   const a = Math.max(0, Number(state.healthA ?? 3));
   const b = Math.max(0, Number(state.healthB ?? 3));
-  elements.scoreA.textContent = a;
-  elements.scoreB.textContent = b;
+  elements.scoreA.textContent = `${a} / 3 lives`;
+  elements.scoreB.textContent = `${b} / 3 lives`;
   elements.healthA.style.width = `${(a / 3) * 100}%`;
   elements.healthB.style.width = `${(b / 3) * 100}%`;
 }

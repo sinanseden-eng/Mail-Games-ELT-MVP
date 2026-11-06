@@ -10,6 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="question-studio.css" />
+  <link rel="stylesheet" href="home.css" />
+  <link rel="stylesheet" href="sniper.css" />
 </head>
 <body>
   <div class="site-shell">
@@ -22,343 +24,114 @@
         <button class="nav-link" data-route="home">Home</button>
         <button class="nav-link" data-route="teacher">Teacher Studio</button>
         <button class="nav-link" data-route="play">Play Demo</button>
+        <a class="nav-link classroom-link" href="classroom.html">Classroom app ↗</a>
       </nav>
     </header>
 
     <main id="app" tabindex="-1"></main>
 
     <footer>
-      <p>Built for teachers, students, and inboxes with suspiciously competitive energy.</p>
-      <p class="footer-note">Prototype data stays in this browser unless email sending is configured.</p>
+      <p>Three games. One question pool. Every answer makes a difference.</p>
+      <p class="footer-note">Try a local demo or open the classroom app for assigned matches.</p>
     </footer>
   </div>
 
   <template id="home-template">
-    <section class="hero">
-      <div class="hero-copy">
-        <span class="eyebrow">Answer first. Act second.</span>
-        <h1>English questions that actually control the game.</h1>
-        <p>Teachers create ELT questions. Students answer correctly to activate shots, saves, attacks, blocks, and counters—then continue the match by email.</p>
-        <div class="hero-actions">
-          <button class="primary" data-route="teacher">Create a question set</button>
-          <button class="secondary" data-route="play">Try the classroom demo</button>
-        </div>
-        <div class="feature-row" aria-label="Key features">
-          <span>✓ Teacher editable</span>
-          <span>✓ CSV import</span>
-          <span>✓ Email-ready turns</span>
-        </div>
+    <section class="launch-poster" aria-labelledby="poster-heading">
+      <img class="launch-poster-art" src="assets/home/three-games-poster.webp" alt="Illustrated game poster: a penalty kick under floodlights, tanks on rocky hills and a scout overlooking village cover." width="1774" height="887" fetchpriority="high" />
+      <div class="launch-poster-copy">
+        <span class="launch-kicker">MAIL GAMES ELT / THE THREE-GAME COLLECTION</span>
+        <h1 id="poster-heading">Know the answer.<br /><em>Make your move.</em></h1>
+        <p>One question pool. Three ways to play.</p>
+        <button class="launch-explore" type="button" data-explore-games>Explore the games <span aria-hidden="true">↓</span></button>
       </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="mail-orbit mail-one">✉</div>
-        <div class="mail-orbit mail-two">✉</div>
-        <div class="hero-ball">⚽</div>
-        <div class="hero-turkey">🦃</div>
-        <div class="hero-bubble">Correct answer!</div>
+      <div class="poster-game-labels" aria-label="Featured games">
+        <button type="button" data-teaser="football"><small>01 / THE PENALTY CLUB</small><strong>FOOTBALL</strong><span>Pick your corner. Own the moment. <b aria-hidden="true">▶</b></span></button>
+        <button type="button" data-teaser="tanx"><small>02 / FRACTURE ARENAS</small><strong>TANX</strong><span>Read the wind. Reshape the ground. <b aria-hidden="true">▶</b></span></button>
+        <button type="button" data-teaser="sniper"><small>03 / THE PREDICTION DUEL</small><strong>SNIPER</strong><span>Choose your cover. Read your rival. <b aria-hidden="true">▶</b></span></button>
       </div>
+      <span class="poster-art-note">Game artwork · Watch a teaser for gameplay</span>
     </section>
 
-    <section class="game-grid" aria-labelledby="games-heading">
-      <div class="section-heading">
-        <span class="eyebrow">Three games, one learning engine</span>
-        <h2 id="games-heading">Choose your classroom chaos</h2>
-      </div>
+    <div class="launch-strip" aria-label="How to join in"><span><b>3</b> games. Your next move.</span><span>Teacher questions power the action.</span><a href="classroom.html">Open the classroom app <span aria-hidden="true">↗</span></a></div>
 
+    <section class="game-grid launch-games" id="games" aria-labelledby="games-heading">
+      <div class="section-heading launch-heading"><div><span class="eyebrow">Watch it. Try it. Challenge a classmate.</span><h2 id="games-heading">Choose your next obsession.</h2></div><p>Watch a short gameplay teaser, then jump into a demo.</p></div>
       <article class="game-card penalty-card">
-        <div class="card-visual stadium-scene" aria-hidden="true">
-          <div class="stadium-lights"></div>
-          <div class="goal-mini">
-            <span></span><span></span><span></span>
-            <span></span><span></span><span></span>
-          </div>
-          <div class="player-avatar striker-avatar">S</div>
-          <div class="player-avatar keeper-avatar">K</div>
-          <div class="mini-ball">⚽</div>
-        </div>
-        <div class="game-card-copy">
-          <span class="game-label">Game 01</span>
-          <h3>Mail Penalty Shootout</h3>
-          <p>The floodlights are on. Pick your corner and beat the keeper in the new Penalty Club, with animated kicks, diving saves and a net that ripples with every goal.</p>
-          <ul>
-            <li>Nine practice targets · six match zones</li>
-            <li>Striker and keeper questions</li>
-            <li>Goals, catches, parries and off-target attempts</li>
-          </ul>
-          <div class="card-actions"><a class="primary button-link" href="football.html">Play football ↗</a><a class="secondary prototype-link" href="shootout.html">Play an English match</a></div>
-        </div>
+        <div class="card-visual launch-football"><img src="assets/home/three-games-poster.webp" alt="Football poster artwork with a striker and diving goalkeeper" loading="lazy" /><button class="teaser-play" type="button" data-teaser="football" aria-label="Watch Football gameplay teaser"><span aria-hidden="true">▶</span> Watch teaser</button><span class="visual-caption">GAME ARTWORK</span></div>
+        <div class="game-card-copy"><span class="game-label">01 / SPORT &amp; PREDICTION</span><h3>The Penalty Club</h3><p class="game-hook">One shot. Make it count.</p><p>Run up, pick your corner and beat the keeper. Watch the dive, the save or the net stretch with your finish.</p><ul><li>Animated run-ups, kicks and diving saves</li><li>Nine practice targets and a reactive net</li><li>Striker vs goalkeeper English matches</li></ul><div class="card-actions"><a class="primary button-link" href="football.html">Play Football <span aria-hidden="true">↗</span></a><a class="game-secondary-link" href="shootout.html">Try an English match →</a></div></div>
       </article>
-
-      <article class="game-card turkey-card">
-        <div class="card-visual barn-scene" aria-hidden="true">
-          <div class="barn"></div>
-          <div class="turkey fighter-a">🦃</div>
-          <div class="turkey fighter-b">🦃</div>
-          <div class="dust-cloud">POOF!</div>
-        </div>
-        <div class="game-card-copy">
-          <span class="game-label">Game 02</span>
-          <h3>Turkey Fight Mail</h3>
-          <p>Earn attacks and defences through English questions. Cartoon feathers fly; nobody needs to contact the school nurse.</p>
-          <ul>
-            <li>Attacks and damage-reducing defences</li>
-            <li>Secret attacks and defensive choices</li>
-            <li>Non-graphic comic action</li>
-          </ul>
-          <button class="primary warm" data-game="turkey">Play turkey demo</button>
-        </div>
+      <article class="game-card tanx-card">
+        <div class="card-visual launch-tanx"><img src="assets/tanx/battlefield-preview.webp" alt="Tanx gameplay: tanks on natural ground behind industrial hills" loading="lazy" /><button class="teaser-play" type="button" data-teaser="tanx" aria-label="Watch Tanx gameplay teaser"><span aria-hidden="true">▶</span> Watch teaser</button><span class="visual-caption">GAMEPLAY</span></div>
+        <div class="game-card-copy"><span class="game-label">02 / STRATEGY &amp; DESTRUCTION</span><h3>Tanx</h3><p class="game-hook">The landscape is part of the duel.</p><p>Choose your angle, judge the wind and fire across hills and valleys. Every crater changes the next shot.</p><ul><li>Neon Industrial and Desert Frontier arenas</li><li>Five terrain choices, from plains to canyons</li><li>Local 2–4 player battles or classroom duels</li></ul><div class="card-actions"><a class="primary button-link" href="tanx.html">Play Tanx <span aria-hidden="true">↗</span></a><a class="game-secondary-link" href="classroom.html">Assign a classroom duel →</a></div></div>
       </article>
-
       <article class="game-card sniper-card">
-        <div class="card-visual sniper-village-card" aria-hidden="true">
-          <span class="sniper-card-tag">4 secret positions</span>
-        </div>
-        <div class="game-card-copy">
-          <span class="game-label">Game 03</span>
-          <h3>Sniper Elite!</h3>
-          <p>Answer to activate a cinematic training shot, choose where to emerge, and predict the rival's hidden position.</p>
-          <ul>
-            <li>Four emergence locations</li>
-            <li>Two secret choices per player</li>
-            <li>Cinematic replays in email matches</li>
-          </ul>
-          <button class="primary sniper-primary" data-game="sniper">Play classroom demo</button>
-        </div>
+        <div class="card-visual launch-sniper"><img src="assets/sniper-village-background.png" alt="Sniper's village arena with rooftops, windows, broken walls and supply crates" loading="lazy" /><button class="teaser-play" type="button" data-teaser="sniper" aria-label="Watch Sniper gameplay teaser"><span aria-hidden="true">▶</span> Watch teaser</button><span class="visual-caption">ARENA ARTWORK</span></div>
+        <div class="game-card-copy"><span class="game-label">03 / COVER &amp; SECRET CHOICES</span><h3>Sniper Elite!</h3><p class="game-hook">Four positions. Two secret choices.</p><p>Choose where to emerge, predict your rival’s cover and reveal the result in a cinematic training duel.</p><ul><li>Four cover positions to outguess your rival</li><li>Answer correctly to activate your shot</li><li>Scope views and cinematic replays</li></ul><div class="card-actions"><button class="primary sniper-primary" type="button" data-game="sniper">Play Sniper <span aria-hidden="true">↗</span></button><a class="game-secondary-link" href="classroom.html">Assign a classroom duel →</a></div></div>
       </article>
     </section>
 
-    <section class="how-it-works">
-      <div class="section-heading">
-        <span class="eyebrow">The learning loop</span>
-        <h2>From question to consequence</h2>
-      </div>
-      <div class="steps">
-        <article><span>1</span><h3>Teacher prepares</h3><p>Add questions manually or import a CSV question pack.</p></article>
-        <article><span>2</span><h3>Student answers</h3><p>A correct answer activates the chosen move at full strength.</p></article>
-        <article><span>3</span><h3>Opponent responds</h3><p>The next player receives a secure turn link by email.</p></article>
-        <article><span>4</span><h3>Game resolves</h3><p>The server compares the choices and reveals the result.</p></article>
-      </div>
-    </section>
+    <section class="launch-teacher" aria-labelledby="teacher-launch-heading"><div><span class="eyebrow">Your lesson. Their next move.</span><h2 id="teacher-launch-heading">Bring the questions.<br />We’ll bring the game.</h2><p>Add your own questions or import PDF, Word, CSV and JSON files for review. Open the classroom app to pair students and assign a match.</p></div><div class="hero-actions"><button class="primary" data-route="teacher">Open Teacher Studio</button><a class="secondary button-link" href="classroom.html">Manage classroom matches ↗</a></div></section>
+    <section class="how-it-works"><div class="section-heading"><span class="eyebrow">The learning loop</span><h2>From question to consequence.</h2></div><div class="steps"><article><span>1</span><h3>Prepare</h3><p>Create or import a question pool and review its answers.</p></article><article><span>2</span><h3>Assign</h3><p>Choose a game and pair students in the classroom app.</p></article><article><span>3</span><h3>Answer &amp; choose</h3><p>Students answer questions and lock in their moves.</p></article><article><span>4</span><h3>Watch &amp; continue</h3><p>The game reveals the result. The next turn begins.</p></article></div></section>
+
+    <dialog class="game-teaser-dialog" aria-labelledby="teaser-title"><header><div><span class="eyebrow">GAMEPLAY TEASER / SOUND OFF</span><h2 id="teaser-title"></h2></div><button type="button" data-close-teaser aria-label="Close gameplay teaser">×</button></header><div class="teaser-screen"><canvas id="teaser-canvas" aria-label="Gameplay teaser"></canvas></div><p id="teaser-caption" role="status">Getting the game ready…</p><footer><button type="button" class="secondary" data-replay-teaser disabled>Watch again ↻</button><a class="primary button-link" data-teaser-play-link>Play the game ↗</a></footer></dialog>
   </template>
 
   <template id="teacher-template">
     <section class="teacher-studio" id="teacher-studio">
-      <aside class="studio-rail" aria-label="Teacher Studio navigation">
-        <button class="studio-crest" type="button" data-route="home" aria-label="Mail Games ELT home">
-          <span aria-hidden="true">T</span>
-        </button>
-        <div class="studio-rail-links">
-          <button type="button" class="rail-link" data-route="home"><span aria-hidden="true">⌂</span><small>Home</small></button>
-          <button type="button" class="rail-link active" data-studio-target="question-editor-panel"><span aria-hidden="true">▱</span><small>Question<br />Bank</small></button>
-          <button type="button" class="rail-link" data-studio-target="mission-control"><span aria-hidden="true">➤</span><small>Mission<br />Control</small></button>
-          <button type="button" class="rail-link" data-studio-target="question-bank-panel"><span aria-hidden="true">▥</span><small>Questions</small></button>
-          <button type="button" class="rail-link" data-route="play"><span aria-hidden="true">▶</span><small>Play Demo</small></button>
-        </div>
-        <div class="rail-sticker" aria-hidden="true"><b>⚡</b><span>Make it<br /><em>legendary.</em></span></div>
+      <aside class="studio-rail" aria-label="Teacher Studio">
+        <a class="studio-brand" href="#home"><span class="studio-brand-mark" aria-hidden="true">M<span>↗</span></span><span>MAIL GAMES<small>THE TEACHER STUDIO</small></span></a>
+        <div class="studio-nav-caption">YOUR WORKSPACE</div>
+        <nav class="studio-rail-links" role="tablist" aria-label="Studio sections" aria-orientation="vertical">
+          <button id="studio-tab-library" type="button" class="studio-nav-button active" role="tab" aria-selected="true" aria-controls="question-bank-panel" data-studio-target="question-bank-panel"><span aria-hidden="true">▤</span><span>Question library<small>Your pools, all in one place</small></span></button>
+          <button id="studio-tab-import" type="button" class="studio-nav-button" role="tab" aria-selected="false" aria-controls="bulk-tools-panel" data-studio-target="bulk-tools-panel"><span aria-hidden="true">↥</span><span>Import questions<small>Bring a document or pool</small></span></button>
+          <button id="studio-tab-create" type="button" class="studio-nav-button" role="tab" aria-selected="false" aria-controls="question-editor-panel" data-studio-target="question-editor-panel"><span aria-hidden="true">＋</span><span>Create a question<small>Make it your own</small></span></button>
+          <button id="studio-tab-launch" type="button" class="studio-nav-button" role="tab" aria-selected="false" aria-controls="mission-control" data-studio-target="mission-control"><span aria-hidden="true">↗</span><span>Assign &amp; play<small>Put your questions to work</small></span></button>
+        </nav>
+        <div class="studio-sidebar-bottom"><a href="classroom.html" class="studio-classroom-link">Open Classroom <span aria-hidden="true">↗</span></a><div class="studio-storage-note"><span aria-hidden="true">◉</span><p><strong>Saved in this browser</strong>Copy a pool into your classroom account to use it across devices.</p></div><a class="studio-back-link" href="#home">← Back to the game hub</a></div>
       </aside>
 
       <div class="studio-page">
-        <header class="studio-hero">
-          <div class="studio-hero-copy">
-            <span class="studio-kicker"><i aria-hidden="true">✦</i> Teacher Studio</span>
-            <h1>Build <em>epic questions.</em><br />Power <strong>great games.</strong></h1>
-            <p>Create, import, and manage questions that decide every shot, save, block, and gloriously mistimed turkey move.</p>
-            <div class="hero-actions studio-actions">
-              <button class="secondary" id="load-sample" type="button">＋ Sample pool</button>
-              <button class="primary" id="export-json" type="button">⇩ Export JSON</button>
-            </div>
-            <span class="hero-tape">Answer first. Act second.</span>
-          </div>
+        <header class="studio-topbar"><div><span>TEACHER STUDIO</span><span aria-hidden="true">/</span><strong id="studio-current-section">Question library</strong></div><a href="classroom.html">My classroom <span aria-hidden="true">↗</span></a></header>
+        <section class="studio-welcome" aria-labelledby="studio-welcome-title">
+          <div><span class="studio-overline"><i aria-hidden="true"></i> A LITTLE PREP. A LOT OF PLAY.</span><h1 id="studio-welcome-title">Your questions.<br /><em>Their next move.</em></h1><p>Turn what you’re teaching into something they’ll want to play again.</p><div class="studio-welcome-actions"><button class="primary" type="button" data-studio-target="bulk-tools-panel">↥ Import questions</button><button class="secondary" type="button" data-studio-target="question-editor-panel">＋ Create a question</button></div></div>
+          <div class="studio-game-art"><img src="assets/home/three-games-poster.webp" alt="Football, Tanx and Sniper: three games powered by your English questions." /><div><span>ONE QUESTION POOL.</span><strong>Three ways to play.</strong><p>Football <b>·</b> Tanx <b>·</b> Sniper</p></div></div>
+        </section>
+        <section class="studio-metrics" aria-label="Your question workspace at a glance"><div><span class="studio-metric-icon" aria-hidden="true">▤</span><p><strong id="studio-stat-questions">0</strong><span>Questions in this pool</span></p></div><div><span class="studio-metric-icon" aria-hidden="true">▱</span><p><strong id="studio-stat-pools">1</strong><span>Saved question pools</span></p></div><div><span class="studio-metric-icon" aria-hidden="true">✦</span><p><strong id="studio-stat-topics">0</strong><span>Topics in this pool</span></p></div></section>
 
-          <div class="studio-hero-art" aria-hidden="true">
-            <div class="hero-brush hero-brush-a"></div>
-            <div class="hero-brush hero-brush-b"></div>
-            <img class="turkey-illustration" src="assets/turkey-mascot.svg" alt="" />
-            <img class="keeper-illustration" src="assets/goalkeeper.svg" alt="" />
-            <span class="motion-mark mark-a">✦</span>
-            <span class="motion-mark mark-b">×</span>
-            <span class="motion-mark mark-c">○</span>
-            <span class="motion-caption">Saving good lessons!</span>
-          </div>
-        </header>
-
-        <section class="studio-workspace" aria-label="Question bank workspace">
-          <article class="panel editor-panel creative-panel" id="question-editor-panel">
-            <span class="panel-number" aria-hidden="true">1</span>
-            <span class="paper-tape tape-purple" aria-hidden="true"></span>
-            <div class="panel-heading">
-              <div><span class="eyebrow">Question editor</span><h2>Add an ELT question</h2></div>
-              <span class="status-pill" id="question-count"></span>
-            </div>
-            <form id="question-form">
-              <label>Question
-                <textarea name="prompt" rows="3" required placeholder="She ___ here since 2023."></textarea>
-              </label>
-              <div class="form-grid">
-                <label>Type
-                  <select name="type">
-                    <option value="multiple-choice">Multiple choice</option>
-                    <option value="true-false">True / False</option>
-                    <option value="gap-fill">Gap fill</option>
-                  </select>
-                </label>
-                <label>Level
-                  <select name="level">
-                    <option>A1</option><option>A2</option><option selected>B1</option><option>B2</option><option>C1</option><option>C2</option>
-                  </select>
-                </label>
-              </div>
-              <div class="form-grid">
-                <label>Option A<input name="optionA" placeholder="works" /></label>
-                <label>Option B<input name="optionB" placeholder="worked" /></label>
-                <label>Option C<input name="optionC" placeholder="has worked" /></label>
-                <label>Option D<input name="optionD" placeholder="is working" /></label>
-                <label>Option E (optional)<input name="optionE" /></label>
-              </div>
-              <div class="form-grid">
-                <label>Correct answer<input name="answer" required placeholder="has worked" /></label>
-                <label>Topic / tag<input name="tag" placeholder="Present Perfect" /></label>
-              </div>
-              <label>Explanation<input name="explanation" placeholder="Use present perfect with since." /></label>
-              <button class="primary add-question-button" type="submit"><span aria-hidden="true">✦</span> Add question</button>
-            </form>
-          </article>
-
-          <article class="panel bank-panel creative-panel" id="question-bank-panel">
-            <span class="paper-tape tape-blue" aria-hidden="true"></span>
-            <div class="panel-heading bank-heading">
-              <div><span class="eyebrow">Your question bank</span><h2>Ready to play</h2></div>
-              <div class="filter-row">
-                <input id="question-search" type="search" placeholder="Search" aria-label="Search questions or tags" />
-                <select id="level-filter" aria-label="Filter questions by level"><option value="all">All</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
-              </div>
-            </div>
+        <div class="studio-panels">
+          <article class="studio-panel studio-library-panel" id="question-bank-panel" data-studio-panel data-studio-title="Question library" role="tabpanel" aria-labelledby="studio-tab-library">
+            <div class="studio-panel-heading"><div><span class="eyebrow">COLLECT. ORGANISE. REUSE.</span><h2 tabindex="-1">Your question library</h2><p>One active pool powers your demos and new email matches.</p></div><span class="status-pill" id="question-count"></span></div>
             <div id="pool-controls"></div>
-            <div id="question-list" class="question-list compact-question-list"></div>
+            <div class="studio-library-tools"><label class="studio-search-label">Find a question<input id="question-search" type="search" placeholder="Search questions, answers or topics…" /></label><label>Level<select id="level-filter"><option value="all">All levels</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select></label><label>Question type<select id="question-type-filter"><option value="all">All types</option><option value="multiple-choice">Multiple choice</option><option value="true-false">True / False</option><option value="gap-fill">Gap fill</option></select></label></div>
+            <div class="studio-list-heading"><span id="question-filter-summary" role="status" aria-live="polite"></span><button class="studio-text-button" id="clear-question-filters" type="button">Clear filters</button></div>
+            <div id="question-list" class="studio-question-list"></div>
+            <div class="studio-pagination" id="question-pagination" hidden><button class="secondary" id="question-page-previous" type="button">← Previous</button><span id="question-page-summary"></span><button class="secondary" id="question-page-next" type="button">Next →</button></div>
+            <div class="studio-library-footer"><span>Keep a copy of the active pool for backup or sharing.</span><div><button class="secondary" id="load-sample" type="button">＋ Add a sample pool</button><button class="secondary" id="export-json" type="button">↓ Export this pool</button></div></div>
           </article>
 
-          <article class="panel import-panel creative-panel" id="bulk-tools-panel">
-            <span class="panel-number warm-number" aria-hidden="true">2</span>
-            <span class="paperclip" aria-hidden="true"></span>
-            <div class="panel-heading"><div><span class="eyebrow">Bring your own questions</span><h2>Import documents &amp; pools</h2></div></div>
-            <p>Upload a PDF, Word document (.docx), CSV or JSON question pool. Review questions and answers before saving.</p>
-            <label class="upload-box">
-              <input type="file" id="question-file" accept=".pdf,.docx,.csv,.json,.txt" />
-              <span class="upload-icon" aria-hidden="true">☁</span>
-              <strong>Choose a question file</strong><small>PDF · Word .docx · CSV · JSON · TXT / up to 10 MB</small>
-            </label>
-            <p class="import-hint">Text-based PDFs and numbered questions work best. Scanned pages need OCR first. Save older .doc files as .docx. Check that imported questions include any passage or picture they rely on.</p>
-            <div id="import-status" role="status" aria-live="polite"></div>
-            <div id="import-review" hidden></div>
-            <button class="secondary full csv-button" id="download-template" type="button">Download CSV template</button>
-            <button class="secondary full" id="download-text-template" type="button">Download document example</button>
-            <div class="privacy-note"><strong>Prototype note:</strong> questions are stored in this browser until teacher accounts and database storage are enabled.</div>
+          <article class="studio-panel" id="bulk-tools-panel" data-studio-panel data-studio-title="Import questions" role="tabpanel" aria-labelledby="studio-tab-import" hidden>
+            <div class="studio-panel-heading"><div><span class="eyebrow">YOUR MATERIALS, READY TO PLAY</span><h2 tabindex="-1">Give your documents a second life.</h2><p>Upload a file, check the extracted questions, then save them to a pool.</p></div><span class="studio-step-badge">UPLOAD → REVIEW → SAVE</span></div>
+            <div class="studio-import-layout"><div><label class="studio-upload-box" id="studio-upload-zone"><input type="file" id="question-file" accept=".pdf,.docx,.csv,.json,.txt" /><span class="studio-upload-symbol" aria-hidden="true">↥</span><strong>Choose a file or drop it here</strong><span>PDF, Word .docx, CSV, JSON or TXT</span><small>Up to 10 MB · review every answer before saving</small></label><div class="studio-template-actions"><button class="secondary" id="download-template" type="button">↓ CSV template</button><button class="secondary" id="download-text-template" type="button">↓ Document example</button></div></div><aside class="studio-import-help"><span class="eyebrow">A SMOOTHER IMPORT</span><h3>A quick check before you upload</h3><ol><li>Use numbered questions with a clear answer key.</li><li>Text-based PDFs work best. Scans need text recognition (OCR) first.</li><li>Save older Word .doc files as .docx.</li><li>Include any passage the questions depend on. Check picture-based questions carefully.</li></ol><p>Nothing is added to your pool until you review and save it.</p></aside></div>
+            <div id="import-status" role="status" aria-live="polite"></div><div id="import-review" hidden></div>
           </article>
 
-          <aside class="setup-card" aria-labelledby="setup-card-title">
-            <span class="setup-label">✓ Setup status</span>
-            <h2 id="setup-card-title">You’re almost <em>match</em> ready!</h2>
-            <img src="assets/mail-rocket.svg" alt="" aria-hidden="true" />
-            <ul class="setup-checklist">
-              <li class="complete">Question bank saved</li>
-              <li class="complete">Document &amp; pool import ready</li>
-              <li id="launch-ready-item">Launch your email match</li>
-            </ul>
-            <span class="status-pill status-neutral" id="mission-status">Checking backend…</span>
-          </aside>
-        </section>
-
-        <section class="mission-stage" id="mission-control" aria-labelledby="launch-match-heading">
-          <div class="mission-poster" aria-hidden="true">
-            <span class="mission-index">3 · Mission Control</span>
-            <h2>Launch your<br />email match</h2>
-            <p>Set the game. Invite players.<br />Let the language-powered chaos begin.</p>
-            <img class="mission-football" src="assets/football.svg" alt="" />
-            <span class="mission-arrow">↗</span>
-          </div>
-
-          <article class="mission-form-card">
-            <div class="panel-heading mission-form-heading">
-              <div><span class="eyebrow">Match builder</span><h2 id="launch-match-heading">Create the first turn</h2></div>
-            </div>
-            <form id="match-launch-form">
-              <div class="form-grid"><label>Football ties<select name="tieMode"><option value="draw">Draw after 5 kicks each</option><option value="sudden-death">Sudden death: up to 5 extra pairs, then draw</option></select></label><label>Turkey / Sniper round limit<input name="maxRounds" type="number" min="1" max="20" placeholder="8 Turkey / 5 Sniper" /></label></div>
-              <div class="form-grid">
-                <label>Game
-                  <select name="gameType">
-                    <option value="penalty">⚽ Mail Penalty Shootout</option>
-                    <option value="turkey">🦃 Turkey Fight Mail</option>
-                    <option value="sniper">🎯 Sniper Elite! (training prediction)</option>
-                  </select>
-                </label>
-                <label>Question-pack name
-                  <input name="packName" required maxlength="120" value="Class revision match" />
-                </label>
-              </div>
-
-              <label class="test-code-field">Private email-test code
-                <input name="testCode" id="mail-test-code" required minlength="12" maxlength="200" type="password" autocomplete="off" placeholder="Enter the code saved in Netlify" />
-                <small>This protects the public prototype from unauthorised match emails.</small>
-              </label>
-
-              <div class="player-grid">
-                <fieldset class="player-card">
-                  <legend>Player A · first turn</legend>
-                  <label>Display name
-                    <input name="playerAName" required maxlength="80" autocomplete="off" placeholder="Student A" />
-                  </label>
-                  <label>School email
-                    <input name="playerAEmail" required maxlength="254" type="email" autocomplete="email" placeholder="student.a@example.com" />
-                  </label>
-                </fieldset>
-
-                <fieldset class="player-card">
-                  <legend>Player B</legend>
-                  <label>Display name
-                    <input name="playerBName" required maxlength="80" autocomplete="off" placeholder="Student B" />
-                  </label>
-                  <label>School email
-                    <input name="playerBEmail" required maxlength="254" type="email" autocomplete="email" placeholder="student.b@example.com" />
-                  </label>
-                </fieldset>
-              </div>
-
-              <div class="launch-actions">
-                <button class="primary" id="launch-match-button" type="submit">➤ Create match and send turn</button>
-                <span id="launch-question-summary">The current question bank will be used.</span>
-              </div>
-            </form>
+          <article class="studio-panel" id="question-editor-panel" data-studio-panel data-studio-title="Create a question" role="tabpanel" aria-labelledby="studio-tab-create" hidden>
+            <div class="studio-panel-heading"><div><span class="eyebrow">A GOOD QUESTION GOES A LONG WAY</span><h2 id="studio-editor-title" tabindex="-1">Create a question</h2><p>Saving to <strong id="studio-editor-pool-name">your active pool</strong>.</p></div><span class="studio-step-badge">LIVE STUDENT PREVIEW</span></div>
+            <div class="studio-editor-layout"><form id="question-form"><label>Question<textarea name="prompt" rows="3" required placeholder="She ___ here since 2023."></textarea></label><div class="form-grid"><label>Question type<select name="type"><option value="multiple-choice">Multiple choice</option><option value="true-false">True / False</option><option value="gap-fill">Gap fill</option></select></label><label>English level<select name="level"><option>A1</option><option>A2</option><option selected>B1</option><option>B2</option><option>C1</option><option>C2</option></select></label></div><div class="form-grid studio-options-grid"><label>Option A<input name="optionA" placeholder="works" /></label><label>Option B<input name="optionB" placeholder="worked" /></label><label>Option C<input name="optionC" placeholder="has worked" /></label><label>Option D<input name="optionD" placeholder="is working" /></label><label>Option E (optional)<input name="optionE" /></label></div><div class="form-grid"><label>Correct answer<input name="answer" required placeholder="Use the exact option text" /></label><label>Topic / tag<input name="tag" placeholder="Present Perfect" /></label></div><label>Explanation (optional)<textarea name="explanation" rows="2" placeholder="Help students understand why this answer is correct."></textarea></label><div class="studio-form-actions"><button class="primary" type="submit">Save question</button><button class="secondary" type="button" id="clear-question-form">Clear form</button></div><p class="studio-form-note">Multiple-choice answers must match an option. Gap-fill questions need one short, unambiguous answer.</p></form><aside class="studio-student-preview"><div class="studio-preview-top"><span>STUDENT PREVIEW</span><span id="studio-preview-level">B1</span></div><div id="studio-question-preview"></div><div class="studio-preview-note"><span aria-hidden="true">✦</span> Clear wording makes a better game.</div></aside></div>
           </article>
 
-          <aside class="launch-summary mission-next-card">
-            <span class="paper-tape tape-yellow" aria-hidden="true"></span>
-            <h3>What happens next</h3>
-            <ol>
-              <li>The current question bank becomes a private match pack.</li>
-              <li>Player A receives a single-use, 48-hour turn link.</li>
-              <li>Each player answers and chooses directly beside the visible game pitch.</li>
-              <li>The goalkeeper watches the result; the striker receives a replay email.</li>
-            </ol>
-            <button class="secondary full" id="check-backend" type="button">⌁ Check Mission Control</button>
-            <div id="mission-details" class="backend-note" aria-live="polite">Connecting to the Netlify Functions…</div>
-            <div id="launch-result" class="launch-result" aria-live="polite" hidden></div>
-
-            <section class="delivery-recovery" aria-labelledby="delivery-recovery-heading">
-              <h4 id="delivery-recovery-heading">Email delivery recovery</h4>
-              <p>After creating a match, check which inbox owns the pending turn and recover its secure link if delivery fails.</p>
-              <label>Match ID
-                <input id="delivery-match-id" maxlength="80" placeholder="Paste a match ID" />
-              </label>
-              <button class="secondary full" id="check-delivery" type="button">Check pending delivery</button>
-              <div id="delivery-result" class="backend-note" aria-live="polite" hidden></div>
-            </section>
-            <p class="student-data-note">For 0.7 testing, use only the two email addresses listed in <code>MAIL_TEST_ALLOWED_RECIPIENTS</code>. Do not enter real student information.</p>
-          </aside>
-
-          <img class="mission-mail-art" src="assets/mail-rocket.svg" alt="" aria-hidden="true" />
-        </section>
+          <section class="studio-panel studio-launch-panel" id="mission-control" data-studio-panel data-studio-title="Assign & play" role="tabpanel" aria-labelledby="studio-tab-launch" hidden>
+            <div class="studio-panel-heading"><div><span class="eyebrow">FROM PREPARATION TO PLAY</span><h2 tabindex="-1">Let your questions do the talking.</h2><p>Choose how you want students to join the game.</p></div></div>
+            <div class="studio-classroom-card"><div><span class="studio-recommended">RECOMMENDED FOR YOUR CLASS</span><h3>Assign a classroom match</h3><p>Use registered students, save pools to your account and keep every match in one place.</p><a class="primary button-link" href="classroom.html">Open Classroom <span aria-hidden="true">↗</span></a></div><ol><li><span>01</span><div><strong>Bring your pool</strong><p>In Classroom → Question pools, choose “Copy an existing pool from this browser”.</p></div></li><li><span>02</span><div><strong>Pair your students</strong><p>Select two registered players and choose Football, Tanx or Sniper.</p></div></li><li><span>03</span><div><strong>Assign and follow the match</strong><p>Students play from their inbox. Review their English answers and results.</p></div></li></ol></div>
+            <details class="studio-email-details"><summary><span><strong>Email match testing</strong><small>For approved test inboxes · private code required</small></span><span aria-hidden="true">＋</span></summary><div class="studio-email-layout"><div class="studio-email-form"><div class="studio-email-heading"><h3>Create an email test match</h3><span class="status-pill" id="mission-status">Checking email service…</span></div><p id="launch-ready-item" class="studio-form-note">Checking email service availability.</p><form id="match-launch-form"><div class="form-grid"><label>Game<select name="gameType"><option value="penalty">Football · penalty shootout</option><option value="sniper">Sniper · prediction duel</option></select></label><label>Match title<input name="packName" required maxlength="120" value="Class revision match" /></label></div><div class="form-grid"><label id="studio-football-settings">If Football is tied<select name="tieMode"><option value="draw">Draw after 5 kicks each</option><option value="sudden-death">Sudden death · up to 5 extra pairs</option></select></label><label id="studio-sniper-settings" hidden>Sniper round limit<input name="maxRounds" type="number" min="1" max="20" value="5" /></label></div><label>Private email-test code<input name="testCode" id="mail-test-code" required minlength="12" maxlength="200" type="password" autocomplete="off" placeholder="Enter your private test code" /><small>Only approved test recipients can receive these matches.</small></label><div class="player-grid"><fieldset class="player-card"><legend>Player A · first turn</legend><label>Display name<input name="playerAName" required maxlength="80" autocomplete="off" placeholder="Test player A" /></label><label>Email<input name="playerAEmail" required maxlength="254" type="email" autocomplete="email" placeholder="approved.a@example.com" /></label></fieldset><fieldset class="player-card"><legend>Player B</legend><label>Display name<input name="playerBName" required maxlength="80" autocomplete="off" placeholder="Test player B" /></label><label>Email<input name="playerBEmail" required maxlength="254" type="email" autocomplete="email" placeholder="approved.b@example.com" /></label></fieldset></div><div class="studio-form-actions"><button class="primary" id="launch-match-button" type="submit">Create match and send turn</button><span id="launch-question-summary">The active pool will be used.</span></div></form><div id="launch-result" class="launch-result" aria-live="polite" hidden></div></div><aside class="studio-email-help"><h3>What happens next?</h3><ol><li>Your active pool is copied into this match.</li><li>Player A receives a single-use turn link, valid for 48 hours.</li><li>Both players answer and choose their moves. Once both are locked, the game reveals the result.</li><li>The next turn and replay links arrive by email.</li></ol><p class="studio-form-note">Tanx assignments are available in Classroom.</p><details class="studio-service-details"><summary>Email service &amp; delivery tools</summary><button class="secondary" id="check-backend" type="button">Check email service</button><div id="mission-details" class="backend-note" aria-live="polite">Checking the email service…</div><section class="delivery-recovery" aria-labelledby="delivery-recovery-heading"><h4 id="delivery-recovery-heading">Recover a pending turn</h4><p>Use a match ID to check delivery and recover its secure turn link.</p><label>Match ID<input id="delivery-match-id" maxlength="80" placeholder="Paste a match ID" /></label><button class="secondary" id="check-delivery" type="button">Check pending delivery</button><div id="delivery-result" class="backend-note" aria-live="polite" hidden></div></section></details></aside></div></details>
+          </section>
+        </div>
+        <footer class="studio-footer"><span>A little preparation. A lot of “one more round”.</span><span>Mail Games ELT · Teacher Studio</span></footer>
       </div>
     </section>
   </template>
+
 
   <template id="play-template">
     <section class="page-header compact">
@@ -372,7 +145,7 @@
 
     <section class="game-switcher" role="tablist" aria-label="Choose a game">
       <button role="tab" aria-selected="true" data-play-game="penalty">⚽ Mail Penalty Shootout</button>
-      <button role="tab" aria-selected="false" data-play-game="turkey">🦃 Turkey Fight Mail</button>
+      <button role="tab" aria-selected="false" data-play-game="tanx">Tanx · artillery</button>
       <button role="tab" aria-selected="false" data-play-game="sniper">🎯 Sniper Elite!</button>
     </section>
 
@@ -434,15 +207,17 @@
           <div class="score-main"><span id="sniper-demo-round">Round 1</span><small>Prediction training</small></div>
           <div><small>Player B</small><strong id="sniper-demo-health-b">3</strong></div>
         </div>
-        <canvas id="classroom-sniper-canvas" style="width:100%;aspect-ratio:16/9" aria-label="Training village replay"></canvas>
+        <canvas id="classroom-sniper-canvas" style="width:100%;aspect-ratio:16/9" aria-label="Two opposing village areas. Use the numbered hiding-place and prediction buttons, or tap a numbered map position."></canvas>
         <div class="event-log" id="sniper-demo-log">The simulation starts after both players lock their choices.</div>
         <div style="display:flex;flex-wrap:wrap;gap:12px;padding:16px"><button type="button" class="secondary" id="watch-classroom-sniper" disabled>Watch last simulation</button><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="classroom-sniper-motion" style="width:auto">Reduced motion</label></div>
+        <div id="sniper-last-result"></div>
       </article>
       <aside class="panel turn-panel" id="sniper-turn-panel"></aside>
     </section>
   </template>
 
-  <script type="module" src="auth-redirect.mjs" data-classroom-pilot="true"></script>
+  <a href="classroom.html" style="position:fixed;right:18px;bottom:18px;z-index:50" class="primary button-link">Open classroom app ↗</a>
+  <script type="module" src="auth-redirect.mjs"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>

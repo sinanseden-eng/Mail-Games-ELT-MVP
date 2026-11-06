@@ -6,7 +6,7 @@ function fakeContext() {
   const methods = new Set([
     "arc", "beginPath", "clearRect", "clip", "closePath", "drawImage", "fill", "fillRect", "fillText",
     "lineTo", "moveTo", "quadraticCurveTo", "restore", "rotate", "roundRect", "save", "scale",
-    "setLineDash", "stroke", "translate"
+    "setLineDash", "stroke", "translate", "rect"
   ]);
   return new Proxy({}, {
     get(target, key) {
@@ -27,6 +27,8 @@ test("0.9B Sniper Elite scene renders cinematic shot and resolved frames", async
   const canvas = { getContext: () => ctx, width: 0, height: 0, style: {}, closest: () => null };
   const caption = { textContent: "", className: "" };
   const scene = new SniperScene(canvas, caption, { reducedMotion: true });
+  scene.backgroundReady = true;
+  scene.background = { width: 1280, height: 720 };
   assert.doesNotThrow(() => scene.setIdle({ actor: "A", emergence: "rooftop", target: "broken-wall", active: true }));
   scene.mode = "replay";
   scene.replay = {

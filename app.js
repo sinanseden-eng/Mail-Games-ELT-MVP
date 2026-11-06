@@ -1,12 +1,17 @@
 import { defaultState, applyTurn, turkeyAttack } from "./game-engine.mjs";
 import { createSniperAudio } from "./sniper-audio.mjs";
 import { SniperScene } from "./sniper-scene.mjs";
+import { sniperGuideMarkup, sniperHistoryMarkup, sniperResultMarkup } from "./sniper-ui.mjs";
+import { replayMotionPreference, saveReplayMotion } from "./classroom-playback.mjs";
 import { validateQuestion } from "./question-import.mjs";
-import { initQuestionStudio } from "./question-studio.mjs";
+import { initQuestionStudio, setStudioPanel } from "./question-studio.mjs";
 import { poolStore } from "./question-pools.mjs";
+import { initHomeTeasers } from "./home-teasers.mjs";
 
 (() => {
   "use strict";
+  let disposeHome = null;
+  let studioQuestionPage = 1;
 
   const STORAGE = {
     questions: "mailgames.questions.v1",
@@ -205,6 +210,7 @@ import { poolStore } from "./question-pools.mjs";
   }
 
   function render() {
+    disposeHome?.(); disposeHome = null;
     cancelGameTimers();
     const route = routeFromHash();
     document.body.dataset.route = route;
@@ -223,6 +229,7 @@ import { poolStore } from "./question-pools.mjs";
 
   function renderHome() {
     app.append(cloneTemplate("home-template"));
+    disposeHome = initHomeTeasers(app, game => { activePlayGame = game; setRoute("play"); });
   }
 
   function renderTeacher() {
@@ -231,21 +238,12 @@ import { poolStore } from "./question-pools.mjs";
     initQuestionStudio({ getQuestions, saveQuestions, refreshQuestionList, showToast });
     const typeSelect = form.elements.type;
 
-    document.querySelectorAll("[data-studio-target]").forEach(button => {
-      button.addEventListener("click", () => {
-        const target = document.getElementById(button.dataset.studioTarget);
-        if (!target) return;
-        document.querySelectorAll(".rail-link[data-studio-target]").forEach(link => link.classList.remove("active"));
-        button.classList.add("active");
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    });
-
     function syncTypeFields() {
       const type = typeSelect.value;
       const options = ["optionA", "optionB", "optionC", "optionD", "optionE"];
       options.forEach((name, index) => {
         const input = form.elements[name];
+        input.readOnly = type === "true-false";
         const label = input.closest("label");
         if (type === "gap-fill") label.style.display = "none";
         else {
@@ -256,6 +254,8 @@ import { poolStore } from "./question-pools.mjs";
           }
         }
       });
+      form.elements.answer.placeholder = type === "gap-fill" ? "e.g. at" : type === "true-false" ? "True or False" : "Use the exact option text";
+      form.dispatchEvent(new Event("input", {bubbles:true}));
     }
 
     typeSelect.addEventListener("change", syncTypeFields);
@@ -285,7 +285,7 @@ import { poolStore } from "./question-pools.mjs";
       if (index >= 0) questions[index] = question; else questions.push(question);
       try { saveQuestions(questions); } catch { return showToast("Storage is full. Export a backup before adding more questions."); }
       delete form.dataset.editId;
-      form.querySelector('[type="submit"]').textContent = "Add question";
+      form.querySelector('[type="submit"]').textContent = "Save question";
       form.reset();
       typeSelect.value = "multiple-choice";
       syncTypeFields();
@@ -321,6 +321,13 @@ import { poolStore } from "./question-pools.mjs";
     const testCodeInput = document.getElementById("mail-test-code");
     const deliveryMatchId = document.getElementById("delivery-match-id");
     const deliveryResult = document.getElementById("delivery-result");
+    function syncLaunchSettings() {
+      const sniper = launchForm.elements.gameType.value === "sniper";
+      document.getElementById("studio-football-settings").hidden = sniper;
+      document.getElementById("studio-sniper-settings").hidden = !sniper;
+    }
+    launchForm.elements.gameType.addEventListener("change", syncLaunchSettings);
+    syncLaunchSettings();
 
     async function checkMissionControl() {
       missionStatus.textContent = "Checking…";
@@ -367,11 +374,11 @@ import { poolStore } from "./question-pools.mjs";
         missionStatus.className = "status-pill status-error";
         if (launchReadyItem) {
           launchReadyItem.classList.remove("ready");
-          launchReadyItem.textContent = "Mission Control unavailable";
+          launchReadyItem.textContent = "Email service unavailable";
         }
         missionDetails.textContent = location.protocol === "file:"
           ? "Run the project through Netlify or `netlify dev` to use server-backed matches."
-          : `Mission Control could not be reached: ${error.message}`;
+          : `Email service could not be reached: ${error.message}`;
         return null;
       }
     }
@@ -556,7 +563,7 @@ import { poolStore } from "./question-pools.mjs";
         setLaunchMessage(
           "fail",
           "Match not created",
-          `${error.message}. Check Mission Control above and confirm the Supabase schema and Netlify variables are configured.`
+          `${error.message}. Open Email service & delivery tools to check the connection settings.`
         );
         await checkMissionControl();
       } finally {
@@ -567,6 +574,15 @@ import { poolStore } from "./question-pools.mjs";
 
     document.getElementById("question-search").addEventListener("input", refreshQuestionList);
     document.getElementById("level-filter").addEventListener("change", refreshQuestionList);
+    document.getElementById("question-type-filter").addEventListener("change", refreshQuestionList);
+    document.getElementById("clear-question-filters").addEventListener("click", () => {
+      document.getElementById("question-search").value = "";
+      document.getElementById("level-filter").value = "all";
+      document.getElementById("question-type-filter").value = "all";
+      refreshQuestionList();
+    });
+    document.getElementById("question-page-previous").onclick = () => { studioQuestionPage--; refreshQuestionList({keepPage:true}); };
+    document.getElementById("question-page-next").onclick = () => { studioQuestionPage++; refreshQuestionList({keepPage:true}); };
     refreshQuestionList();
     checkMissionControl();
   }
@@ -622,16 +638,26 @@ import { poolStore } from "./question-pools.mjs";
     }).filter(question => question.prompt && question.answer && (question.type === "gap-fill" || question.options.length >= 2));
   }
 
-  function refreshQuestionList() {
+  function refreshQuestionList({keepPage = false} = {}) {
     const list = document.getElementById("question-list");
     if (!list) return;
     const search = normalize(document.getElementById("question-search")?.value);
     const level = document.getElementById("level-filter")?.value || "all";
+    const type = document.getElementById("question-type-filter")?.value || "all";
     const questions = getQuestions();
     const filtered = questions.filter(question => {
       const haystack = normalize(`${question.prompt} ${question.tag} ${question.answer}`);
-      return (!search || haystack.includes(search)) && (level === "all" || question.level === level);
+      return (!search || haystack.includes(search)) && (level === "all" || question.level === level) && (type === "all" || question.type === type);
     });
+    if (!keepPage) studioQuestionPage = 1;
+    const pageCount = Math.max(1, Math.ceil(filtered.length / 12));
+    studioQuestionPage = Math.max(1, Math.min(studioQuestionPage, pageCount));
+    const visible = filtered.slice((studioQuestionPage - 1) * 12, studioQuestionPage * 12);
+    document.getElementById("question-filter-summary").textContent = `${filtered.length} of ${questions.length} question${questions.length === 1 ? "" : "s"}`;
+    document.getElementById("question-pagination").hidden = pageCount <= 1;
+    document.getElementById("question-page-summary").textContent = `Page ${studioQuestionPage} of ${pageCount}`;
+    document.getElementById("question-page-previous").disabled = studioQuestionPage === 1;
+    document.getElementById("question-page-next").disabled = studioQuestionPage === pageCount;
 
     document.getElementById("question-count").textContent = `${questions.length} question${questions.length === 1 ? "" : "s"}`;
     const launchSummary = document.getElementById("launch-question-summary");
@@ -643,24 +669,27 @@ import { poolStore } from "./question-pools.mjs";
     list.replaceChildren();
     if (!filtered.length) {
       const empty = document.createElement("div");
-      empty.className = "empty-state";
-      empty.textContent = "No questions match this filter. Even the grammar goblins have gone home.";
+      empty.className = "studio-empty-state";
+      empty.innerHTML = questions.length
+        ? '<h3>No matching questions.</h3><p>Try another word, level or question type.</p>'
+        : '<h3>A new pool. A fresh start.</h3><p>Add your first question or import a document to get ready for a match.</p><button type="button" class="primary">Create a question</button>';
+      empty.querySelector("button")?.addEventListener("click", () => setStudioPanel("question-editor-panel"));
       list.append(empty);
       return;
     }
 
-    filtered.forEach(question => {
+    visible.forEach(question => {
       const item = document.createElement("article");
       item.className = "question-item";
       item.innerHTML = `
         <div>
           <h3>${escapeHtml(question.prompt)}</h3>
-          <p>Answer: <strong>${escapeHtml(question.answer)}</strong>${question.explanation ? ` · ${escapeHtml(question.explanation)}` : ""}</p>
           <div class="question-meta">
             <span class="chip">${escapeHtml(question.level)}</span>
             <span class="chip">${escapeHtml(question.tag || "General English")}</span>
-            <span class="chip">${escapeHtml(question.type)}</span>
+            <span class="chip">${escapeHtml({"multiple-choice":"Multiple choice","true-false":"True / False","gap-fill":"Gap fill"}[question.type] || question.type)}</span>
           </div>
+          <details><summary>View answer &amp; explanation</summary><p>Answer: <strong>${escapeHtml(question.answer)}</strong>${question.explanation ? `<br>${escapeHtml(question.explanation)}` : ""}</p></details>
         </div>
         <div class="question-actions"><button class="secondary edit-question" type="button">Edit</button><button class="danger delete-question" type="button">Delete</button></div>
       `;
@@ -671,7 +700,8 @@ import { poolStore } from "./question-pools.mjs";
         form.elements.type.dispatchEvent(new Event("change"));
         ["optionA", "optionB", "optionC", "optionD", "optionE"].forEach((name, i) => form.elements[name].value = question.options[i] || "");
         form.querySelector('[type="submit"]').textContent = "Save changes";
-        form.scrollIntoView({ behavior: "smooth", block: "center" });
+        form.dispatchEvent(new Event("input", {bubbles:true}));
+        setStudioPanel("question-editor-panel");
       };
       item.querySelector(".delete-question").addEventListener("click", () => {
         if (!confirm("Delete this question from the current pool?")) return;
@@ -711,7 +741,7 @@ import { poolStore } from "./question-pools.mjs";
     if (!stage) return;
     stage.replaceChildren();
     answerState = null;
-    if (activePlayGame === "turkey") renderTurkeyGame(stage);
+    if (activePlayGame === "tanx") { const frame=document.createElement('iframe');frame.src='tanx.html';frame.title='Tanx local multiplayer';frame.style.cssText='width:100%;height:1100px;border:0;border-radius:16px';stage.append(frame); }
     else if (activePlayGame === "sniper") renderSniperGame(stage);
     else {
       stage.innerHTML = `<article class="panel"><span class="eyebrow">The Penalty Club</span><h2>One shot. Make it count.</h2><p>Step into the new football pitch. Practice your finish or answer English questions to unlock each shot and save.</p><div class="card-actions"><a class="primary button-link" href="football.html">Play football ↗</a><a class="secondary button-link" href="shootout.html">English match</a></div></article>`;
@@ -1055,10 +1085,10 @@ import { poolStore } from "./question-pools.mjs";
     stage.append(cloneTemplate("sniper-demo-template"));
     const state = getSniperState();
     sniperAudio ||= createSniperAudio();
-    classroomScene = new SniperScene(document.getElementById("classroom-sniper-canvas"), document.getElementById("sniper-demo-log"), {reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches, onEvent: event => sniperAudio.handleEvent(event)});
+    classroomScene = new SniperScene(document.getElementById("classroom-sniper-canvas"), document.getElementById("sniper-demo-log"), {reducedMotion: replayMotionPreference(localStorage, matchMedia("(prefers-reduced-motion: reduce)").matches), onEvent: event => sniperAudio.handleEvent(event)});
     classroomScene.setIdle({actor: state.phase});
-    document.getElementById("sniper-demo-health-a").textContent = state.healthA;
-    document.getElementById("sniper-demo-health-b").textContent = state.healthB;
+    document.getElementById("sniper-demo-health-a").textContent = `${state.healthA} / 3 lives`;
+    document.getElementById("sniper-demo-health-b").textContent = `${state.healthB} / 3 lives`;
     document.getElementById("sniper-demo-round").textContent = state.finished ? "Match over" : `Round ${state.round} of ${state.maxRounds}`;
     const log = document.getElementById("sniper-demo-log");
     if (state.history.length) log.textContent = state.history.at(-1)?.message || state.history.at(-1);
@@ -1066,12 +1096,13 @@ import { poolStore } from "./question-pools.mjs";
     else if (state.phase === "B") handoff(document.getElementById("sniper-turn-panel"), "Player B", () => renderSniperTurn(state));
     else renderSniperTurn(state);
     const replay = state.history.findLast(item => item && typeof item === "object" && item.gameType === "sniper");
+    document.getElementById("sniper-last-result").innerHTML = sniperResultMarkup(replay);
     const watch = document.getElementById("watch-classroom-sniper");
     watch.disabled = !replay;
     watch.onclick = async () => { const active = classroomScene; watch.disabled = true; void sniperAudio.unlock(); await active.playReplay(replay); if (classroomScene === active) watch.disabled = false; };
     const motion = document.getElementById("classroom-sniper-motion");
     motion.checked = classroomScene.reducedMotion;
-    motion.onchange = () => {classroomScene.reducedMotion = motion.checked;};
+    motion.onchange = () => {classroomScene.reducedMotion = motion.checked; saveReplayMotion(localStorage, motion.checked);};
   }
 
   function renderSniperTurn(state) {
@@ -1093,8 +1124,9 @@ import { poolStore } from "./question-pools.mjs";
 
     panel.innerHTML = `
       <div class="turn-status"><div><span class="eyebrow">Current player</span><strong>${player}</strong></div><span class="avatar-dot">${actor}</span></div>
-      <h2>Answer and make two secret choices</h2>
-      <p>A wrong answer still reveals your cover, but disables your training shot.</p>
+      ${sniperGuideMarkup(state.maxRounds, state.round === 1)}
+      <h2>1. Answer the question</h2>
+      <p>A wrong answer means you won’t fire this round. Your hiding place stays secret until both players lock their choices.</p>
       <div class="question-box">
         <div class="question-context"><span class="chip">${escapeHtml(question.level)}</span><span class="chip">${escapeHtml(question.tag)}</span></div>
         <strong>${escapeHtml(question.prompt)}</strong>
@@ -1103,10 +1135,15 @@ import { poolStore } from "./question-pools.mjs";
         <div id="sniper-answer-feedback"></div>
       </div>
       <div id="sniper-demo-choices" hidden>
-        <h3>Choose your emergence spot</h3><div class="move-grid">${spotButtons("emergence")}</div>
-        <h3>Predict the rival position</h3><div class="move-grid">${spotButtons("target")}</div>
+        <section class="sniper-choice-section emergence"><h3>2. Your hiding place</h3><p>Choose on your side. The blue YOU marker shows your choice.</p><div class="move-grid">${spotButtons("emergence")}</div></section>
+        <section class="sniper-choice-section target"><h3>3. Where will your opponent appear?</h3><p>Choose on their side. The amber YOUR GUESS marker shows your prediction.</p><div class="move-grid">${spotButtons("target")}</div></section>
+        <p class="sniper-confirmation" id="sniper-choice-confirmation" aria-live="polite">Choose your hiding place and your guess.</p>
         <button class="primary full" type="button" id="sniper-submit-turn" disabled>Lock both choices</button>
-      </div>`;
+      </div>${sniperHistoryMarkup(state.history, actor)}`;
+    const activeScene = classroomScene;
+    activeScene.onSelect = ({kind, spot}) => {
+      if (checked && !locked) panel.querySelector(`[data-sniper-${kind}="${spot}"]`)?.click();
+    };
 
     panel.querySelectorAll("[data-sniper-answer]").forEach(button => {
       button.addEventListener("click", () => {
@@ -1125,13 +1162,20 @@ import { poolStore } from "./question-pools.mjs";
       feedback.className = `feedback ${correct ? "success" : "fail"}`;
       feedback.innerHTML = correct
         ? `Correct. Your training shot is active.${question.explanation ? ` ${escapeHtml(question.explanation)}` : ""}`
-        : `Not quite. Correct answer: <strong>${escapeHtml(question.answer)}</strong>. You will still emerge, but cannot score a tag.`;
+        : `Not quite. Correct answer: <strong>${escapeHtml(question.answer)}</strong>. Choose a hiding place; you won’t fire this round.`;
       panel.querySelector("#sniper-check-answer").disabled = true;
       panel.querySelector("#sniper-demo-choices").hidden = false;
+      syncReady();
     });
 
     function syncReady() {
       panel.querySelector("#sniper-submit-turn").disabled = locked || !(checked && emergence && target);
+      const own = sniperSpots.find(spot => spot.id === emergence)?.label || "not chosen";
+      const guess = sniperSpots.find(spot => spot.id === target)?.label || "not chosen";
+      panel.querySelector("#sniper-choice-confirmation").textContent = `You hide: ${own}. Your guess: ${guess}.${checked && !correct ? " Your shot is disabled this round." : ""}`;
+      activeScene.setIdle({actor, emergence: emergence || null, target: target || null, active: correct,
+        caption: emergence && target ? `You hide at ${own}. You predict ${guess}. Both choices remain secret.` : "Choose your hiding place and predict your opponent’s hiding place."});
+      for (const kind of ["emergence", "target"]) panel.querySelectorAll(`[data-sniper-${kind}]`).forEach(button => button.setAttribute("aria-pressed", String(button.classList.contains("selected"))));
     }
     panel.querySelectorAll("[data-sniper-emergence]").forEach(button => {
       button.addEventListener("click", () => {
@@ -1150,6 +1194,7 @@ import { poolStore } from "./question-pools.mjs";
     panel.querySelector("#sniper-submit-turn").addEventListener("click", () => {
       if (locked || !checked || !emergence || !target) return;
       locked = true;
+      activeScene.onSelect = null;
       void sniperAudio?.unlock();
       panel.querySelectorAll("button, input").forEach(el => { el.disabled = true; });
       state[`emergence${actor}`] = emergence;
@@ -1173,7 +1218,7 @@ import { poolStore } from "./question-pools.mjs";
     saveSniperState(result.state);
     const scene = classroomScene;
     const panel = document.getElementById("sniper-turn-panel");
-    panel.innerHTML = '<h2>Watch the round</h2><p>Both choices are now revealed.</p><button id="pause-classroom-replay" class="secondary">Pause</button> <button id="skip-classroom-replay" class="secondary">Skip replay</button>';
+    panel.innerHTML = '<h2>Watch the round</h2><p>Both choices are revealed. Both shots happen together, so both players can lose a life.</p><button id="pause-classroom-replay" class="secondary">Pause</button> <button id="skip-classroom-replay" class="secondary">Skip replay</button>';
     panel.querySelector('#skip-classroom-replay').onclick = () => scene.skipReplay();
     panel.querySelector('#pause-classroom-replay').onclick = event => {event.currentTarget.textContent = scene.togglePause() ? 'Resume' : 'Pause';};
     document.getElementById('watch-classroom-sniper').disabled = true;
@@ -1187,7 +1232,7 @@ import { poolStore } from "./question-pools.mjs";
     panel.innerHTML = `
       <span class="eyebrow">Match complete</span>
       <h2>${result}</h2>
-      <p>Final health: Player A <strong>${state.healthA}</strong>, Player B <strong>${state.healthB}</strong>.</p>
+      <p>Lives remaining: Player A <strong>${state.healthA} / 3</strong>, Player B <strong>${state.healthB} / 3</strong>. Equal lives means a draw.</p>
       <button class="primary full" id="new-sniper-match">Start a new prediction match</button>
       ${emailInviteMarkup("Sniper Elite!")}`;
     panel.querySelector("#new-sniper-match").addEventListener("click", () => {
