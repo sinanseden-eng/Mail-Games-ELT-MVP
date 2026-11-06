@@ -14,7 +14,7 @@ test("0.9D adds deliberate target acquisition before both stored shots", async (
   assert.match(source, /TRACKING PREDICTED COVER/);
   assert.match(source, /TARGET ACQUIRED · BREATH HELD/);
   assert.match(source, /lockRadius/);
-  assert.match(source, /% LOCK/);
+  assert.match(source, /LOCKED CHOICE/);
 });
 
 test("0.9D gives recoil, projectile travel and clean hit reactions separate readable phases", async () => {
@@ -39,7 +39,10 @@ test("0.9D synchronizes scope lock, layered report, impact and bolt-cycle audio"
 });
 
 
-test("0.9D preserves a visible reaction-camera beat between the two scope views", () => {
-  assert.ok(SNIPER_REPLAY_TIMELINE.scopeBStart > SNIPER_REPLAY_TIMELINE.reactionAEnd);
+test("both scope previews finish before the simultaneous shots and reactions", () => {
+  assert.ok(SNIPER_REPLAY_TIMELINE.scopeBStart > SNIPER_REPLAY_TIMELINE.scopeAEnd);
+  assert.ok(SNIPER_REPLAY_TIMELINE.scopeBEnd < SNIPER_REPLAY_TIMELINE.shotAStart);
+  assert.equal(SNIPER_REPLAY_TIMELINE.shotAStart, SNIPER_REPLAY_TIMELINE.shotBStart);
+  assert.equal(SNIPER_REPLAY_TIMELINE.shotAImpact, SNIPER_REPLAY_TIMELINE.shotBImpact);
   assert.ok(SNIPER_REPLAY_TIMELINE.resultStart > SNIPER_REPLAY_TIMELINE.reactionBEnd);
 });

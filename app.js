@@ -1,6 +1,8 @@
 import { defaultState, applyTurn, turkeyAttack } from "./game-engine.mjs";
 import { createSniperAudio } from "./sniper-audio.mjs";
 import { SniperScene } from "./sniper-scene.mjs";
+import { sniperGuideMarkup, sniperHistoryMarkup, sniperResultMarkup } from "./sniper-ui.mjs";
+import { replayMotionPreference, saveReplayMotion } from "./classroom-playback.mjs";
 import { validateQuestion } from "./question-import.mjs";
 import { initQuestionStudio } from "./question-studio.mjs";
 import { poolStore } from "./question-pools.mjs";
@@ -1059,10 +1061,10 @@ import { initHomeTeasers } from "./home-teasers.mjs";
     stage.append(cloneTemplate("sniper-demo-template"));
     const state = getSniperState();
     sniperAudio ||= createSniperAudio();
-    classroomScene = new SniperScene(document.getElementById("classroom-sniper-canvas"), document.getElementById("sniper-demo-log"), {reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches, onEvent: event => sniperAudio.handleEvent(event)});
+    classroomScene = new SniperScene(document.getElementById("classroom-sniper-canvas"), document.getElementById("sniper-demo-log"), {reducedMotion: replayMotionPreference(localStorage, matchMedia("(prefers-reduced-motion: reduce)").matches), onEvent: event => sniperAudio.handleEvent(event)});
     classroomScene.setIdle({actor: state.phase});
-    document.getElementById("sniper-demo-health-a").textContent = state.healthA;
-    document.getElementById("sniper-demo-health-b").textContent = state.healthB;
+    document.getElementById("sniper-demo-health-a").textContent = `${state.healthA} / 3 lives`;
+    document.getElementById("sniper-demo-health-b").textContent = `${state.healthB} / 3 lives`;
     document.getElementById("sniper-demo-round").textContent = state.finished ? "Match over" : `Round ${state.round} of ${state.maxRounds}`;
     const log = document.getElementById("sniper-demo-log");
     if (state.history.length) log.textContent = state.history.at(-1)?.message || state.history.at(-1);
@@ -1070,12 +1072,13 @@ import { initHomeTeasers } from "./home-teasers.mjs";
     else if (state.phase === "B") handoff(document.getElementById("sniper-turn-panel"), "Player B", () => renderSniperTurn(state));
     else renderSniperTurn(state);
     const replay = state.history.findLast(item => item && typeof item === "object" && item.gameType === "sniper");
+    document.getElementById("sniper-last-result").innerHTML = sniperResultMarkup(replay);
     const watch = document.getElementById("watch-classroom-sniper");
     watch.disabled = !replay;
     watch.onclick = async () => { const active = classroomScene; watch.disabled = true; void sniperAudio.unlock(); await active.playReplay(replay); if (classroomScene === active) watch.disabled = false; };
     const motion = document.getElementById("classroom-sniper-motion");
     motion.checked = classroomScene.reducedMotion;
-    motion.onchange = () => {classroomScene.reducedMotion = motion.checked;};
+    motion.onchange = () => {classroomScene.reducedMotion = motion.checked; saveReplayMotion(localStorage, motion.checked);};
   }
 
   function renderSniperTurn(state) {
@@ -1097,8 +1100,9 @@ import { initHomeTeasers } from "./home-teasers.mjs";
 
     panel.innerHTML = `
       <div class="turn-status"><div><span class="eyebrow">Current player</span><strong>${player}</strong></div><span class="avatar-dot">${actor}</span></div>
-      <h2>Answer and make two secret choices</h2>
-      <p>A wrong answer still reveals your cover, but disables your training shot.</p>
+      ${sniperGuideMarkup(state.maxRounds, state.round === 1)}
+      <h2>1. Answer the question</h2>
+      <p>A wrong answer means you won’t fire this round. Your hiding place stays secret until both players lock their choices.</p>
       <div class="question-box">
         <div class="question-context"><span class="chip">${escapeHtml(question.level)}</span><span class="chip">${escapeHtml(question.tag)}</span></div>
         <strong>${escapeHtml(question.prompt)}</strong>
@@ -1107,10 +1111,15 @@ import { initHomeTeasers } from "./home-teasers.mjs";
         <div id="sniper-answer-feedback"></div>
       </div>
       <div id="sniper-demo-choices" hidden>
-        <h3>Choose your emergence spot</h3><div class="move-grid">${spotButtons("emergence")}</div>
-        <h3>Predict the rival position</h3><div class="move-grid">${spotButtons("target")}</div>
+        <section class="sniper-choice-section emergence"><h3>2. Your hiding place</h3><p>Choose on your side. The blue YOU marker shows your choice.</p><div class="move-grid">${spotButtons("emergence")}</div></section>
+        <section class="sniper-choice-section target"><h3>3. Where will your opponent appear?</h3><p>Choose on their side. The amber YOUR GUESS marker shows your prediction.</p><div class="move-grid">${spotButtons("target")}</div></section>
+        <p class="sniper-confirmation" id="sniper-choice-confirmation" aria-live="polite">Choose your hiding place and your guess.</p>
         <button class="primary full" type="button" id="sniper-submit-turn" disabled>Lock both choices</button>
-      </div>`;
+      </div>${sniperHistoryMarkup(state.history, actor)}`;
+    const activeScene = classroomScene;
+    activeScene.onSelect = ({kind, spot}) => {
+      if (checked && !locked) panel.querySelector(`[data-sniper-${kind}="${spot}"]`)?.click();
+    };
 
     panel.querySelectorAll("[data-sniper-answer]").forEach(button => {
       button.addEventListener("click", () => {
@@ -1129,13 +1138,20 @@ import { initHomeTeasers } from "./home-teasers.mjs";
       feedback.className = `feedback ${correct ? "success" : "fail"}`;
       feedback.innerHTML = correct
         ? `Correct. Your training shot is active.${question.explanation ? ` ${escapeHtml(question.explanation)}` : ""}`
-        : `Not quite. Correct answer: <strong>${escapeHtml(question.answer)}</strong>. You will still emerge, but cannot score a tag.`;
+        : `Not quite. Correct answer: <strong>${escapeHtml(question.answer)}</strong>. Choose a hiding place; you won’t fire this round.`;
       panel.querySelector("#sniper-check-answer").disabled = true;
       panel.querySelector("#sniper-demo-choices").hidden = false;
+      syncReady();
     });
 
     function syncReady() {
       panel.querySelector("#sniper-submit-turn").disabled = locked || !(checked && emergence && target);
+      const own = sniperSpots.find(spot => spot.id === emergence)?.label || "not chosen";
+      const guess = sniperSpots.find(spot => spot.id === target)?.label || "not chosen";
+      panel.querySelector("#sniper-choice-confirmation").textContent = `You hide: ${own}. Your guess: ${guess}.${checked && !correct ? " Your shot is disabled this round." : ""}`;
+      activeScene.setIdle({actor, emergence: emergence || null, target: target || null, active: correct,
+        caption: emergence && target ? `You hide at ${own}. You predict ${guess}. Both choices remain secret.` : "Choose your hiding place and predict your opponent’s hiding place."});
+      for (const kind of ["emergence", "target"]) panel.querySelectorAll(`[data-sniper-${kind}]`).forEach(button => button.setAttribute("aria-pressed", String(button.classList.contains("selected"))));
     }
     panel.querySelectorAll("[data-sniper-emergence]").forEach(button => {
       button.addEventListener("click", () => {
@@ -1154,6 +1170,7 @@ import { initHomeTeasers } from "./home-teasers.mjs";
     panel.querySelector("#sniper-submit-turn").addEventListener("click", () => {
       if (locked || !checked || !emergence || !target) return;
       locked = true;
+      activeScene.onSelect = null;
       void sniperAudio?.unlock();
       panel.querySelectorAll("button, input").forEach(el => { el.disabled = true; });
       state[`emergence${actor}`] = emergence;
@@ -1177,7 +1194,7 @@ import { initHomeTeasers } from "./home-teasers.mjs";
     saveSniperState(result.state);
     const scene = classroomScene;
     const panel = document.getElementById("sniper-turn-panel");
-    panel.innerHTML = '<h2>Watch the round</h2><p>Both choices are now revealed.</p><button id="pause-classroom-replay" class="secondary">Pause</button> <button id="skip-classroom-replay" class="secondary">Skip replay</button>';
+    panel.innerHTML = '<h2>Watch the round</h2><p>Both choices are revealed. Both shots happen together, so both players can lose a life.</p><button id="pause-classroom-replay" class="secondary">Pause</button> <button id="skip-classroom-replay" class="secondary">Skip replay</button>';
     panel.querySelector('#skip-classroom-replay').onclick = () => scene.skipReplay();
     panel.querySelector('#pause-classroom-replay').onclick = event => {event.currentTarget.textContent = scene.togglePause() ? 'Resume' : 'Pause';};
     document.getElementById('watch-classroom-sniper').disabled = true;
@@ -1191,7 +1208,7 @@ import { initHomeTeasers } from "./home-teasers.mjs";
     panel.innerHTML = `
       <span class="eyebrow">Match complete</span>
       <h2>${result}</h2>
-      <p>Final health: Player A <strong>${state.healthA}</strong>, Player B <strong>${state.healthB}</strong>.</p>
+      <p>Lives remaining: Player A <strong>${state.healthA} / 3</strong>, Player B <strong>${state.healthB} / 3</strong>. Equal lives means a draw.</p>
       <button class="primary full" id="new-sniper-match">Start a new prediction match</button>
       ${emailInviteMarkup("Sniper Elite!")}`;
     panel.querySelector("#new-sniper-match").addEventListener("click", () => {

@@ -1,4 +1,4 @@
-import { sniperOutcomeLabel, sniperSpot, sniperSpotLabel } from "./sniper-core.mjs";
+import { sniperOutcomeLabel, sniperPosition, sniperShotExplanation, sniperSpot, sniperSpotLabel } from "./sniper-core.mjs";
 
 const WIDTH = 1280;
 const HEIGHT = 720;
@@ -12,12 +12,14 @@ const TIMELINE = Object.freeze({
   aimEnd: 0.255,
   scopeAStart: 0.245,
   lockAStart: 0.325,
-  shotAStart: 0.385,
-  shotAImpact: 0.46,
-  boltAStart: 0.505,
-  reactionAEnd: 0.54,
-  scopeBStart: 0.56,
-  lockBStart: 0.64,
+  scopeAEnd: 0.445,
+  shotAStart: 0.70,
+  shotAImpact: 0.775,
+  boltAStart: 0.82,
+  reactionAEnd: 0.88,
+  scopeBStart: 0.46,
+  lockBStart: 0.56,
+  scopeBEnd: 0.68,
   shotBStart: 0.70,
   shotBImpact: 0.775,
   boltBStart: 0.82,
@@ -40,12 +42,25 @@ const SPOT_COVER_DROP = Object.freeze({
 });
 
 export class SniperScene {
-  constructor(canvas, captionElement = null, { reducedMotion = false, onEvent = null } = {}) {
+  constructor(canvas, captionElement = null, { reducedMotion = false, onEvent = null, onSelect = null } = {}) {
     this.canvas = canvas;
     this.ctx = canvas?.getContext?.("2d") || null;
     this.captionElement = captionElement;
     this.reducedMotion = Boolean(reducedMotion);
     this.onEvent = typeof onEvent === "function" ? onEvent : () => {};
+    this.onSelect = onSelect;
+    this.handleMapClick = event => {
+      if (this.mode !== "idle" || typeof this.onSelect !== "function") return;
+      const bounds = this.canvas.getBoundingClientRect();
+      const x = (event.clientX - bounds.left) / bounds.width;
+      const y = (event.clientY - bounds.top) / bounds.height;
+      const actor = x < 0.5 ? "A" : "B";
+      const spots = ["rooftop", "upper-window", "broken-wall", "supply-crates"];
+      const nearest = spots.map(id => ({id, ...sniperPosition(actor, id)}))
+        .find(spot => Math.hypot((spot.x - x) * WIDTH, (spot.y - y) * HEIGHT) <= 62);
+      if (nearest) this.onSelect({ kind: actor === this.idle.actor ? "emergence" : "target", spot: nearest.id });
+    };
+    this.canvas?.addEventListener?.("click", this.handleMapClick);
     this.cancelReplay();
     this.mode = "idle";
     this.idle = { actor: "A", emergence: null, target: null, active: true };
@@ -95,7 +110,7 @@ export class SniperScene {
     this.captionElement.className = `scene-caption sniper-caption ${tone}`.trim();
   }
 
-  setIdle({ actor = "A", emergence = null, target = null, active = true, caption = "Answer, choose cover, then predict the rival position." } = {}) {
+  setIdle({ actor = "A", emergence = null, target = null, active = true, caption = "Answer → choose your hiding place → predict your opponent’s hiding place." } = {}) {
     this.cancelReplay();
     this.mode = "idle";
     this.idle = { actor, emergence, target, active: Boolean(active) };
@@ -110,7 +125,7 @@ export class SniperScene {
     this.finishReplay?.(); this.finishReplay = null;
   }
 
-  destroy() { this.cancelReplay(); this.onEvent = () => {}; this.captionElement = null; this.ctx = null; }
+  destroy() { this.cancelReplay(); this.canvas?.removeEventListener?.("click", this.handleMapClick); this.onSelect = null; this.onEvent = () => {}; this.captionElement = null; this.ctx = null; }
 
   async playReplay(replay) {
     this.cancelReplay();
@@ -123,18 +138,11 @@ export class SniperScene {
     this.pausedDuration = 0;
     this.skipRequested = false;
     this.emitted.clear();
-    this.setCaption("Positions locked. The cinematic replay is beginning…", "");
+    this.setCaption("Both choices locked. Preview the guesses; both shots will happen together.", "");
     this.emitOnce("round-start", { type: "round-start", replay: this.replay });
 
-    if (this.reducedMotion) {
-      this.progress = 1;
-      this.markActionEventsComplete();
-      this.emitReplayEvents(1);
-      this.drawSafely(performanceNow());
-      await wait(180);
-      return;
-    }
-
+    // Reduced motion keeps the full reading time and essential reveal sequence.
+    // It suppresses camera movement, flashes and particles instead of skipping.
     this.startedAt = performanceNow();
     await new Promise(resolve => {
       this.finishReplay = resolve;
@@ -198,11 +206,11 @@ export class SniperScene {
     if (progress >= TIMELINE.aimStart) this.emitOnce("aim", { type: "aim" });
     if (progress >= TIMELINE.scopeAStart) {
       this.emitOnce("scope-a", { type: "scope", actor: "A" });
-      this.setCaption("Player A scope view: predicted cover acquired.", "scope");
+      this.setCaption("Player A’s guess. Both shots are locked and will happen together.", "scope");
     }
     if (progress >= TIMELINE.lockAStart) {
       this.emitOnce("lock-a", { type: "scope-lock", actor: "A" });
-      this.setCaption("Player A has the predicted cover centred. Breath held.", "scope");
+      this.setCaption("Player A’s prediction is ready. Waiting for the shared reveal.", "scope");
     }
     if (progress >= TIMELINE.shotAStart) {
       this.emitOnce("shot-a", { type: replay.activeA ? "shot" : "disabled", actor: "A" });
@@ -215,11 +223,11 @@ export class SniperScene {
     }
     if (progress >= TIMELINE.scopeBStart) {
       this.emitOnce("scope-b", { type: "scope", actor: "B" });
-      this.setCaption("Player B scope view: predicted cover acquired.", "scope");
+      this.setCaption("Player B’s guess. Both shots are locked and will happen together.", "scope");
     }
     if (progress >= TIMELINE.lockBStart) {
       this.emitOnce("lock-b", { type: "scope-lock", actor: "B" });
-      this.setCaption("Player B has the predicted cover centred. Breath held.", "scope");
+      this.setCaption("Player B’s prediction is ready. Both shots will happen together.", "scope");
     }
     if (progress >= TIMELINE.shotBStart) {
       this.emitOnce("shot-b", { type: replay.activeB ? "shot" : "disabled", actor: "B" });
@@ -230,6 +238,8 @@ export class SniperScene {
     if (progress >= TIMELINE.boltBStart && replay.activeB) {
       this.emitOnce("bolt-b", { type: "bolt", actor: "B" });
     }
+    if (progress >= TIMELINE.shotAStart) this.setCaption("Both shots resolve together. A hit does not cancel the other locked shot.");
+    if (progress >= TIMELINE.shotAImpact) this.setCaption(`A: ${sniperShotExplanation(replay, "A")} B: ${sniperShotExplanation(replay, "B")}`);
     if (progress >= TIMELINE.resultStart) {
       this.emitOnce("result", { type: "result", replay });
       this.setCaption(replay.caption || sniperOutcomeLabel(replay), replay.completed ? "finish" : (replay.hitByA || replay.hitByB ? "hit" : "miss"));
@@ -256,6 +266,7 @@ export class SniperScene {
 
   draw(now = performanceNow()) {
     if (!this.ctx) return;
+    if (this.reducedMotion) now = 0;
     const ctx = this.ctx;
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
@@ -283,6 +294,7 @@ export class SniperScene {
   }
 
   cameraShake(now) {
+    if (this.reducedMotion) return { x: 0, y: 0 };
     const p = this.progress;
     const kick =
       pulse(p, TIMELINE.shotAStart, TIMELINE.shotAStart + 0.055) * 5.2 +
@@ -297,6 +309,9 @@ export class SniperScene {
 
   replayCamera(now) {
     const p = this.progress;
+    if (this.reducedMotion || (p >= TIMELINE.scopeBEnd && p <= TIMELINE.reactionBEnd)) {
+      return { focusX: WIDTH / 2, focusY: HEIGHT / 2, zoom: 1, scope: null, reactionActor: null };
+    }
     const scope = this.scopeState(p, now);
     if (scope) {
       const acquisition = easeInOut(interval(p, scope.start + 0.01, scope.lockStart));
@@ -305,10 +320,13 @@ export class SniperScene {
       const entryX = scope.actor === "A" ? -82 : 82;
       const entryY = scope.actor === "A" ? 44 : -38;
       const sway = lerp(6.5, 1.25, hold);
+      const zoom = lerp(1, 2.25, scope.blend);
+      const focusY = lerp(HEIGHT / 2, scope.target.y + entryY * (1 - acquisition)
+        + Math.cos(now / 520) * sway * 0.68 - recoil * 22, scope.blend);
       return {
-        focusX: scope.target.x + entryX * (1 - acquisition) + Math.sin(now / 410) * sway,
-        focusY: scope.target.y + entryY * (1 - acquisition) + Math.cos(now / 520) * sway * 0.68 - recoil * 22,
-        zoom: lerp(1, 2.25, scope.blend),
+        focusX: lerp(WIDTH / 2, scope.target.x + entryX * (1 - acquisition) + Math.sin(now / 410) * sway, scope.blend),
+        focusY: clamp(focusY, HEIGHT / (2 * zoom), HEIGHT - HEIGHT / (2 * zoom)),
+        zoom,
         scope: { ...scope, acquisition, hold, recoil },
         reactionActor: null
       };
@@ -346,7 +364,7 @@ export class SniperScene {
         lockStart: TIMELINE.lockAStart,
         shotStart: TIMELINE.shotAStart,
         impact: TIMELINE.shotAImpact,
-        end: TIMELINE.shotAImpact + 0.055,
+        end: TIMELINE.scopeAEnd,
         targetId: replay.targetA,
         hit: Boolean(replay.hitByA),
         active: Boolean(replay.activeA)
@@ -357,7 +375,7 @@ export class SniperScene {
         lockStart: TIMELINE.lockBStart,
         shotStart: TIMELINE.shotBStart,
         impact: TIMELINE.shotBImpact,
-        end: TIMELINE.shotBImpact + 0.055,
+        end: TIMELINE.scopeBEnd,
         targetId: replay.targetB,
         hit: Boolean(replay.hitByB),
         active: Boolean(replay.activeB)
@@ -367,7 +385,7 @@ export class SniperScene {
     for (const item of scopes) {
       if (!item.targetId || progress < item.start || progress > item.end) continue;
       const fadeIn = easeInOut(interval(progress, item.start, item.start + 0.055));
-      const fadeOut = 1 - easeInOut(interval(progress, item.impact - 0.005, item.end));
+      const fadeOut = 1 - easeInOut(interval(progress, item.end - 0.055, item.end));
       const blend = clamp(Math.min(fadeIn, fadeOut));
       const target = this.impactPoint(item.actor, item.targetId, item.active && item.hit);
       return { ...item, blend, target, now };
@@ -376,6 +394,8 @@ export class SniperScene {
   }
 
   reactionCameraState(progress) {
+    // Joint impacts stay in the wide view so both outcomes remain visible.
+    if (TIMELINE.shotAImpact === TIMELINE.shotBImpact) return null;
     const replay = this.replay || {};
     const reactions = [
       {
@@ -414,8 +434,19 @@ export class SniperScene {
       const scale = Math.max(WIDTH / image.width, HEIGHT / image.height);
       const width = image.width * scale;
       const height = image.height * scale;
-      const drift = Math.sin(now / 9000) * 5;
-      ctx.drawImage(image, (WIDTH - width) / 2 + drift, (HEIGHT - height) / 2, width, height);
+      const drift = this.reducedMotion ? 0 : Math.sin(now / 9000) * 5;
+      for (const actor of ["A", "B"]) {
+        ctx.save();
+        // Extend the outer edges so a scope at an edge cover still sees scenery.
+        ctx.beginPath(); ctx.rect(actor === "A" ? -WIDTH : WIDTH / 2, 0, WIDTH * 1.5, HEIGHT); ctx.clip();
+        if (actor === "B") ctx.translate(WIDTH, 0);
+        ctx.scale(actor === "A" ? 0.5 : -0.5, 1);
+        ctx.drawImage(image, (WIDTH - width) / 2 + drift, (HEIGHT - height) / 2, width, height);
+        ctx.save(); ctx.scale(-1, 1);
+        ctx.drawImage(image, (WIDTH - width) / 2 - drift, (HEIGHT - height) / 2, width, height);
+        ctx.restore();
+        ctx.restore();
+      }
     } else {
       const sky = ctx.createLinearGradient(0, 0, 0, HEIGHT);
       sky.addColorStop(0, "#d8783b");
@@ -433,7 +464,7 @@ export class SniperScene {
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
     ctx.save();
-    for (let i = 0; i < 20; i += 1) {
+    for (let i = 0; !this.reducedMotion && i < 20; i += 1) {
       const x = ((i * 83 + now / 70) % (WIDTH + 80)) - 40;
       const y = 230 + ((i * 47 + now / 35) % 410);
       ctx.globalAlpha = 0.05 + (i % 4) * 0.018;
@@ -446,16 +477,23 @@ export class SniperScene {
   }
 
   drawLocationGuides(ctx, now) {
-    const selected = this.mode === "idle" ? [this.idle.emergence, this.idle.target] : [];
+    for (const actor of ["A", "B"]) {
     for (const id of ["rooftop", "upper-window", "broken-wall", "supply-crates"]) {
-      const spot = sniperSpot(id);
+      const spot = sniperPosition(actor, id);
       const x = spot.x * WIDTH;
       const y = spot.y * HEIGHT;
-      const active = selected.includes(id);
+      const own = actor === this.idle.actor;
+      const active = this.mode === "idle" && (own ? this.idle.emergence : this.idle.target) === id;
       const pulseAmount = 0.5 + Math.sin(now / 380 + spot.number) * 0.15;
       ctx.save();
-      ctx.globalAlpha = active ? 0.96 : (this.mode === "replay" ? 0.09 : 0.22 + pulseAmount * 0.12);
-      ctx.strokeStyle = active ? "#ffd154" : "rgba(255,255,255,.72)";
+      // Replace the artwork's embedded signs so mirrored scenery has readable labels.
+      const labelX = actor === "A" ? Math.min(x, WIDTH / 2 - 70) : Math.max(x, WIDTH / 2 + 70);
+      ctx.fillStyle = "#101820";
+      roundRectPath(ctx, labelX - 64, y - 73, 128, 50, 6); ctx.fill();
+      ctx.fillStyle = "#fff2c0"; ctx.font = "800 13px system-ui, sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(`${spot.number} · ${spot.label}`, labelX, y - 42);
+      ctx.globalAlpha = active ? 1 : (this.mode === "replay" ? 0.24 : 0.85);
+      ctx.strokeStyle = active ? (own ? "#69bdff" : "#ffd154") : "rgba(255,255,255,.72)";
       ctx.lineWidth = active ? 5 : 2;
       ctx.beginPath();
       ctx.arc(x, y, active ? 26 : 20, 0, Math.PI * 2);
@@ -466,14 +504,26 @@ export class SniperScene {
       ctx.moveTo(x, y - 32);
       ctx.lineTo(x, y + 32);
       ctx.stroke();
+      if (this.mode === "idle") {
+        ctx.fillStyle = "rgba(9,17,26,.88)";
+        ctx.beginPath(); ctx.arc(x, y, 19, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "white"; ctx.font = "900 22px system-ui, sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(String(spot.number), x, y + 8);
+      }
       ctx.restore();
     }
+    }
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(WIDTH / 2, 0); ctx.lineTo(WIDTH / 2, HEIGHT); ctx.stroke();
+    ctx.restore();
   }
 
   drawIdle(ctx) {
     const { actor, emergence, target, active } = this.idle;
-    if (emergence) this.drawSelectionBadge(ctx, emergence, "EMERGE", "#48a9ff");
-    if (target) this.drawSelectionBadge(ctx, target, "PREDICT", "#f05b4f", 52);
+    this.drawSideLabels(ctx, actor);
+    if (emergence) this.drawSelectionBadge(ctx, emergence, "YOU", "#69bdff", -50, actor);
+    if (target) this.drawSelectionBadge(ctx, target, "YOUR GUESS", "#ffd154", -50, actor === "A" ? "B" : "A");
     if (!active && (emergence || target)) {
       ctx.save();
       ctx.globalAlpha = 0.88;
@@ -488,9 +538,20 @@ export class SniperScene {
     }
   }
 
-  drawSelectionBadge(ctx, spotId, label, color, yOffset = 0) {
-    const spot = sniperSpot(spotId);
-    const x = spot.x * WIDTH;
+  drawSideLabels(ctx, viewer = null) {
+    ctx.save(); ctx.textAlign = "center"; ctx.font = "900 20px system-ui, sans-serif";
+    for (const actor of ["A", "B"]) {
+      const x = actor === "A" ? WIDTH / 4 : WIDTH * 3 / 4;
+      ctx.fillStyle = "rgba(8,16,25,.88)"; roundRectPath(ctx, x - 185, 18, 370, 42, 10); ctx.fill();
+      ctx.fillStyle = viewer ? (viewer === actor ? "#69bdff" : "#ffd154") : (actor === "A" ? "#69bdff" : "#ffad94");
+      ctx.fillText(viewer ? (viewer === actor ? "YOUR SIDE · CHOOSE YOUR COVER" : "OPPONENT’S SIDE · MAKE A GUESS") : `PLAYER ${actor}’S SIDE`, x, 46);
+    }
+    ctx.restore();
+  }
+
+  drawSelectionBadge(ctx, spotId, label, color, yOffset = 0, actor = "A") {
+    const spot = sniperPosition(actor, spotId);
+    const x = actor === "A" ? Math.min(spot.x * WIDTH, WIDTH / 2 - 86) : Math.max(spot.x * WIDTH, WIDTH / 2 + 86);
     const y = spot.y * HEIGHT + yOffset;
     ctx.save();
     ctx.fillStyle = "rgba(12,18,24,.88)";
@@ -509,13 +570,13 @@ export class SniperScene {
   drawReplayWorld(ctx, now) {
     const replay = this.replay || {};
     const p = this.progress;
-    const emerge = easeOut(interval(p, TIMELINE.emergeStart, TIMELINE.emergeEnd));
-    const aim = easeInOut(interval(p, TIMELINE.aimStart, TIMELINE.aimEnd));
+    const emerge = this.reducedMotion ? Number(p >= TIMELINE.emergeStart) : easeOut(interval(p, TIMELINE.emergeStart, TIMELINE.emergeEnd));
+    const aim = this.reducedMotion ? 1 : easeInOut(interval(p, TIMELINE.aimStart, TIMELINE.aimEnd));
 
     const reactionA = this.actorReaction("A", p, replay);
     const reactionB = this.actorReaction("B", p, replay);
-    const recoilA = pulse(p, TIMELINE.shotAStart, TIMELINE.shotAStart + 0.085);
-    const recoilB = pulse(p, TIMELINE.shotBStart, TIMELINE.shotBStart + 0.085);
+    const recoilA = this.reducedMotion ? 0 : pulse(p, TIMELINE.shotAStart, TIMELINE.shotAStart + 0.085);
+    const recoilB = this.reducedMotion ? 0 : pulse(p, TIMELINE.shotBStart, TIMELINE.shotBStart + 0.085);
 
     const actors = [
       { actor: "A", emergence: replay.emergenceA, target: replay.targetA, active: replay.activeA, color: "#4aa7ff", reaction: reactionA, recoil: recoilA },
@@ -557,6 +618,10 @@ export class SniperScene {
   drawReplayOverlay(ctx, now, camera) {
     const replay = this.replay || {};
     const p = this.progress;
+    if (!camera?.scope) this.drawSideLabels(ctx);
+    ctx.save(); ctx.fillStyle = "rgba(8,16,25,.9)"; roundRectPath(ctx, WIDTH / 2 - 240, HEIGHT - 48, 480, 34, 8); ctx.fill();
+    ctx.fillStyle = "#ffe19a"; ctx.font = "800 16px system-ui, sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(p < TIMELINE.shotAStart ? "GUESSES LOCKED · BOTH SHOTS HAPPEN TOGETHER" : "SIMULTANEOUS SHOTS · NO FIRST-SHOT ADVANTAGE", WIDTH / 2, HEIGHT - 25); ctx.restore();
 
     if (camera?.scope) {
       this.drawScopeOverlay(ctx, now, camera.scope);
@@ -593,8 +658,13 @@ export class SniperScene {
       ctx.fillText(sniperOutcomeLabel(replay), WIDTH / 2, 132);
       ctx.fillStyle = "#f7cf72";
       ctx.font = "800 14px system-ui, sans-serif";
-      ctx.fillText("HYBRID SCOPE REPLAY · CLEAN TRAINING IMPACT", WIDTH / 2, 154);
+      ctx.fillText(`LIVES REMAINING · A ${replay.healthA} / 3 · B ${replay.healthB} / 3`, WIDTH / 2, 154);
       ctx.restore();
+      ctx.save(); ctx.fillStyle = "rgba(10,14,20,.9)";
+      roundRectPath(ctx, WIDTH / 2 - 330, 188, 660, 82, 12); ctx.fill();
+      ctx.fillStyle = "white"; ctx.font = "700 19px system-ui, sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(`A: ${sniperShotExplanation(replay, "A")}`, WIDTH / 2, 220);
+      ctx.fillText(`B: ${sniperShotExplanation(replay, "B")}`, WIDTH / 2, 248); ctx.restore();
     }
 
     if (this.paused && p < 1) {
@@ -728,7 +798,6 @@ export class SniperScene {
     }
     ctx.restore();
 
-    const range = 115 + (sniperSpot(scope.targetId)?.number || 1) * 27;
     ctx.save();
     ctx.globalAlpha = 0.82;
     ctx.fillStyle = "rgba(4,10,12,.62)";
@@ -737,7 +806,7 @@ export class SniperScene {
     ctx.fillStyle = "rgba(230,244,232,.9)";
     ctx.font = "800 13px ui-monospace, SFMono-Regular, Menlo, monospace";
     ctx.textAlign = "center";
-    ctx.fillText(`RANGE ${range} M  ·  ${Math.round(lockProgress * 100)}% LOCK`, centreX, centreY + radius - 38);
+    ctx.fillText(`GUESS ${sniperSpot(scope.targetId).number} · LOCKED CHOICE`, centreX, centreY + radius - 38);
     ctx.restore();
 
     // Keep the actual firing moment visible inside the lens. This deliberately
@@ -906,6 +975,7 @@ export class SniperScene {
   }
 
   actorReaction(actor, p, replay) {
+    if (this.reducedMotion) return { kick: 0, stagger: 0, recovery: 0, collapse: 0, knockedOut: false };
     const wasHit = actor === "A" ? Boolean(replay.hitByB) : Boolean(replay.hitByA);
     if (!wasHit) return { kick: 0, stagger: 0, recovery: 0, collapse: 0, knockedOut: false };
     const impact = actor === "A" ? TIMELINE.shotBImpact : TIMELINE.shotAImpact;
@@ -922,13 +992,11 @@ export class SniperScene {
 
   drawSoldier(ctx, { actor, emergence, target, active, color, emerge, aim, reaction, recoil, replay }) {
     if (!emergence || emerge <= 0) return;
-    const spot = sniperSpot(emergence);
-    const targetSpot = sniperSpot(target || emergence);
+    const spot = sniperPosition(actor, emergence);
+    const targetSpot = sniperPosition(actor === "A" ? "B" : "A", target || emergence);
     const scale = SPOT_SCALE[emergence] || 0.78;
     const coverDrop = SPOT_COVER_DROP[emergence] || 42;
-    const samePosition = replay?.emergenceA && replay?.emergenceA === replay?.emergenceB;
-    const separation = samePosition ? (actor === "A" ? -15 : 15) : 0;
-    const x = spot.x * WIDTH + separation;
+    const x = spot.x * WIDTH;
     const hiddenY = spot.y * HEIGHT + coverDrop;
     const visibleY = spot.y * HEIGHT + 12;
     const y = lerp(hiddenY, visibleY, emerge);
@@ -1060,6 +1128,15 @@ export class SniperScene {
 
     const from = this.actorMuzzle(actor, fromId, targetId);
     const end = this.impactPoint(actor, targetId, hit);
+    if (this.reducedMotion) {
+      if (p >= impact) {
+        ctx.save(); ctx.fillStyle = "rgba(10,18,25,.95)";
+        roundRectPath(ctx, end.x - 55, end.y - 72, 110, 34, 8); ctx.fill();
+        ctx.fillStyle = hit ? "#ffe079" : "white"; ctx.font = "900 17px system-ui, sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(hit ? "TAGGED" : "MISS", end.x, end.y - 49); ctx.restore();
+      }
+      return;
+    }
     const travel = easeInOut(interval(p, start, impact));
     const shotVisible = p >= start && p <= impact;
 
@@ -1101,26 +1178,22 @@ export class SniperScene {
   }
 
   actorMuzzle(actor, fromId, targetId) {
-    const from = sniperSpot(fromId);
-    const target = sniperSpot(targetId);
+    const from = sniperPosition(actor, fromId);
+    const target = sniperPosition(actor === "A" ? "B" : "A", targetId);
     const scale = SPOT_SCALE[fromId] || 0.78;
-    const samePosition = this.replay?.emergenceA === this.replay?.emergenceB;
-    const separation = samePosition ? (actor === "A" ? -15 : 15) : 0;
     const direction = target.x >= from.x ? 1 : -1;
     return {
-      x: from.x * WIDTH + separation + direction * 84 * scale,
+      x: from.x * WIDTH + direction * 84 * scale,
       y: from.y * HEIGHT - 4 * scale,
       direction
     };
   }
 
   impactPoint(actor, targetId, hit) {
-    const target = sniperSpot(targetId);
-    const samePosition = this.replay?.emergenceA === this.replay?.emergenceB && hit;
     const targetActor = actor === "A" ? "B" : "A";
-    const separation = samePosition ? (targetActor === "A" ? -15 : 15) : 0;
+    const target = sniperPosition(targetActor, targetId);
     if (hit) {
-      return { x: target.x * WIDTH + separation, y: target.y * HEIGHT + 12 };
+      return { x: target.x * WIDTH, y: target.y * HEIGHT + 12 };
     }
     const sign = actor === "A" ? 1 : -1;
     const number = target.number || 1;
@@ -1211,7 +1284,7 @@ export class SniperScene {
     const p = this.progress;
     const amount = pulse(p, start, start + 0.16);
     if (amount <= 0) return;
-    const spot = sniperSpot(spotId);
+    const spot = sniperPosition(actor, spotId);
     const x = spot.x * WIDTH;
     const y = spot.y * HEIGHT - 38;
     ctx.save();
@@ -1268,6 +1341,5 @@ function easeOut(value) { return 1 - Math.pow(1 - clamp(value), 3); }
 function easeInOut(value) { const t = clamp(value); return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
 function clamp(value, min = 0, max = 1) { return Math.max(min, Math.min(max, Number(value) || 0)); }
 function performanceNow() { return globalThis.performance?.now?.() ?? Date.now(); }
-function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
 export { sniperSpotLabel, TIMELINE as SNIPER_REPLAY_TIMELINE };

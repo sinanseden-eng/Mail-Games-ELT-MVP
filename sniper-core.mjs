@@ -20,6 +20,30 @@ export function sniperSpotLabel(id) {
   return sniperSpot(id).label;
 }
 
+// Matching cover numbers belong to separate, opposing areas of the village.
+export function sniperPosition(actor, id) {
+  const spot = sniperSpot(id);
+  const x = spot.x * 0.5;
+  return { ...spot, x: actor === "B" ? 1 - x : x };
+}
+
+export function sniperRecentPositions(history = [], actor = "A") {
+  const opponent = actor === "B" ? "A" : "B";
+  return history.filter(item => item?.gameType === "sniper"
+    && SNIPER_SPOTS.includes(item.emergenceA) && SNIPER_SPOTS.includes(item.emergenceB))
+    .slice(-3).map(item => ({ round: item.round, spot: item[`emergence${opponent}`] }));
+}
+
+export function sniperShotExplanation(replay, actor) {
+  if (!replay?.[`active${actor}`]) return "No shot: incorrect English answer.";
+  const opponent = actor === "A" ? "B" : "A";
+  const guess = sniperSpot(replay[`target${actor}`]).number;
+  const actual = sniperSpot(replay[`emergence${opponent}`]).number;
+  return replay[`hitBy${actor}`]
+    ? `Hit: guessed ${guess}; opponent appeared at ${actual}.`
+    : `Miss: guessed ${guess}; opponent appeared at ${actual}.`;
+}
+
 export function sniperOutcomeLabel(replay = {}) {
   if (replay.completed) {
     if (replay.winner === "A") return "PLAYER A WINS";

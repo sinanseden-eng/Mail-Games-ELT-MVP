@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="question-studio.css" />
   <link rel="stylesheet" href="home.css" />
+  <link rel="stylesheet" href="sniper.css" />
 </head>
 <body>
   <div class="site-shell">
@@ -370,9 +371,10 @@
           <div class="score-main"><span id="sniper-demo-round">Round 1</span><small>Prediction training</small></div>
           <div><small>Player B</small><strong id="sniper-demo-health-b">3</strong></div>
         </div>
-        <canvas id="classroom-sniper-canvas" style="width:100%;aspect-ratio:16/9" aria-label="Training village replay"></canvas>
+        <canvas id="classroom-sniper-canvas" style="width:100%;aspect-ratio:16/9" aria-label="Two opposing village areas. Use the numbered hiding-place and prediction buttons, or tap a numbered map position."></canvas>
         <div class="event-log" id="sniper-demo-log">The simulation starts after both players lock their choices.</div>
         <div style="display:flex;flex-wrap:wrap;gap:12px;padding:16px"><button type="button" class="secondary" id="watch-classroom-sniper" disabled>Watch last simulation</button><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="classroom-sniper-motion" style="width:auto">Reduced motion</label></div>
+        <div id="sniper-last-result"></div>
       </article>
       <aside class="panel turn-panel" id="sniper-turn-panel"></aside>
     </section>

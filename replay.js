@@ -1,3 +1,4 @@
+import { sniperResultMarkup } from "./sniper-ui.mjs";
 import { ShootoutScene } from "./shootout-scene.mjs?v=0.9.23";
 import { createShootoutAudio } from "./shootout-audio.mjs?v=0.9.23";
 import { zoneLabel } from "./shootout-core.mjs?v=0.9.23";
@@ -241,7 +242,7 @@ async function presentSniper(data) {
   app.innerHTML = startCard({
     eyebrow: "Prediction result ready",
     title: "Watch both positions resolve.",
-    copy: "Press play to reveal the locked choices. Each shot briefly switches into the firing soldier’s scope point of view, then cuts to the target reaction. The clean training presentation uses no blood, and the stored result cannot change.",
+    copy: "Press play to reveal the locked choices. Preview each player’s locked prediction, then watch both shots happen together. Both players can lose a life. The clean training presentation uses no blood, and the stored result cannot change.",
     summary: `<strong>${html(match.players.A)}:</strong> ${html(sniperSpotLabel(replay.emergenceA))} → predicts ${html(sniperSpotLabel(replay.targetA))}<br /><strong>${html(match.players.B)}:</strong> ${html(sniperSpotLabel(replay.emergenceB))} → predicts ${html(sniperSpotLabel(replay.targetB))}`,
     button: "Play cinematic round",
     buttonId: "play-sniper"
@@ -257,8 +258,8 @@ async function runSniperReplay(replay, match) {
   app.innerHTML = `
     <div class="sniper-playback-card">
       <span class="control-eyebrow">Cinematic replay in progress</span>
-      <h1 class="control-title">Wide view → scope POV → impact camera</h1>
-      <p class="control-copy">The crosshair follows the stored prediction. Pause to inspect a frame or skip directly to the server-authoritative result.</p>
+      <h1 class="control-title">Preview both guesses → both shots together</h1>
+      <p class="control-copy">The scope previews each stored guess. Both shots then happen together. Pause to inspect a frame or skip to the saved result.</p>
       <div class="result-summary"><strong>${html(match.players.A)}:</strong> ${html(sniperSpotLabel(replay.emergenceA))} → ${html(sniperSpotLabel(replay.targetA))}<br /><strong>${html(match.players.B)}:</strong> ${html(sniperSpotLabel(replay.emergenceB))} → ${html(sniperSpotLabel(replay.targetB))}</div>
       <div class="control-actions sniper-playback-controls">
         <button class="secondary" id="sniper-pause" type="button" aria-pressed="false">Pause</button>
@@ -299,7 +300,7 @@ function renderSniperResult(data) {
       <div><small>${html(match.players.B)} cover</small><strong>${html(sniperSpotLabel(replay.emergenceB))}</strong></div>
       <div><small>${html(match.players.B)} prediction</small><strong>${html(sniperSpotLabel(replay.targetB))}</strong></div>
     </div>
-    <div class="result-summary">Health after the round: <strong>${replay.healthA}–${replay.healthB}</strong></div>
+    ${sniperResultMarkup(replay)}
     ${reviewMarkup([review?.A, review?.B], match)}
     ${replayControls("Replay scope sequence")}`;
   bindSniperReplayAgain(data);
@@ -375,8 +376,8 @@ function updateSniperScore(match, replay, before) {
   elements.nameB.textContent = `${match.players.B} · Sniper B`;
   const a = Math.max(0, Number(before ? replay.healthBeforeA : replay.healthA));
   const b = Math.max(0, Number(before ? replay.healthBeforeB : replay.healthB));
-  elements.scoreA.textContent = a;
-  elements.scoreB.textContent = b;
+  elements.scoreA.textContent = `${a} / 3 lives`;
+  elements.scoreB.textContent = `${b} / 3 lives`;
   elements.healthA.style.width = `${(a / 3) * 100}%`;
   elements.healthB.style.width = `${(b / 3) * 100}%`;
 }

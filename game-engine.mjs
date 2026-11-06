@@ -413,11 +413,14 @@ function sniperRoundMessage({ state, hitByA, hitByB }) {
 function sniperRoundCaption({ state, hitByA, hitByB, winner, reachedRoundLimit }) {
   if (winner === "A") return "PLAYER A WINS THE TRAINING MATCH.";
   if (winner === "B") return "PLAYER B WINS THE TRAINING MATCH.";
-  if (state.finished && reachedRoundLimit) return "TRAINING DRAW — the round limit is reached.";
+  if (state.finished) return reachedRoundLimit
+    ? "TRAINING DRAW — equal lives at the round limit."
+    : "TRAINING DRAW — both players ran out of lives together.";
   if (hitByA && hitByB) return "DOUBLE TAG — both predictions were correct.";
   if (hitByA) return "PLAYER A TAGS THE RIVAL POSITION.";
   if (hitByB) return "PLAYER B TAGS THE RIVAL POSITION.";
   if (!state.activeA && !state.activeB) return "BOTH SHOTS DISABLED — the questions win this round.";
+  if (!state.activeA || !state.activeB) return "NO TAG — the active shot missed.";
   return "NO TAG — both predictions miss.";
 }
 
